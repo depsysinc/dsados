@@ -1,4 +1,10 @@
 # depsysweb
 
 ## Setup
-* Dev Containers: Clone Repository in Named Container Volume
+* In wsl bash terminal
+  * `git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/bin/git-credential-manager.exe"`
+* Clone depsysinc/xterm.js 
+  * Dev Containers: Clone Repository in Named Container Volume (depsysweb)
+  * `yarn run esbuild-watch`
+* Clone depsysinc/depsysweb
+  * Dev Containers: Clone Repository in Named Container Volume (depsysweb)
