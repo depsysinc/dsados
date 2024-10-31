@@ -25,5 +25,8 @@
     "build:prod": "webpack --mode=production --node-env=production",
     "watch": "webpack --watch",
     "serve": "webpack serve --open"
+  },
+  "dependencies": {
+    "@xterm/xterm": "^5.5.0"
   }
 }
