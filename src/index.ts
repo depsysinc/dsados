@@ -1,6 +1,6 @@
 // Import the xterm module
-import { Terminal } from 'xterm';
-import 'xterm/css/xterm.css';
+import { Terminal } from '@xterm/xterm';
+import '@xterm/xterm/css/xterm.css';
 
 // Create a div container for the terminal
 const terminalContainer = document.createElement("div");
