@@ -3,16 +3,25 @@
 {
 	"name": "depsysweb",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/typescript-node:18-bookworm"
+	"image": "mcr.microsoft.com/devcontainers/typescript-node:18-bookworm",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+	"forwardPorts": [8080],
+
+	// Use 'portsAttributes' to set default properties for specific forwarded ports. 
+	// More info: https://containers.dev/implementors/json_reference/#port-attributes
+	"portsAttributes": {
+		"8080": {
+			"label": "Dev server",
+			"onAutoForward": "notify"
+		}
+	},
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "yarn install",
+	"postCreateCommand": "yarn install"
 
 	// Configure tool-specific properties.
 	// "customizations": {},
