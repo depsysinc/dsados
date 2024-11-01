@@ -18,6 +18,7 @@ const config = {
         path: path.resolve(__dirname, 'dist'),
         clean: true,
     },
+    devtool: 'source-map',
     devServer: {
         open: true,
         host: '0.0.0.0', // Required for container to host port forwarding
