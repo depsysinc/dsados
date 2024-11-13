@@ -18,6 +18,11 @@ const config = {
         path: path.resolve(__dirname, 'dist'),
         clean: true,
     },
+    optimization: {
+        splitChunks: {
+          chunks: 'all',
+      },
+    },
     devtool: 'source-map',
     devServer: {
         open: true,
@@ -25,7 +30,7 @@ const config = {
     },
     plugins: [
         new HtmlWebpackPlugin({
-            title: 'Hello World',
+            template: './src/index.html',
         }),
 
         // Add your plugins here
