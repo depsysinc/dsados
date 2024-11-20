@@ -1,5 +1,15 @@
 # depsysweb
 
+## TODO
+*  Implement delayed text writing
+*  Factor out terminal subsystem
+*  Implement a process table
+*  Implement a filesystem
+*  Implement a shell (depshell)
+*  Implement custom gl effects calls
+*  Enable click and touch
+*  Enable images
+
 ## Setup
 * In wsl bash terminal
   * `git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/bin/git-credential-manager.exe"`

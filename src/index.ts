@@ -1,6 +1,6 @@
 import './styles.css';
 
-import { DepSysOS } from './depSysOS';
+import { DSKernel } from './dsKernel';
 
 async function initApp(): Promise<void> {
     console.log("DepSys terminal firmware initializing");
@@ -15,7 +15,7 @@ async function initApp(): Promise<void> {
     document.body.appendChild(terminalContainer);
 
     // Boot the OS
-    const os = new DepSysOS(terminalContainer);
+    const os = new DSKernel(terminalContainer);
 }
 
 initApp();
