@@ -3,5 +3,33 @@
     src: url('./fonts/ModernDOS8x16.ttf');
     font-weight: normal;
     font-style: normal;
-  }
-  
+}
+
+html, body {
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+  align-items: center;    /* Centers vertically */
+  background-color: #111; /* Optional: Set a background color */
+}
+
+.xterm-viewport {
+  overflow: hidden !important; /* Prevent scrolling */
+}
+
+.xterm-scroll-area {
+  display: none !important; /* Hide the scrollbar */
+}
+
+#terminal-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  border: 5px solid grey;
+  box-sizing: border-box; /* Includes the border in the element's dimensions */
+  background-color: black;
+}

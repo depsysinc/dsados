@@ -1,32 +1,21 @@
-// Import the xterm module
-import { Terminal } from '@xterm/xterm';
-import { WebglAddon } from '@xterm/addon-webgl';
-import '@xterm/xterm/css/xterm.css';
-import './styles.css'
+import './styles.css';
 
-// Create a div container for the terminal
-const terminalContainer = document.createElement("div");
-terminalContainer.id = "terminal-container";
+import { DepSysOS } from './depSysOS';
 
-// Append the terminal container to the body of the document
-document.body.appendChild(terminalContainer);
+async function initApp(): Promise<void> {
+    console.log("DepSys terminal firmware initializing");
 
-// Initialize the xterm Terminal
-const terminal = new Terminal(
-    {
-        cols: 80,              // Set the number of columns (width)
-        rows: 24,              // Set the number of rows (height)
-        fontFamily: 'CRTFont, monospace', // Set the font family
-        fontSize: 32,          // Set the font size
-        fontWeight: 'normal',  // Optional: font weight
-    }
-);
+    await document.fonts.load('16px CRTFont');
 
-// Open the terminal in the specified container
-terminal.open(terminalContainer);
-terminal.loadAddon(new WebglAddon());
+    // Create a div container for the terminal
+    const terminalContainer = document.createElement("div");
+    terminalContainer.id = "terminal-container";
+    
+    // Append the terminal container to the body of the document
+    document.body.appendChild(terminalContainer);
 
-// Write "Hello world!" to the terminal
-terminal.write("Hello world!\r\nThis is some more font ABCDEFGHIJKLMNOP");
+    // Boot the OS
+    const os = new DepSysOS(terminalContainer);
+}
 
-console.log("Index complete");
+initApp();
