@@ -1,11 +1,9 @@
 # depsysweb
 
 ## TODO
-*  Implement delayed text writing
-*  Factor out terminal subsystem
 *  Implement a process table
-*  Implement a filesystem
 *  Implement a shell (depshell)
+*  Implement a filesystem
 *  Implement custom gl effects calls
 *  Enable click and touch
 *  Enable images

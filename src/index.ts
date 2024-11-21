@@ -16,6 +16,8 @@ async function initApp(): Promise<void> {
 
     // Boot the OS
     const os = new DSKernel(terminalContainer);
+    
+    console.log("DepSysOS handoff complete");
 }
 
 initApp();

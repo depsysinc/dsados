@@ -12,16 +12,16 @@ function isMobileDevice(): boolean {
 }
 
 export class DSTerminal {
-    private terminal: Terminal;
-    private webglAddon: WebglAddon;
-    private fitAddon: FitAddon;
+    private _terminal: Terminal;
+    private _webglAddon: WebglAddon;
+    private _fitAddon: FitAddon;
 
     get cols(): number  {
-        return this.terminal.cols;
+        return this._terminal.cols;
     }
 
     get rows(): number  {
-        return this.terminal.rows;
+        return this._terminal.rows;
     }
 
 
@@ -29,7 +29,7 @@ export class DSTerminal {
     constructor(private kernel : DSKernel, terminalContainer: HTMLDivElement) {
         // Initialize the xterm Terminal
 
-        const t = this.terminal = new Terminal(
+        const t = this._terminal = new Terminal(
             {
                 cols: 20,              // Set the number of columns (width)
                 rows: 10,              // Set the number of rows (height)
@@ -43,12 +43,12 @@ export class DSTerminal {
 
         // Open the terminal in the specified container
         if (!isMobileDevice()) {
-            this.webglAddon = new WebglAddon();
-            t.loadAddon(this.webglAddon);
+            this._webglAddon = new WebglAddon();
+            t.loadAddon(this._webglAddon);
         }
 
-        this.fitAddon = new FitAddon();
-        t.loadAddon(this.fitAddon);
+        this._fitAddon = new FitAddon();
+        t.loadAddon(this._fitAddon);
 
         t.open(terminalContainer);
 
@@ -63,17 +63,28 @@ export class DSTerminal {
         window.addEventListener('resize', this.handleResize);
         
         // TODO: Add listeners for keystrokes, clicks, and touches
+
+        t.focus();
     }
 
     async baudText(msg: string, delay: number = 5): Promise<void> {
         for (const char of msg) {
-            this.terminal.write(char);
+            this._terminal.write(char);
             await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
 
     directText(msg: string) {
-        this.terminal.write(msg);
+        console.log(msg);
+        this._terminal.write(msg);
+    }
+
+    reset() {
+        this._terminal.reset();
+    }
+
+    convertEol(convert: boolean) {
+        this._terminal.options.convertEol = convert;
     }
 
     handleResize = () => {
@@ -82,21 +93,21 @@ export class DSTerminal {
     }
 
     private _resize(): void {
-        const t = this.terminal;
+        const t = this._terminal;
         const portrait = window.matchMedia("(orientation: portrait)").matches;
         const targetCols = portrait ? 40 : 80;
 
         t.options.fontSize = 20;
         // Find out what the new dimensions should be
-        let newdim = this.fitAddon.proposeDimensions();
+        let newdim = this._fitAddon.proposeDimensions();
         // If they're too far from 80 cols
         while (newdim.cols > targetCols + 1) {
             t.options.fontSize++;
-            newdim = this.fitAddon.proposeDimensions();
+            newdim = this._fitAddon.proposeDimensions();
         }
         while (newdim.cols < targetCols + 1) {
             t.options.fontSize--;
-            newdim = this.fitAddon.proposeDimensions();
+            newdim = this._fitAddon.proposeDimensions();
         }
 
         t.resize(newdim.cols - 1, newdim.rows);
