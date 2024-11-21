@@ -2,13 +2,13 @@ import { DSKernel } from "./dsKernel";
 import { DSTerminal } from "./dsTerminal";
 
 export abstract class DSProcess {
-    protected _t: DSTerminal;
+    t: DSTerminal;
     protected _exitPromise: Promise<number>;
     protected _exitPromiseResolver: (value: number | PromiseLike<number>) => void;
 
     
     constructor(protected _kernel: DSKernel, readonly _pid: number) {
-        this._t = _kernel.terminal;
+        this.t = _kernel.terminal;
         this._exitPromise = new Promise<number>((resolve) => {
             this._exitPromiseResolver = resolve;
         });

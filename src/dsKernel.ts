@@ -89,7 +89,7 @@ class PRInit extends DSProcess {
 
     private async _spawnloop() {
         while (true) {
-            await this._t.baudText("init: spawning root shell\r\n");
+            await this.t.baudText("init: spawning root shell\r\n");
             await this._kernel.exec(DSShell);
         }
     }

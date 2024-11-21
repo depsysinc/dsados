@@ -15,6 +15,7 @@ export class DSTerminal {
     private _terminal: Terminal;
     private _webglAddon: WebglAddon;
     private _fitAddon: FitAddon;
+    baud: number = 1;
 
     get cols(): number {
         return this._terminal.cols;
@@ -76,10 +77,13 @@ export class DSTerminal {
         this.kernel.handleStdin(data);
     }
 
-    async baudText(msg: string, delay: number = 5): Promise<void> {
+    async baudText(msg: string, delay: number = undefined): Promise<void> {
+        if (!delay)
+            delay = this.baud;
         for (const char of msg) {
             this._terminal.write(char);
-            await new Promise(resolve => setTimeout(resolve, delay));
+            if (delay > 0)
+                await new Promise(resolve => setTimeout(resolve, delay));
         }
     }
 

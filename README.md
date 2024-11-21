@@ -3,8 +3,11 @@
 ## TODO
 *  Implement a shell (depshell)
   * command line parser (readline with input buffering while work happening)
+  * sleep command
+  * echo command
   * ps command
 *  Implement a filesystem
+*  Implement top level exception handler that calls panic
 *  Implement custom gl effects calls
 *  Enable click and touch
 *  Enable images
