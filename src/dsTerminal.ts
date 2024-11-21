@@ -16,17 +16,17 @@ export class DSTerminal {
     private _webglAddon: WebglAddon;
     private _fitAddon: FitAddon;
 
-    get cols(): number  {
+    get cols(): number {
         return this._terminal.cols;
     }
 
-    get rows(): number  {
+    get rows(): number {
         return this._terminal.rows;
     }
 
 
     // Private constructor to prevent direct instantiation
-    constructor(private kernel : DSKernel, terminalContainer: HTMLDivElement) {
+    constructor(private kernel: DSKernel, terminalContainer: HTMLDivElement) {
         // Initialize the xterm Terminal
 
         const t = this._terminal = new Terminal(
@@ -52,6 +52,8 @@ export class DSTerminal {
 
         t.open(terminalContainer);
 
+        this._terminal.options.convertEol = true;
+
         // Set the font color using the theme property
         t.options.theme = {
             foreground: '#00ff00', // Green font color
@@ -60,11 +62,18 @@ export class DSTerminal {
 
         // Call resize directly (no propagation because we're booting)
         this._resize();
-        window.addEventListener('resize', this.handleResize);
+
+        window.addEventListener('resize', () => { this.handleResize() });
         
+        t.onData((data): void => { this.handleStdin(data); });
+
         // TODO: Add listeners for keystrokes, clicks, and touches
 
         t.focus();
+    }
+
+    handleStdin(data: string): void {
+        this.kernel.handleStdin(data);
     }
 
     async baudText(msg: string, delay: number = 5): Promise<void> {
@@ -74,8 +83,7 @@ export class DSTerminal {
         }
     }
 
-    directText(msg: string) {
-        console.log(msg);
+    stdout(msg: string) {
         this._terminal.write(msg);
     }
 
@@ -83,14 +91,11 @@ export class DSTerminal {
         this._terminal.reset();
     }
 
-    convertEol(convert: boolean) {
-        this._terminal.options.convertEol = convert;
-    }
-
-    handleResize = () => {
+    handleResize() {
         this._resize();
         this.kernel.handleResize();
     }
+
 
     private _resize(): void {
         const t = this._terminal;
@@ -113,14 +118,14 @@ export class DSTerminal {
         t.resize(newdim.cols - 1, newdim.rows);
     }
 
-            /*
-        for (let i = 0; i < t.cols; i++) {
-            t.write(String(i % 10));
-        }
-        t.writeln("");
-        for (let i = 0; i < t.cols; i++) {
-            t.write(String(i / 10).charAt(0));
-        }
-        */
+    /*
+for (let i = 0; i < t.cols; i++) {
+    t.write(String(i % 10));
+}
+t.writeln("");
+for (let i = 0; i < t.cols; i++) {
+    t.write(String(i / 10).charAt(0));
+}
+*/
 
 }

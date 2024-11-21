@@ -4,7 +4,13 @@ export class DSShell extends DSProcess {
     get procname(): string {
         return "dssh";
     }
-    protected run(): void {
+    protected main(): void {
         this._t.baudText("$ ");
+    }
+    handleResize(): void {
+        console.log("RESIZE!");
+    }
+    handleStdin(data: string): void {
+        console.log(data);
     }
 }

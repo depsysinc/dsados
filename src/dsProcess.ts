@@ -6,30 +6,32 @@ export abstract class DSProcess {
     protected _exitPromise: Promise<number>;
     protected _exitPromiseResolver: (value: number | PromiseLike<number>) => void;
 
-    abstract get procname(): string;
-
+    
     constructor(protected _kernel: DSKernel, readonly _pid: number) {
         this._t = _kernel.terminal;
         this._exitPromise = new Promise<number>((resolve) => {
             this._exitPromiseResolver = resolve;
         });
     }
+    
+    abstract get procname(): string;
+    protected abstract main(): void;
 
-    protected abstract run(): void;
-
-
-
-    exec(): Promise<number> {
-        // Put this in the proctable
-        this._kernel.process.set(this._pid,this);
-        this.run();
+    start(): Promise<number> {
+        // Add to top of process stack
+        this._kernel.procstack.push(this);
+        this.main();
         return this._exitPromise;
     }
 
     protected _exit(retval: number): void {
-        // Pull this out of the proctable
-        this._kernel.process.delete(this._pid);
+        // Pop off the process stack
+        this._kernel.procstack.pop();
         // Signal term
         this._exitPromiseResolver(retval);
     }
+
+    // Default ignore handlers
+    handleResize(): void {} 
+    handleStdin(data: string): void {}
 }

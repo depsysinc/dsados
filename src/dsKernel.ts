@@ -8,7 +8,7 @@ export class DSKernel {
     static version: string = "V1.0";
 
     terminal: DSTerminal;
-    process: Map<number, DSProcess> = new Map();
+    procstack: DSProcess[] = [];
     nextpid: number = 1;
 
     constructor(terminalContainer: HTMLDivElement) {
@@ -16,7 +16,7 @@ export class DSKernel {
         console.log("Initializing Terminal")
         this.terminal = new DSTerminal(this, terminalContainer);
 
-        this.terminal.directText(`BOOTING DepSysOS ${DSKernel.version}...\r\n\r\n`);
+        this.terminal.stdout(`BOOTING DepSysOS ${DSKernel.version}...\r\n\r\n`);
 
         this._boot();
     }
@@ -24,7 +24,7 @@ export class DSKernel {
     private async _boot() {
         const t = this.terminal;
         await this.terminal.baudText(
-            `Initializing Terminal:\r\n` +
+            `term: init\r\n` +
             `  Grid   : ${t.cols} X ${t.rows}\r\n` +
             `  Device : ${navigator.userAgent}\r\n`
         );
@@ -40,7 +40,7 @@ export class DSKernel {
         // FIXME: ensure no existing process with the next pid
         const newproc = new processType(this, this.nextpid++)
         // Start it running and return the promise
-        return newproc.exec();
+        return newproc.start();
     }
 
     panic(msg = "UNDEFINED") {
@@ -48,8 +48,7 @@ export class DSKernel {
 
         const t = this.terminal;
         t.reset();
-        t.convertEol(true);
-        t.directText(
+        t.stdout(
             `${'*'.repeat(t.cols - 1)}\n` +
             `${' '.repeat(t.cols / 2 - 8)}>>> PANIC <<<\n` +
             `${'*'.repeat(t.cols - 1)}\n` +
@@ -57,14 +56,26 @@ export class DSKernel {
             try {
                 throw new Error(msg);
             } catch (error) {
-            this.terminal.directText(error.stack);
+            this.terminal.stdout(error.stack);
         }
-        this.terminal.directText("\n\nTo Reboot Press [F5]")
+        this.terminal.stdout("\n\nTo Reboot Press [F5]")
     }
 
+    get curproc() : DSProcess {
+        if (this.procstack.length == 0)
+            return undefined;
+        return this.procstack[this.procstack.length - 1];
+    }
     handleResize(): void {
-        // TODO: Send to the attached process
+        if (!this.curproc)
+            return;
+        this.curproc.handleResize();
     };
+    handleStdin(data: string) {
+        if (!this.curproc)
+            return;
+        this.curproc.handleStdin(data);
+    }
 }
 
 class PRInit extends DSProcess {
@@ -72,7 +83,7 @@ class PRInit extends DSProcess {
         return "init";
     }
 
-    run(): void {
+    main(): void {
         this._spawnloop();
     }
 

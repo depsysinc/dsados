@@ -1,8 +1,9 @@
 # depsysweb
 
 ## TODO
-*  Implement a process table
 *  Implement a shell (depshell)
+  * command line parser (readline with input buffering while work happening)
+  * ps command
 *  Implement a filesystem
 *  Implement custom gl effects calls
 *  Enable click and touch
