@@ -20,15 +20,63 @@ export class DSShell extends DSProcess {
             const tokens = splitRespectingQuotes(input);
             const command = tokens[0];
             switch (command) {
-                case "": // empty command, do nothing
+                case undefined: // empty command, do nothing
                     break;
                 case "exit":
                     this._exit(0);
                     return;
+                case "sleep":
+                    await this._commandSleep(tokens);
+                    break;
+                case "echo":
+                    await this._commandEcho(tokens);
+                    break;
+                case "ps":
+                    await this._commandPs(tokens);
+                    break;
                 default:
                     await this.t.baudText(`${command}: command not found\n`);
             }
         }
+    }
+    private _commandPs(tokens: string[]) {
+        const usage = (error: string = undefined) => {
+            let usagemsg = "";
+            if (error)
+                usagemsg += `error: ${error}\n`;
+            usagemsg += "Usage: ps\n";
+            return this.t.baudText(usagemsg);
+        };
+        if (tokens.length != 1)
+            return usage(`expected no arguments (${tokens.length - 1} given)\n`);
+        const pidwidth = 6;
+        let proclist = `${"PID".padStart(pidwidth)} CMD\n`;
+        this._kernel.procstack.forEach((proc, idx) => {
+            const active = proc.pid == this._kernel.curproc.pid ? " *" : "";
+            proclist += `${String(proc.pid).padStart(pidwidth)} ${proc.procname}${active}\n`;
+        });
+        return this.t.baudText(proclist);
+    }
+
+    private _commandEcho(tokens: string[]) {
+        return this.t.baudText(tokens.slice(1).join(" ") + "\n");
+    }
+
+    private _commandSleep(tokens: string[]) {
+        const usage = (error: string = undefined) => {
+            let usagemsg = "";
+            if (error)
+                usagemsg += `error: ${error}\n`;
+            usagemsg += "Usage: sleep <milliseconds>\n";
+            return this.t.baudText(usagemsg);
+        };
+
+        if (tokens.length != 2)
+            return usage(`expected 1 argument (${tokens.length - 1} given)\n`);
+        let delay = Number(tokens[1]);
+        if (isNaN(delay) || !Number.isInteger(delay) || delay <= 0)
+            return usage(`expected positive whole number argument (${delay})\n`);
+        return new Promise((resolve) => setTimeout(resolve, delay));
     }
 
     handleStdin(data: string): void {

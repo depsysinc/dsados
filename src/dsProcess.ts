@@ -7,7 +7,7 @@ export abstract class DSProcess {
     protected _exitPromiseResolver: (value: number | PromiseLike<number>) => void;
 
     
-    constructor(protected _kernel: DSKernel, readonly _pid: number) {
+    constructor(protected _kernel: DSKernel, readonly pid: number) {
         this.t = _kernel.terminal;
         this._exitPromise = new Promise<number>((resolve) => {
             this._exitPromiseResolver = resolve;
