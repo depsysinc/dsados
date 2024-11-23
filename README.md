@@ -1,14 +1,17 @@
 # depsysweb
 
 ## TODO
-*  Implement a shell (depshell)
-  * command line parser (readline with input buffering while work happening)
-  * sleep command
-  * echo command
-  * ps command
 *  Implement a filesystem
+  * access permissions system
+  * implement cat in dssh
+  * implement DSIBrowserFile -> BrowserStorage?
+*  dssh
+  * support delete and left/right arrow keys
 *  Implement top level exception handler that calls panic
 *  Implement custom gl effects calls
+  * Implement slow fuzzy warmup
+  * Synchronize with first boot sequence
+  * Make faster after recent boots
 *  Enable click and touch
 *  Enable images
 

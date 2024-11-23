@@ -1,3 +1,4 @@
+import { DSIDirectory } from "./dsFilesystem";
 import { DSKernel } from "./dsKernel";
 import { DSTerminal } from "./dsTerminal";
 
@@ -6,8 +7,16 @@ export abstract class DSProcess {
     protected _exitPromise: Promise<number>;
     protected _exitPromiseResolver: (value: number | PromiseLike<number>) => void;
 
+    get cwd() : DSIDirectory {
+        return this._cwd;
+    }
     
-    constructor(protected _kernel: DSKernel, readonly pid: number) {
+    constructor(
+        protected _kernel: DSKernel,
+        readonly pid: number,
+        readonly ppid: number,
+        protected _cwd: DSIDirectory
+    ) {
         this.t = _kernel.terminal;
         this._exitPromise = new Promise<number>((resolve) => {
             this._exitPromiseResolver = resolve;

@@ -25,10 +25,7 @@ export class DSTerminal {
         return this._terminal.rows;
     }
 
-
-    // Private constructor to prevent direct instantiation
-    constructor(private kernel: DSKernel, terminalContainer: HTMLDivElement) {
-        // Initialize the xterm Terminal
+    constructor(private _kernel: DSKernel, terminalContainer: HTMLDivElement) {
 
         const t = this._terminal = new Terminal(
             {
@@ -74,7 +71,7 @@ export class DSTerminal {
     }
 
     handleStdin(data: string): void {
-        this.kernel.handleStdin(data);
+        this._kernel.handleStdin(data);
     }
 
     async baudText(msg: string, delay: number = undefined): Promise<void> {
@@ -97,7 +94,7 @@ export class DSTerminal {
 
     handleResize() {
         this._resize();
-        this.kernel.handleResize();
+        this._kernel.handleResize();
     }
 
 

@@ -1,3 +1,4 @@
+import { DSIDirectory } from "../dsFilesystem";
 import { DSProcess } from "../dsProcess";
 
 export class DSShell extends DSProcess {
@@ -34,21 +35,79 @@ export class DSShell extends DSProcess {
                 case "ps":
                     await this._commandPs(tokens);
                     break;
+                case "pwd":
+                    await this._commandPwd(tokens);
+                    break;
+                case "mkdir":
+                    await this._commandMkdir(tokens);
+                    break;
+                case "ls":
+                    await this._commandLs(tokens);
+                    break;
+                case "cd":
+                    await this._commandCd(tokens);
+                    break;
                 default:
                     await this.t.baudText(`${command}: command not found\n`);
             }
         }
     }
-    private _commandPs(tokens: string[]) {
-        const usage = (error: string = undefined) => {
-            let usagemsg = "";
-            if (error)
-                usagemsg += `error: ${error}\n`;
-            usagemsg += "Usage: ps\n";
-            return this.t.baudText(usagemsg);
-        };
+
+    private _usage(cmd: string, args: string[], error: string = undefined) {
+        let usagemsg = "";
+        if (error)
+            usagemsg += `error: ${error}\n`;
+        usagemsg += `Usage: ${cmd} ${args.join(" ")}\n`;
+        return this.t.baudText(usagemsg);
+    };
+
+    private _commandLs(tokens: string[]) {
         if (tokens.length != 1)
-            return usage(`expected no arguments (${tokens.length - 1} given)\n`);
+            return this._usage("ls", [], `expected no arguments (${tokens.length - 1} given)\n`);
+
+        // Get the file list
+        let fileliststr = "";
+        this._cwd.filelist.forEach((fileinfo) => {
+            fileliststr += `${fileinfo.name}\n`;
+        })
+        return this.t.baudText(fileliststr);
+
+    }
+
+    private _commandCd(tokens: string[]) {
+        if (tokens.length != 2)
+            return this._usage("cd", ["<dirname>"], `expected 1 argument (${tokens.length - 1} given)\n`);
+        let dirname = tokens[1];
+
+        const fileinfo = this._cwd.getfileinfo(dirname);
+        if (!fileinfo)
+            return this.t.baudText("error: No such file or directory\n");
+        if (!(fileinfo.inode instanceof DSIDirectory)) {
+            return this.t.baudText(`error: ${dirname} is not a directory\n`);
+        }
+        console.log(fileinfo);
+        this._cwd = fileinfo.inode;
+    }
+
+    private _commandMkdir(tokens: string[]) {
+        if (tokens.length != 2)
+            return this._usage("mkdir", ["<dirname>"], `expected 1 argument (${tokens.length - 1} given)\n`);
+        let dirname = tokens[1];
+
+        this._cwd.mkdir(dirname);
+    }
+
+    private _commandPwd(tokens: string[]) {
+        if (tokens.length != 1)
+            return this._usage("pwd", [], `expected no arguments (${tokens.length - 1} given)\n`);
+
+        return this.t.baudText(this.cwd.path + "\n");
+    }
+
+    private _commandPs(tokens: string[]) {
+        if (tokens.length != 1)
+            return this._usage("ps", [], `expected no arguments (${tokens.length - 1} given)\n`);
+
         const pidwidth = 6;
         let proclist = `${"PID".padStart(pidwidth)} CMD\n`;
         this._kernel.procstack.forEach((proc, idx) => {
@@ -63,22 +122,15 @@ export class DSShell extends DSProcess {
     }
 
     private _commandSleep(tokens: string[]) {
-        const usage = (error: string = undefined) => {
-            let usagemsg = "";
-            if (error)
-                usagemsg += `error: ${error}\n`;
-            usagemsg += "Usage: sleep <milliseconds>\n";
-            return this.t.baudText(usagemsg);
-        };
-
         if (tokens.length != 2)
-            return usage(`expected 1 argument (${tokens.length - 1} given)\n`);
+            return this._usage("sleep", ["<milliseconds>"], `expected 1 argument (${tokens.length - 1} given)\n`);
         let delay = Number(tokens[1]);
         if (isNaN(delay) || !Number.isInteger(delay) || delay <= 0)
-            return usage(`expected positive whole number argument (${delay})\n`);
+            return this._usage("sleep", ["<milliseconds>"], `expected positive whole number argument (${delay})\n`);
         return new Promise((resolve) => setTimeout(resolve, delay));
     }
 
+    // Handlers
     handleStdin(data: string): void {
         if (this._prompt)
             this._prompt.handleStdin(data);
@@ -98,7 +150,7 @@ function splitRespectingQuotes(input: string): string[] {
 }
 
 class CommandLinePrompt {
-    private _prompt: string;
+    private _promptprefix: string;
     private _userinput: string = "";
     private _cursor: number = 0;
 
@@ -106,7 +158,7 @@ class CommandLinePrompt {
     private _inputresolver: (value: string | PromiseLike<string>) => void;
 
     constructor(private _shell: DSShell) {
-        this._prompt = "guest@depsys.io:/$ ";
+        this._promptprefix = "guest@depsys.io:";
     }
 
     async promptForInput(): Promise<string> {
@@ -114,7 +166,10 @@ class CommandLinePrompt {
         this._cursor = 0;
 
         const t = this._shell.t;
-        await t.baudText(this._prompt);
+        let prompt = this._promptprefix;
+        prompt += this._shell.cwd.path;
+        prompt += "$ ";
+        await t.baudText(prompt);
 
         t.stdout("\x1b[4h"); // Enable insert mode
         while (true) {

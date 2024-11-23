@@ -1,6 +1,7 @@
 import '@xterm/xterm/css/xterm.css';
 
 import { DSTerminal } from "./dsTerminal";
+import { DSFilesystem, DSIDirectory } from "./dsFilesystem";
 import { DSProcess } from "./dsProcess";
 import { DSShell } from "./process/dsShell"
 
@@ -8,8 +9,13 @@ export class DSKernel {
     static version: string = "V1.0";
 
     terminal: DSTerminal;
+
+    filesystem: DSFilesystem;
+
     procstack: DSProcess[] = [];
     nextpid: number = 1;
+
+    bootbaud: number = 0;
 
     constructor(terminalContainer: HTMLDivElement) {
         console.log("DepSysOS KERNEL START");
@@ -22,23 +28,39 @@ export class DSKernel {
     }
 
     private async _boot() {
+        // Init terminal
         const t = this.terminal;
-        await this.terminal.baudText(
-            `term: init\r\n` +
-            `  Grid   : ${t.cols} X ${t.rows}\r\n` +
-            `  Device : ${navigator.userAgent}\r\n`
+        await t.baudText(
+            `dsterm: init\n` +
+            `  Grid   : ${t.cols} X ${t.rows}\n` +
+            `  Device : ${navigator.userAgent}\n`,
+            this.bootbaud
         );
-        await this.terminal.baudText("exec: init\r\n");
+        // Init filesystem
+        const fs = this.filesystem = new DSFilesystem(this);
+        await t.baudText(`dsfs: init\n`, this.bootbaud)
+
+        // Start init process
+        await t.baudText("proc: exec init\n", this.bootbaud);
         await this.exec(PRInit);
 
         // Should never get here
         this.panic("UNEXPECTED INIT EXIT");
     }
 
-    exec<T extends DSProcess>(processType: new (_kernel: DSKernel, _pid: number) => T): Promise<number> {
-        // Construct the process 
+    exec<T extends DSProcess>(
+        processType: new (
+            _kernel: DSKernel, 
+            pid: number, 
+            ppid: number,
+            _cwd: DSIDirectory) => T
+        ) : Promise<number> {
+        // This is a FILO stack based process table so the parent is always
+        // the currently running process.  If this is init, then we make PPID 0
+        const ppid = this.curproc ? this.curproc.pid : 0;
+        const cwd = this.curproc ? this.curproc.cwd : this.filesystem.root;
         // FIXME: ensure no existing process with the next pid
-        const newproc = new processType(this, this.nextpid++)
+        const newproc = new processType(this, this.nextpid++, ppid, cwd);
         // Start it running and return the promise
         return newproc.start();
     }
@@ -53,15 +75,15 @@ export class DSKernel {
             `${' '.repeat(t.cols / 2 - 8)}>>> PANIC <<<\n` +
             `${'*'.repeat(t.cols - 1)}\n` +
             `\nDepSysOS ${DSKernel.version}\n`)
-            try {
-                throw new Error(msg);
-            } catch (error) {
+        try {
+            throw new Error(msg);
+        } catch (error) {
             this.terminal.stdout(error.stack);
         }
         this.terminal.stdout("\n\nTo Reboot Press [F5]")
     }
 
-    get curproc() : DSProcess {
+    get curproc(): DSProcess {
         if (this.procstack.length == 0)
             return undefined;
         return this.procstack[this.procstack.length - 1];
