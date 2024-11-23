@@ -85,7 +85,6 @@ export class DSShell extends DSProcess {
         if (!(fileinfo.inode instanceof DSIDirectory)) {
             return this.t.baudText(`error: ${dirname} is not a directory\n`);
         }
-        console.log(fileinfo);
         this._cwd = fileinfo.inode;
     }
 
