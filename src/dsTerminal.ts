@@ -62,7 +62,7 @@ export class DSTerminal {
         this._resize();
 
         window.addEventListener('resize', () => { this.handleResize() });
-        
+
         t.onData((data): void => { this.handleStdin(data); });
 
         // TODO: Add listeners for keystrokes, clicks, and touches
@@ -75,12 +75,32 @@ export class DSTerminal {
     }
 
     async baudText(msg: string, delay: number = undefined): Promise<void> {
-        if (!delay)
+        // Handle default delay case
+        if (delay == undefined)
             delay = this.baud;
+        // Handle no delay case
+        if (delay <= 0) {
+            await new Promise<void>((resolve) => {
+                this._terminal.write(msg, () => { resolve(); });
+            });
+            return;
+        }
         for (const char of msg) {
-            this._terminal.write(char);
-            if (delay > 0)
-                await new Promise(resolve => setTimeout(resolve, delay));
+            await new Promise<void>((resolve) => {
+                const startTime = Date.now();
+
+                // Write the character to the terminal
+                this._terminal.write(char, () => {
+                    const elapsed = Date.now() - startTime;
+
+                    // If the rendering was faster than the delay, wait the remaining time
+                    if (elapsed < delay) {
+                        setTimeout(resolve, delay - elapsed);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
         }
     }
 

@@ -30,18 +30,19 @@ export class DSKernel {
     private async _boot() {
         // Init terminal
         const t = this.terminal;
+        t.baud = 0;
         await t.baudText(
             `dsterm: init\n` +
             `  Grid   : ${t.cols} X ${t.rows}\n` +
             `  Device : ${navigator.userAgent}\n`,
-            this.bootbaud
         );
         // Init filesystem
         const fs = this.filesystem = new DSFilesystem(this);
-        await t.baudText(`dsfs: init\n`, this.bootbaud)
+        await t.baudText(`dsfs: init\n`)
 
         // Start init process
-        await t.baudText("proc: exec init\n", this.bootbaud);
+        await t.baudText("proc: exec init\n");
+        t.baud = 10;
         await this.exec(PRInit);
 
         // Should never get here

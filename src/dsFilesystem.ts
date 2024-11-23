@@ -43,8 +43,8 @@ export class DSIDirectory extends DSInode {
         let path = "";
         while (curdir.parent != curdir) {
             // Find ourselves in the parent
-            
-            path = curdir.parent.getfileinfo(this).name + '/' + path;
+            let curname = curdir.parent.getfileinfo(curdir).name;
+            path = curname + '/' + path;
             curdir = curdir.parent;
         }
         path = '/' + path;
@@ -59,6 +59,7 @@ export class DSIDirectory extends DSInode {
         if (typeof identifier === "string") {
             return this.filelist.find(file => file.name === identifier);
         } else {
+            console.log(this);
             return this.filelist.find(file => file.inode === identifier);
         }
     }
