@@ -37,7 +37,7 @@ export class DSKernel {
             `  Device : ${navigator.userAgent}\n`,
         );
         // Init filesystem
-        const fs = this.filesystem = new DSFilesystem(this);
+        const fs = this.filesystem = new DSFilesystem();
         await t.baudText(`dsfs: init\n`)
 
         // Start init process

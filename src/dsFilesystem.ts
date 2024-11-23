@@ -7,7 +7,7 @@ export class DSFilesystem {
         return this._root;
     }
 
-    constructor(private _kernel: DSKernel) {
+    constructor() {
         this._root = new DSIDirectory(this);
     }
 }
