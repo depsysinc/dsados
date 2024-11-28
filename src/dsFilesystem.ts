@@ -1,5 +1,30 @@
 import { DSKernel } from "./dsKernel"
 
+// Exceptions
+
+export class DSFilesystemError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "DSFilesystemError";
+    }
+}
+
+export class DSIDirectoryError extends DSFilesystemError {
+    constructor(message: string) {
+        super(message);
+        this.name = "DSIDirectoryError";
+    }
+}
+
+export class DSIDirectoryAlreadyExistsError extends DSIDirectoryError {
+    constructor(dirname: string) {
+        super(`directory '${dirname}' already exists.`);
+        this.name = "DirectoryAlreadyExistsError";
+    }
+}
+
+// Main classes
+
 export class DSFilesystem {
     private _root: DSIDirectory;
 
@@ -16,7 +41,7 @@ export abstract class DSInode {
     protected constructor(protected _fs: DSFilesystem) { }
 }
 
-class DSFileInfo {
+export class DSFileInfo {
     constructor(
         readonly inode: DSInode,
         public name: string,
@@ -64,14 +89,19 @@ export class DSIDirectory extends DSInode {
         }
     }
 
-    mkdir(dirname: string) {
+    mkdir(dirname: string): DSIDirectory {
+        // Check for collision
+        if (this.getfileinfo(dirname))
+            throw new DSIDirectoryAlreadyExistsError(dirname);
         // Create new Directory
+        const newdir = new DSIDirectory(this._fs, this);
         this.filelist.push(
             new DSFileInfo(
-                new DSIDirectory(this._fs, this),
+                newdir,
                 dirname
             )
         );
+        return newdir;
     }
 
 }

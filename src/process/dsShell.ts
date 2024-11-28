@@ -15,40 +15,45 @@ export class DSShell extends DSProcess {
     private async _commandLoop() {
 
         while (true) {
-            const input = await this._prompt.promptForInput();
+            try {
 
-            // TODO: Handle "" when tokenizing
-            const tokens = splitRespectingQuotes(input);
-            const command = tokens[0];
-            switch (command) {
-                case undefined: // empty command, do nothing
-                    break;
-                case "exit":
-                    this._exit(0);
-                    return;
-                case "sleep":
-                    await this._commandSleep(tokens);
-                    break;
-                case "echo":
-                    await this._commandEcho(tokens);
-                    break;
-                case "ps":
-                    await this._commandPs(tokens);
-                    break;
-                case "pwd":
-                    await this._commandPwd(tokens);
-                    break;
-                case "mkdir":
-                    await this._commandMkdir(tokens);
-                    break;
-                case "ls":
-                    await this._commandLs(tokens);
-                    break;
-                case "cd":
-                    await this._commandCd(tokens);
-                    break;
-                default:
-                    await this.t.baudText(`${command}: command not found\n`);
+                const input = await this._prompt.promptForInput();
+
+                // TODO: Handle "" when tokenizing
+                const tokens = splitRespectingQuotes(input);
+                const command = tokens[0];
+                switch (command) {
+                    case undefined: // empty command, do nothing
+                        break;
+                    case "exit":
+                        this._exit(0);
+                        return;
+                    case "sleep":
+                        await this._commandSleep(tokens);
+                        break;
+                    case "echo":
+                        await this._commandEcho(tokens);
+                        break;
+                    case "ps":
+                        await this._commandPs(tokens);
+                        break;
+                    case "pwd":
+                        await this._commandPwd(tokens);
+                        break;
+                    case "mkdir":
+                        await this._commandMkdir(tokens);
+                        break;
+                    case "ls":
+                        await this._commandLs(tokens);
+                        break;
+                    case "cd":
+                        await this._commandCd(tokens);
+                        break;
+                    default:
+                        await this.t.baudText(`${command}: command not found\n`);
+                }
+            } catch (e) {
+                await this.t.baudText(`${e.message}\n`);
             }
         }
     }
