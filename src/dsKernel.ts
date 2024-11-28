@@ -43,10 +43,14 @@ export class DSKernel {
         // Start init process
         await t.baudText("proc: exec init\n");
         t.baud = 10;
-        await this.exec(PRInit);
+        try {
+            await this.exec(PRInit);
+        } catch(e) {
+            this.panic(e);
+        }
 
         // Should never get here
-        this.panic("UNEXPECTED INIT EXIT");
+        this.panic(new Error("UNEXPECTED INIT EXIT"));
     }
 
     exec<T extends DSProcess>(
@@ -66,7 +70,7 @@ export class DSKernel {
         return newproc.start();
     }
 
-    panic(msg = "UNDEFINED") {
+    panic(e: Error) {
         // TODO: kill all processes
 
         const t = this.terminal;
@@ -76,12 +80,8 @@ export class DSKernel {
             `${' '.repeat(t.cols / 2 - 8)}>>> PANIC <<<\n` +
             `${'*'.repeat(t.cols - 1)}\n` +
             `\nDepSysOS ${DSKernel.version}\n`)
-        try {
-            throw new Error(msg);
-        } catch (error) {
-            this.terminal.stdout(error.stack);
-        }
-        this.terminal.stdout("\n\nTo Reboot Press [F5]")
+        this.terminal.stdout(e.stack);
+        this.terminal.stdout("\n\nReset Required")
     }
 
     get curproc(): DSProcess {
