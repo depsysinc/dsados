@@ -1,8 +1,20 @@
 import { DSIDirectory } from "../dsFilesystem";
 import { DSProcess } from "../dsProcess";
+import { DSKernel } from "../dsKernel";
+import { DSTerminal } from "../dsTerminal";
 
 export class DSShell extends DSProcess {
     private _prompt: CommandLinePrompt;
+    t: DSTerminal;
+
+    constructor(
+        readonly pid: number,
+        readonly ppid: number,
+        cwd: DSIDirectory
+    ) {
+        super(pid,ppid,cwd);
+        this.t = DSKernel.terminal;
+    }
 
     get procname(): string {
         return "dssh";
@@ -72,7 +84,7 @@ export class DSShell extends DSProcess {
 
         // Get the file list
         let fileliststr = "";
-        this._cwd.filelist.forEach((fileinfo) => {
+        this.cwd.filelist.forEach((fileinfo) => {
             fileliststr += `${fileinfo.name}\n`;
         })
         return this.t.baudText(fileliststr);
@@ -84,13 +96,16 @@ export class DSShell extends DSProcess {
             return this._usage("cd", ["<dirname>"], `expected 1 argument (${tokens.length - 1} given)\n`);
         let dirname = tokens[1];
 
-        const fileinfo = this._cwd.getfileinfo(dirname);
+        this.chdir(dirname);
+        /*
+        const fileinfo = this.cwd.getfileinfo(dirname);
         if (!fileinfo)
             return this.t.baudText("error: No such file or directory\n");
         if (!(fileinfo.inode instanceof DSIDirectory)) {
             return this.t.baudText(`error: ${dirname} is not a directory\n`);
         }
         this._cwd = fileinfo.inode;
+        */
     }
 
     private _commandMkdir(tokens: string[]) {
@@ -98,7 +113,7 @@ export class DSShell extends DSProcess {
             return this._usage("mkdir", ["<dirname>"], `expected 1 argument (${tokens.length - 1} given)\n`);
         let dirname = tokens[1];
 
-        this._cwd.mkdir(dirname);
+        this.cwd.mkdir(dirname);
     }
 
     private _commandPwd(tokens: string[]) {
@@ -114,8 +129,8 @@ export class DSShell extends DSProcess {
 
         const pidwidth = 6;
         let proclist = `${"PID".padStart(pidwidth)} CMD\n`;
-        this._kernel.procstack.forEach((proc, idx) => {
-            const active = proc.pid == this._kernel.curproc.pid ? " *" : "";
+        DSKernel.procstack.forEach((proc, idx) => {
+            const active = proc.pid == DSKernel.curproc.pid ? " *" : "";
             proclist += `${String(proc.pid).padStart(pidwidth)} ${proc.procname}${active}\n`;
         });
         return this.t.baudText(proclist);

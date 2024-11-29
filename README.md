@@ -3,11 +3,11 @@
 ## TODO
 *  Implement a filesystem
   * access permissions system
+    * rwx 
   * implement cat in dssh
   * implement DSIBrowserFile -> BrowserStorage?
 *  dssh
   * support delete and left/right arrow keys
-*  Implement top level exception handler that calls panic
 *  Implement custom gl effects calls
   * Implement slow fuzzy warmup
   * Synchronize with first boot sequence

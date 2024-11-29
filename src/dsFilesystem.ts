@@ -1,31 +1,57 @@
-import { DSKernel } from "./dsKernel"
-
 // Exceptions
 
-export class DSFilesystemError extends Error {
+export class DSFileSystemError extends Error {
     constructor(message: string) {
         super(message);
-        this.name = "DSFilesystemError";
+        this.name = this.constructor.name;
     }
 }
 
-export class DSIDirectoryError extends DSFilesystemError {
+export class DSIDirectoryError extends DSFileSystemError {
     constructor(message: string) {
         super(message);
-        this.name = "DSIDirectoryError";
+        this.name = this.constructor.name;
+    }
+}
+
+export class DSIDirectoryInvalidPathError extends DSIDirectoryError {
+    constructor(dirname: string) {
+        super(`'${dirname}' is an invalid path`);
+        this.name = this.constructor.name;
     }
 }
 
 export class DSIDirectoryAlreadyExistsError extends DSIDirectoryError {
     constructor(dirname: string) {
-        super(`directory '${dirname}' already exists.`);
-        this.name = "DirectoryAlreadyExistsError";
+        super(`directory '${dirname}' already exists`);
+        this.name = this.constructor.name;
+    }
+}
+
+export class DSFilePermsPermissionDeniedError extends DSFileSystemError {
+    constructor(message: string) {
+        super(message);
+        this.name = this.constructor.name;
+    }
+}
+
+export class DSFilePermsReadError extends DSFilePermsPermissionDeniedError {
+    constructor(dirname: string) {
+        super(`cannot read '${dirname}': Permission denied`);
+        this.name = this.constructor.name;
+    }
+}
+
+export class DSFilePermsExecError extends DSFilePermsPermissionDeniedError {
+    constructor(dirname: string) {
+        super(`cannot exec '${dirname}': Permission denied`);
+        this.name = this.constructor.name;
     }
 }
 
 // Main classes
 
-export class DSFilesystem {
+export class DSFileSystem {
     private _root: DSIDirectory;
 
     get root(): DSIDirectory {
@@ -38,42 +64,135 @@ export class DSFilesystem {
 }
 
 export abstract class DSInode {
-    protected constructor(protected _fs: DSFilesystem) { }
+    protected constructor(protected _fs: DSFileSystem) { }
+}
+
+export class DSFilePerms {
+    constructor(
+        private _r: boolean,
+        private _w: boolean,
+        private _x: boolean
+    ) { }
+    get r() { return this._r; }
+    get w() { return this._w; }
+    get x() { return this._x; }
+
+    // Factory method for readonly permissions
+    static readonly(): DSFilePerms {
+        return new DSFilePerms(true, false, false);
+    }
+
+    // Factory method for read-execute permissions
+    static rx(): DSFilePerms {
+        return new DSFilePerms(true, false, true);
+    }
+
+    // Factory method for full permissions
+    static full(): DSFilePerms {
+        return new DSFilePerms(true, true, true);
+    }
+
+    // Factory method for no permissions
+    static none(): DSFilePerms {
+        return new DSFilePerms(false, false, false);
+    }
 }
 
 export class DSFileInfo {
     constructor(
         readonly inode: DSInode,
-        public name: string,
+        private _name: string,
+        private _perms: DSFilePerms,
     ) { }
+
+    get perms() {
+        return this._perms;
+    }
+
+    set perms(newperms: DSFilePerms) {
+        this._perms = newperms;
+    }
+
+    get name() {
+        return this._name;
+    }
+
+    /*
+        File Permission Meanings for Directories
+        r	Read:   List directory contents (ls).
+        w	Write:  Create/delete files in the directory.
+        x	Exec:   Traverse the directory (cd).
+    */
+
+    chmod(fileperms: DSFilePerms) {
+        this._perms = fileperms;
+    }
+
 }
 
 export class DSIDirectory extends DSInode {
     public parent: DSIDirectory;
-    public filelist: DSFileInfo[] = [];
+    private _filelist: DSFileInfo[] = [];
 
-    constructor(_fs: DSFilesystem, parent: (DSIDirectory | undefined) = undefined) {
+    constructor(_fs: DSFileSystem, parent: (DSIDirectory | undefined) = undefined) {
         super(_fs);
         if (parent == undefined)
             this.parent = this;
         else
             this.parent = parent;
         // Add . and ..
-        this.filelist.push(new DSFileInfo(this, "."));
-        this.filelist.push(new DSFileInfo(this.parent, ".."));
+        this._filelist.push(new DSFileInfo(this, ".", DSFilePerms.rx()));
+        this._filelist.push(new DSFileInfo(this.parent, "..", DSFilePerms.rx()));
+
+    }
+
+    get fileinfo(): DSFileInfo {
+        return this.parent.getfileinfo(this);
+    }
+
+    get filelist(): DSFileInfo[] {
+        if (!this.fileinfo.perms.r)
+            throw new DSFilePermsReadError(this.fileinfo.name);
+        return this._filelist;
     }
 
     get path(): string {
         let curdir: DSIDirectory = this;
+        if (curdir == this._fs.root)
+            return '/';
         let path = "";
         while (curdir.parent != curdir) {
             // Find ourselves in the parent
-            let curname = curdir.parent.getfileinfo(curdir).name;
-            path = curname + '/' + path;
+            let curname = curdir.fileinfo.name;
+            path = '/' + curname + path;
             curdir = curdir.parent;
         }
-        path = '/' + path;
         return path;
+    }
+
+    getdir(path: string): DSIDirectory {
+        // Check empty root case
+        if (/^\/+$/.test(path))
+            return this._fs.root;
+
+        const pathRegex = /[^/]+/g;
+        const dirs = path.match(pathRegex);
+        if (!dirs)
+            throw new DSIDirectoryInvalidPathError(path);
+
+        let curdir: DSIDirectory = this;
+        for (let i = 0; i < dirs.length; i++) {
+            const dirname = dirs[i];
+            // Try to find the directory
+            const fileinfo = curdir.getfileinfo(dirname);
+            if (!fileinfo)
+                throw new DSIDirectoryInvalidPathError(path);
+            if (!(fileinfo.inode instanceof DSIDirectory))
+                throw new DSIDirectoryInvalidPathError(path);
+            curdir = fileinfo.inode;
+        }
+
+        return curdir;
     }
 
     // Overload signatures
@@ -81,27 +200,24 @@ export class DSIDirectory extends DSInode {
     getfileinfo(inode: DSInode): DSFileInfo | undefined;
     // Single implementation
     getfileinfo(identifier: string | DSInode): DSFileInfo | undefined {
+        // TODO Check permissions
         if (typeof identifier === "string") {
-            return this.filelist.find(file => file.name === identifier);
+            return this._filelist.find(file => file.name === identifier);
         } else {
-            console.log(this);
-            return this.filelist.find(file => file.inode === identifier);
+            return this._filelist.find(file => file.inode === identifier);
         }
     }
 
-    mkdir(dirname: string): DSIDirectory {
+    // Hmmm, default full permissions is a bad smell
+    mkdir(dirname: string, fileperms = DSFilePerms.full()): DSIDirectory {
         // Check for collision
         if (this.getfileinfo(dirname))
             throw new DSIDirectoryAlreadyExistsError(dirname);
         // Create new Directory
         const newdir = new DSIDirectory(this._fs, this);
-        this.filelist.push(
-            new DSFileInfo(
-                newdir,
-                dirname
-            )
+        this._filelist.push(
+            new DSFileInfo(newdir, dirname, fileperms)
         );
         return newdir;
     }
-
 }

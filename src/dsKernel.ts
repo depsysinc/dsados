@@ -1,34 +1,33 @@
 import '@xterm/xterm/css/xterm.css';
 
 import { DSTerminal } from "./dsTerminal";
-import { DSFilesystem, DSIDirectory } from "./dsFilesystem";
+import { DSFileSystem, DSIDirectory } from "./dsFilesystem";
 import { DSProcess } from "./dsProcess";
 import { DSShell } from "./process/dsShell"
 
 export class DSKernel {
     static version: string = "V1.0";
 
-    terminal: DSTerminal;
+    static terminal: DSTerminal;
 
-    filesystem: DSFilesystem;
+    static filesystem: DSFileSystem;
 
-    procstack: DSProcess[] = [];
-    nextpid: number = 1;
+    static procstack: DSProcess[] = [];
+    static nextpid: number = 1;
 
-    bootbaud: number = 0;
+    static bootbaud: number = 0;
 
-    constructor(terminalContainer: HTMLDivElement) {
+    private constructor() {
+    }
+
+    static async boot(terminalContainer: HTMLDivElement) {
+        // Init terminal
         console.log("DepSysOS KERNEL START");
         console.log("Initializing Terminal")
-        this.terminal = new DSTerminal(this, terminalContainer);
+        this.terminal = new DSTerminal(terminalContainer);
 
         this.terminal.stdout(`BOOTING DepSysOS ${DSKernel.version}...\r\n\r\n`);
 
-        this._boot();
-    }
-
-    private async _boot() {
-        // Init terminal
         const t = this.terminal;
         t.baud = 0;
         await t.baudText(
@@ -37,14 +36,14 @@ export class DSKernel {
             `  Device : ${navigator.userAgent}\n`,
         );
         // Init filesystem
-        const fs = this.filesystem = new DSFilesystem();
+        const fs = this.filesystem = new DSFileSystem();
         await t.baudText(`dsfs: init\n`)
 
         // Start init process
         await t.baudText("proc: exec init\n");
         t.baud = 10;
         try {
-            await this.exec(PRInit);
+            await DSKernel.exec(PRInit);
         } catch(e) {
             this.panic(e);
         }
@@ -53,9 +52,8 @@ export class DSKernel {
         this.panic(new Error("UNEXPECTED INIT EXIT"));
     }
 
-    exec<T extends DSProcess>(
+    static async exec<T extends DSProcess>(
         processType: new (
-            _kernel: DSKernel, 
             pid: number, 
             ppid: number,
             _cwd: DSIDirectory) => T
@@ -64,14 +62,20 @@ export class DSKernel {
         // the currently running process.  If this is init, then we make PPID 0
         const ppid = this.curproc ? this.curproc.pid : 0;
         const cwd = this.curproc ? this.curproc.cwd : this.filesystem.root;
-        // FIXME: ensure no existing process with the next pid
-        const newproc = new processType(this, this.nextpid++, ppid, cwd);
-        // Start it running and return the promise
-        return newproc.start();
+        // TODO: ensure no existing process with the next pid
+        const newproc = new processType(this.nextpid++, ppid, cwd);
+        
+        this.procstack.push(newproc);
+
+        await newproc.start();
+
+        this.procstack.pop();
+
+        return;
     }
 
-    panic(e: Error) {
-        // TODO: kill all processes
+    static panic(e: Error) {
+        // TODO: clear out procstack
 
         const t = this.terminal;
         t.reset();
@@ -84,17 +88,17 @@ export class DSKernel {
         this.terminal.stdout("\n\nReset Required")
     }
 
-    get curproc(): DSProcess {
+    static get curproc(): DSProcess {
         if (this.procstack.length == 0)
             return undefined;
         return this.procstack[this.procstack.length - 1];
     }
-    handleResize(): void {
+    static handleResize(): void {
         if (!this.curproc)
             return;
         this.curproc.handleResize();
     };
-    handleStdin(data: string) {
+    static handleStdin(data: string) {
         if (!this.curproc)
             return;
         this.curproc.handleStdin(data);
@@ -112,8 +116,8 @@ class PRInit extends DSProcess {
 
     private async _spawnloop() {
         while (true) {
-            await this.t.baudText("init: spawning root shell\r\n");
-            await this._kernel.exec(DSShell);
+            await DSKernel.terminal.baudText("init: spawning root shell\r\n");
+            await DSKernel.exec(DSShell);
         }
     }
 }

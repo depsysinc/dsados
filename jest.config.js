@@ -4,6 +4,13 @@ module.exports = {
   testEnvironment: "node",
   testMatch: ['**/tests/**/*.test.ts'],
   transform: {
-    "^.+.tsx?$": ["ts-jest",{}],
+    "^.+.tsx?$": ["ts-jest", {
+      tsconfig: "tsconfig.json",
+    }],
+  },
+  moduleNameMapper: {
+    "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+    "^@xterm/addon-webgl$": "<rootDir>/__mocks__/@xterm/addon-webgl.js",
+    "^@xterm/addon-fit$": "<rootDir>/__mocks__/@xterm/addon-fit.js",
   },
 };
