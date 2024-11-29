@@ -25,7 +25,7 @@ export class DSTerminal {
         return this._terminal.rows;
     }
 
-    constructor(private _kernel: DSKernel, terminalContainer: HTMLDivElement) {
+    constructor(terminalContainer: HTMLDivElement) {
 
         const t = this._terminal = new Terminal(
             {
@@ -71,7 +71,7 @@ export class DSTerminal {
     }
 
     handleStdin(data: string): void {
-        this._kernel.handleStdin(data);
+        DSKernel.handleStdin(data);
     }
 
     async baudText(msg: string, delay: number = undefined): Promise<void> {
@@ -114,7 +114,7 @@ export class DSTerminal {
 
     handleResize() {
         this._resize();
-        this._kernel.handleResize();
+        DSKernel.handleResize();
     }
 
 
