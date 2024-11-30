@@ -3,7 +3,9 @@
 ## TODO
 *  Implement a filesystem
   * access permissions system
-    * rwx 
+    * directory creation, traversal
+    * Static filesystem
+    * S3 backed filesystem
   * implement cat in dssh
   * implement DSIBrowserFile -> BrowserStorage?
 *  dssh

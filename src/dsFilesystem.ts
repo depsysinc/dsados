@@ -59,13 +59,17 @@ export class DSFileSystem {
     }
 
     constructor() {
-        this._root = new DSIDirectory(this);
+        this._root = new DSIDirectory(this, DSFilePerms.rx());
     }
 }
 
-export abstract class DSInode {
-    protected constructor(protected _fs: DSFileSystem) { }
-}
+/*
+    File Permission Meanings
+    [Directories]
+    r	Read:   List directory contents (ls).
+    w	Write:  Create/delete files in the directory.
+    x	Exec:   Traverse the directory (cd).
+*/
 
 export class DSFilePerms {
     constructor(
@@ -98,51 +102,49 @@ export class DSFilePerms {
     }
 }
 
-export class DSFileInfo {
-    constructor(
-        readonly inode: DSInode,
-        private _name: string,
-        private _perms: DSFilePerms,
-    ) { }
+export abstract class DSInode {
+
+    protected constructor(
+        protected _fs: DSFileSystem,
+        private _perms: DSFilePerms) { }
 
     get perms() {
         return this._perms;
     }
 
-    set perms(newperms: DSFilePerms) {
-        this._perms = newperms;
+    chmod(fileperms: DSFilePerms) {
+        this._perms = fileperms;
     }
+}
+
+export class DSFileInfo {
+    constructor(
+        readonly inode: DSInode,
+        private _name: string,
+    ) { }
 
     get name() {
         return this._name;
     }
-
-    /*
-        File Permission Meanings for Directories
-        r	Read:   List directory contents (ls).
-        w	Write:  Create/delete files in the directory.
-        x	Exec:   Traverse the directory (cd).
-    */
-
-    chmod(fileperms: DSFilePerms) {
-        this._perms = fileperms;
-    }
-
 }
 
 export class DSIDirectory extends DSInode {
     public parent: DSIDirectory;
     private _filelist: DSFileInfo[] = [];
 
-    constructor(_fs: DSFileSystem, parent: (DSIDirectory | undefined) = undefined) {
-        super(_fs);
+    constructor(
+        fs: DSFileSystem,
+        perms: DSFilePerms,
+        parent: (DSIDirectory | undefined) = undefined) {
+        super(fs, perms);
         if (parent == undefined)
             this.parent = this;
         else
             this.parent = parent;
         // Add . and ..
-        this._filelist.push(new DSFileInfo(this, ".", DSFilePerms.rx()));
-        this._filelist.push(new DSFileInfo(this.parent, "..", DSFilePerms.rx()));
+
+        this._filelist.push(new DSFileInfo(this, "."));
+        this._filelist.push(new DSFileInfo(this.parent, ".."));
 
     }
 
@@ -151,7 +153,7 @@ export class DSIDirectory extends DSInode {
     }
 
     get filelist(): DSFileInfo[] {
-        if (!this.fileinfo.perms.r)
+        if (!this.perms.r)
             throw new DSFilePermsReadError(this.fileinfo.name);
         return this._filelist;
     }
@@ -210,13 +212,14 @@ export class DSIDirectory extends DSInode {
 
     // Hmmm, default full permissions is a bad smell
     mkdir(dirname: string, fileperms = DSFilePerms.full()): DSIDirectory {
+        // TODO check permissions
         // Check for collision
         if (this.getfileinfo(dirname))
             throw new DSIDirectoryAlreadyExistsError(dirname);
         // Create new Directory
-        const newdir = new DSIDirectory(this._fs, this);
+        const newdir = new DSIDirectory(this._fs, fileperms, this);
         this._filelist.push(
-            new DSFileInfo(newdir, dirname, fileperms)
+            new DSFileInfo(newdir, dirname)
         );
         return newdir;
     }

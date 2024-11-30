@@ -155,16 +155,16 @@ test('getdir ../../../../alpha/foo from /gamma/deep/tree/branch', () => {
 test('chmod -rwx', () =>{
     const fs = createTestFS();
     const branch = fs.root.getdir("/gamma/");
-    expect (branch.fileinfo.perms).toEqual(DSFilePerms.full());
+    expect (branch.perms).toEqual(DSFilePerms.full());
 
-    branch.fileinfo.perms = DSFilePerms.none();
-    expect (branch.fileinfo.perms).toEqual(DSFilePerms.none());
+    branch.chmod(DSFilePerms.none());
+    expect (branch.perms).toEqual(DSFilePerms.none());
 });
 
 test('chmod -r /gamma ls', () => {
     const fs = createTestFS();
     const gamma = fs.root.getdir("/gamma/");
-    gamma.fileinfo.chmod(new DSFilePerms(false, true ,true));
+    gamma.chmod(new DSFilePerms(false, true ,true));
 
     expect(() => gamma.filelist).toThrow(new DSFilePermsReadError("gamma"));
 })
