@@ -14,6 +14,13 @@ export class DSIDirectoryError extends DSFileSystemError {
     }
 }
 
+export class DSIDirectoryIllegalFilenameError extends DSIDirectoryError {
+    constructor(filename: string) {
+        super(`'${filename}' contains illegal characters`);
+        this.name = this.constructor.name;
+    }
+}
+
 export class DSIDirectoryInvalidPathError extends DSIDirectoryError {
     constructor(dirname: string) {
         super(`'${dirname}' is an invalid path`);
@@ -45,6 +52,13 @@ export class DSFilePermsReadError extends DSFilePermsPermissionDeniedError {
 export class DSFilePermsExecError extends DSFilePermsPermissionDeniedError {
     constructor(dirname: string) {
         super(`cannot exec '${dirname}': Permission denied`);
+        this.name = this.constructor.name;
+    }
+}
+
+export class DSFilePermsWriteError extends DSFilePermsPermissionDeniedError {
+    constructor(dirname: string) {
+        super(`cannot write '${dirname}': Permission denied`);
         this.name = this.constructor.name;
     }
 }
@@ -184,8 +198,11 @@ export class DSIDirectory extends DSInode {
 
         let curdir: DSIDirectory = this;
         for (let i = 0; i < dirs.length; i++) {
-            const dirname = dirs[i];
+            // Check traversal permissions
+            if (!curdir.perms.x)
+                throw new DSFilePermsExecError(path);
             // Try to find the directory
+            const dirname = dirs[i];
             const fileinfo = curdir.getfileinfo(dirname);
             if (!fileinfo)
                 throw new DSIDirectoryInvalidPathError(path);
@@ -193,7 +210,6 @@ export class DSIDirectory extends DSInode {
                 throw new DSIDirectoryInvalidPathError(path);
             curdir = fileinfo.inode;
         }
-
         return curdir;
     }
 
@@ -210,9 +226,19 @@ export class DSIDirectory extends DSInode {
         }
     }
 
+    private _checkfilename(filename: string) {
+        const badchars = "/";
+        if (badchars.split('').some(char => filename.includes(char))) {
+            throw new DSIDirectoryIllegalFilenameError(filename);
+        }
+    }
     // Hmmm, default full permissions is a bad smell
     mkdir(dirname: string, fileperms = DSFilePerms.full()): DSIDirectory {
-        // TODO check permissions
+        // TODO use getdir to handle traversal
+        this._checkfilename(dirname);
+        // Check permissions
+        if (!this.perms.w)
+            throw new DSFilePermsWriteError(dirname);
         // Check for collision
         if (this.getfileinfo(dirname))
             throw new DSIDirectoryAlreadyExistsError(dirname);

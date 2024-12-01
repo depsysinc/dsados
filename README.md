@@ -3,8 +3,7 @@
 ## TODO
 *  Implement a filesystem
   * access permissions system
-    * directory creation, traversal
-    * Static filesystem
+    * Static filesystem (built from package)
     * S3 backed filesystem
   * implement cat in dssh
   * implement DSIBrowserFile -> BrowserStorage?

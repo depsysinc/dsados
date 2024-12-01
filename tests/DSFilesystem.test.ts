@@ -1,4 +1,4 @@
-import { DSFileSystem, DSIDirectoryAlreadyExistsError, DSIDirectory, DSIDirectoryInvalidPathError, DSFilePerms, DSFilePermsReadError, DSFilePermsExecError } from "../src/dsFilesystem"
+import { DSFileSystem, DSIDirectoryAlreadyExistsError, DSIDirectory, DSIDirectoryInvalidPathError, DSFilePerms, DSFilePermsReadError, DSFilePermsExecError, DSIDirectoryIllegalFilenameError, DSFilePermsWriteError } from "../src/dsFilesystem"
 
 test('fs empty', () => {
     const fs = new DSFileSystem();
@@ -17,15 +17,17 @@ test('fs empty', () => {
 
 });
 
-// TEST check that you can't name 2 files the same thing
-//      for create
-//      for rename
+// TODO files 
+//      TESTS check that you can't name 2 files the same thing
+//          for create
+//          for rename
 
-// mkdir
+// TESTS mkdir
 
 test('mkdir', () => {
     const fs = new DSFileSystem();
     const root = fs.root;
+    root.chmod(DSFilePerms.full());
 
     const nodir = root.getfileinfo("testdir");
     expect(nodir).not.toBeDefined();
@@ -40,13 +42,31 @@ test('mkdir', () => {
 test('mkdir with name collision', () => {
     const fs = new DSFileSystem();
     const root = fs.root;
+    root.chmod(DSFilePerms.full());
+
     root.mkdir('samename');
-    expect(() => root.mkdir('samename')).toThrow(
+    expect(() =>
+        root.mkdir('samename')
+    ).toThrow(
         new DSIDirectoryAlreadyExistsError("samename")
     );
 });
 
-// paths
+test('mkdir with illegal character', () => {
+    const fs = new DSFileSystem();
+    const root = fs.root;
+    root.chmod(DSFilePerms.full());
+
+    const badfilename = `bad/name`;
+
+    expect(() =>
+        root.mkdir(badfilename)
+    ).toThrow(
+        new DSIDirectoryIllegalFilenameError(badfilename)
+    );
+});
+
+// TESTS paths
 
 test('path empty fs', () => {
     const fs = new DSFileSystem();
@@ -56,27 +76,33 @@ test('path empty fs', () => {
 
 test('path 3 levels', () => {
     const fs = new DSFileSystem();
+    fs.root.chmod(DSFilePerms.full());
+
     const dirA = fs.root.mkdir("dirA");
     const dirB = dirA.mkdir("dirB");
     const dirC = dirB.mkdir("dirC");
     expect(dirC.path).toEqual("/dirA/dirB/dirC");
 });
 
-// path traversal
+// TESTS getdir path traversal
 
-// Test that you can't change dirs to a file
+// TODO Test that you can't change dirs to a file
 
 test('getdir <bad path>', () => {
     const fs = new DSFileSystem();
 
-    expect(() => fs.root.getdir('')).toThrow(
+    expect(() =>
+        fs.root.getdir('')
+    ).toThrow(
         new DSIDirectoryInvalidPathError("")
     );
 });
 
 test('getdir <non existent path>', () => {
     const fs = new DSFileSystem();
-    expect(() => fs.root.getdir('florb')).toThrow(
+    expect(() =>
+        fs.root.getdir('florb')
+    ).toThrow(
         new DSIDirectoryInvalidPathError("florb")
     );
 });
@@ -111,6 +137,7 @@ test('getdir / from /', () => {
 */
 function createTestFS(): DSFileSystem {
     const fs = new DSFileSystem();
+    fs.root.chmod(DSFilePerms.full());
 
     const alpha = fs.root.mkdir("alpha");
     const foo = alpha.mkdir("foo");
@@ -152,33 +179,58 @@ test('getdir ../../../../alpha/foo from /gamma/deep/tree/branch', () => {
     expect(foo).toEqual(fs.root.getdir("/alpha/foo"));
 });
 
-test('chmod -rwx', () =>{
+// chmod tests
+
+test('chmod -rwx', () => {
     const fs = createTestFS();
     const branch = fs.root.getdir("/gamma/");
-    expect (branch.perms).toEqual(DSFilePerms.full());
+    expect(branch.perms).toEqual(DSFilePerms.full());
 
     branch.chmod(DSFilePerms.none());
-    expect (branch.perms).toEqual(DSFilePerms.none());
+    expect(branch.perms).toEqual(DSFilePerms.none());
 });
 
-test('chmod -r /gamma ls', () => {
+
+test('chmod -r /gamma; ls', () => {
     const fs = createTestFS();
     const gamma = fs.root.getdir("/gamma/");
-    gamma.chmod(new DSFilePerms(false, true ,true));
+    gamma.chmod(new DSFilePerms(false, true, true));
 
-    expect(() => gamma.filelist).toThrow(new DSFilePermsReadError("gamma"));
+    expect(() =>
+        gamma.filelist
+    ).toThrow(
+        new DSFilePermsReadError("gamma")
+    );
 })
 
-/*
 test('chmod -x /gamma getdir /gamma/deep', () => {
     const fs = createTestFS();
     const gamma = fs.root.getdir("/gamma/");
-    gamma.fileinfo.chmod(new DSFilePerms(true, true ,false));
+    gamma.chmod(new DSFilePerms(true, true, false));
 
-    expect(() => fs.root.getdir("/gamma/deep")).toThrow(new DSFilePermsExecError("gamma"));
+    expect(() =>
+        fs.root.getdir("/gamma/deep")
+    ).toThrow(
+        new DSFilePermsExecError("/gamma/deep")
+    );
 });
 
+test('chmod -w /gamma; mkdir dirdenied from /gamma', () => {
+    const fs = createTestFS();
 
+    const gamma = fs.root.getdir("/gamma/");
+    gamma.chmod(DSFilePerms.rx());
+
+    const dirdenied = "dirdenied";
+    expect(() =>
+        gamma.mkdir(dirdenied)
+    ).toThrow(
+        new DSFilePermsWriteError(dirdenied)
+    );
+
+});
+
+/*
 test('', () => {
 
 });
