@@ -42,6 +42,15 @@ test('chdir .', () => {
     expect(tp.cwd).toEqual(fs.root);
 });
 
+test('chdir gamma', () => {
+    const fs = createTestFS();
+    const tp = new TestProcess(fs.root);
+    const gamma = fs.root.getdir("gamma");
+
+    tp.chdir('gamma');
+
+    expect(tp.cwd).toMatchObject(gamma);
+});
 
 /*
 test('', () => {

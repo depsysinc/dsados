@@ -35,6 +35,6 @@ export abstract class DSProcess {
     handleStdin(data: string): void {}
 
     chdir(dirname: string) {
-        // TODO
+        this._cwd = this._cwd.getdir(dirname);
     }
 }

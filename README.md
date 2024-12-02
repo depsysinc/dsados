@@ -1,10 +1,11 @@
 # depsysweb
 
 ## TODO
-*  Implement a filesystem
-  * access permissions system
-    * Static filesystem (built from package)
-    * S3 backed filesystem
+*  Implement a file subsystem
+  * Nested Filesystems
+    * concept of 'mount'
+  * Static filesystem (built from package)
+  * S3 backed filesystem
   * implement cat in dssh
   * implement DSIBrowserFile -> BrowserStorage?
 *  dssh
