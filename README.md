@@ -7,8 +7,9 @@
   * BrowserStorage backed filesystem 
 * /proc
 * dssh
-  * support delete and left/right arrow keys
-  * implement cat in dssh
+  * implement cat in dssh (?)
+  * handle scripting
+  * implement command history persistence
 *  Implement custom gl effects calls
   * Implement slow fuzzy warmup
   * Synchronize with first boot sequence

@@ -5,6 +5,7 @@ import { DSTerminal } from "../dsTerminal";
 
 export class DSShell extends DSProcess {
     private _prompt: CommandLinePrompt;
+    history: string[] = [];
     t: DSTerminal;
 
     constructor(
@@ -30,12 +31,11 @@ export class DSShell extends DSProcess {
             try {
 
                 const input = await this._prompt.promptForInput();
-
-                // TODO: Handle "" when tokenizing
                 const tokens = splitRespectingQuotes(input);
                 const command = tokens[0];
+
                 switch (command) {
-                    case undefined: // empty command, do nothing
+                    case undefined: // empty command
                         break;
                     case "exit":
                         this._exit(0);
@@ -61,6 +61,9 @@ export class DSShell extends DSProcess {
                     case "cd":
                         await this._commandCd(tokens);
                         break;
+                    case "history":
+                        await this._commandHistory(tokens);
+                        break;
                     default:
                         await this.t.baudText(`${command}: command not found\n`);
                 }
@@ -78,14 +81,23 @@ export class DSShell extends DSProcess {
         return this.t.baudText(usagemsg);
     };
 
+    private _commandHistory(tokens: string[]) {
+        if (tokens.length != 1)
+            return this._usage("ls", [], `expected no arguments (${tokens.length - 1} given)\n`);
+        let histstr = "";
+        const idxwidth = 4;
+        this.history.forEach((command, idx) => {
+            histstr += `${String(idx).padStart(idxwidth)} ${command}\n`;
+        });
+        return this.t.baudText(histstr);
+    };
+
     private _commandLs(tokens: string[]) {
         if (tokens.length != 1)
             return this._usage("ls", [], `expected no arguments (${tokens.length - 1} given)\n`);
 
         // Get the file list
         let fileliststr = "";
-        const pidwidth = 6;
-        let proclist = `${"PID".padStart(pidwidth)} CMD\n`;
 
         this.cwd.filelist.forEach((fileinfo) => {
             fileliststr += fileinfo.inode.perms.r ? 'r' : '-';
@@ -167,8 +179,10 @@ function splitRespectingQuotes(input: string): string[] {
 
 class CommandLinePrompt {
     private _promptprefix: string;
+    private _prompt: string;
     private _userinput: string = "";
     private _cursor: number = 0;
+    private _historyIdx: number;
 
     private _inputbuffer: string[] = [];
     private _inputresolver: (value: string | PromiseLike<string>) => void;
@@ -182,20 +196,36 @@ class CommandLinePrompt {
         this._cursor = 0;
 
         const t = this._shell.t;
-        let prompt = this._promptprefix;
-        prompt += this._shell.cwd.path;
-        prompt += "$ ";
-        await t.baudText(prompt);
+        this._prompt = this._promptprefix;
+        this._prompt += this._shell.cwd.path;
+        this._prompt += "$ ";
+        await t.baudText(this._prompt);
 
         t.stdout("\x1b[4h"); // Enable insert mode
+        this._historyIdx = this._shell.history.length;
+        this._shell.history.push("");
         while (true) {
             const data = await this._getInput();
             if (this._processInput(data))
                 break;
         }
         t.stdout("\x1b[4l"); // Disable insert mode
-        // tokenize
+        // Replace last history entry with final input
+        this._shell.history[this._shell.history.length-1] = this._userinput;
+        // If input is empty or a repeat then throw it away
+        if (
+            (this._userinput == "") 
+            || (this._userinput == this._shell.history[this._shell.history.length-2])
+        )
+            this._shell.history.pop();
         return this._userinput;
+    }
+
+    private _rewriteUserInput() {
+        this._shell.t.stdout(`\x1b[${this._prompt.length + 1}G`); // Put cursor at end of prompt
+        this._shell.t.stdout("\x1b[K"); // Clear to EoL
+        this._shell.t.stdout(this._userinput); // write the entry
+        this._cursor = this._userinput.length; // set cursor to end of entry
     }
 
     private _delFromCursor(): void {
@@ -232,14 +262,24 @@ class CommandLinePrompt {
                     }
                     break;
                 case "[3~": // Delete
-                    if (this._cursor < this._userinput.length) {
+                    if (this._cursor < this._userinput.length)
                         this._delFromCursor();
+                    break;
+                case "[A": // Up
+                    if (this._historyIdx > 0) {
+                        this._shell.history[this._historyIdx] = this._userinput;
+                        this._historyIdx--;
+                        this._userinput = this._shell.history[this._historyIdx];
+                        this._rewriteUserInput();
                     }
                     break;
-
-                case "[A": // Up
-                    break;
                 case "[B": // Down
+                    if (this._historyIdx < this._shell.history.length - 1) {
+                        this._shell.history[this._historyIdx] = this._userinput;
+                        this._historyIdx++;
+                        this._userinput = this._shell.history[this._historyIdx];
+                        this._rewriteUserInput();
+                    }
                     break;
                 default:
                     console.log(`unknown escape sequence ${data}`);
@@ -249,7 +289,6 @@ class CommandLinePrompt {
         // If LF we're done
         if (data == "\r") {
             this._shell.t.stdout("\n");
-            console.log(this._userinput);
             return true;
         }
         // ok add the character at current cursor location and update cursor location
