@@ -1,13 +1,16 @@
 # depsysweb
 
 ## TODO
+* process
+  * implement environment variables
 * Implement a file subsystem
   * Add file Inode types
+    * process type
   * S3 backed filesystem
   * BrowserStorage backed filesystem 
 * /proc
 * dssh
-  * implement cat in dssh (?)
+  * implement search for executable in PATH
   * handle scripting
   * implement command history persistence
 *  Implement custom gl effects calls

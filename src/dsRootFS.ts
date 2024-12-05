@@ -5,23 +5,25 @@ import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecate
 import root_data_depsys_txt from "./root/data/depsys.txt";
 import root_etc_dsos_conf from "./root/etc/dsos.conf";
 
-import { DSFilePerms, DSFileSystem, DSIDirectory } from "./dsFilesystem";
+import { DSFilePerms, DSFileSystem, DSIDirectory, DSIStaticWebFile } from "./dsFilesystem";
 
 export function buildrootfs(): DSFileSystem {
     const fs = new DSFileSystem();
     let dirstack: DSIDirectory[] = [];
     let curdir = fs.root;
-
+    let curfile: DSIStaticWebFile;
 
     // Traversing root/data
     dirstack.push(curdir);
     curdir = curdir.mkdir('data');
     
     // Creating root/data/deprecated_systems_incorporated.txt
-    console.log(root_data_deprecated_systems_incorporated_txt);
+    curfile = new DSIStaticWebFile(fs, root_data_deprecated_systems_incorporated_txt);
+    curdir.addfile("deprecated_systems_incorporated.txt", curfile);
         
     // Creating root/data/depsys.txt
-    console.log(root_data_depsys_txt);
+    curfile = new DSIStaticWebFile(fs, root_data_depsys_txt);
+    curdir.addfile("depsys.txt", curfile);
         
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
@@ -32,7 +34,8 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('etc');
     
     // Creating root/etc/dsos.conf
-    console.log(root_etc_dsos_conf);
+    curfile = new DSIStaticWebFile(fs, root_etc_dsos_conf);
+    curdir.addfile("dsos.conf", curfile);
         
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();

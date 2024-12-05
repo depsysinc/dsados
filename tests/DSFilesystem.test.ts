@@ -1,4 +1,4 @@
-import { DSFileSystem, DSIDirectoryAlreadyExistsError, DSIDirectory, DSIDirectoryInvalidPathError, DSFilePerms, DSFilePermsReadError, DSFilePermsExecError, DSIDirectoryIllegalFilenameError, DSFilePermsWriteError, DSFileSystemReadonlyError } from "../src/dsFilesystem"
+import { DSFileSystem, DSIDirectoryAlreadyExistsError, DSIDirectory, DSIDirectoryInvalidPathError, DSFilePerms, DSFilePermsReadError, DSFilePermsExecError, DSIDirectoryIllegalFilenameError, DSFilePermsWriteError, DSFileSystemReadonlyError, DSIDirectoryError, DSIDirectoryIllegalAddfileError, DSIStaticWebFile, DSFilePermsUnsupportedError, DSIFileAlreadyExistsError } from "../src/dsFilesystem"
 
 test('fs empty', () => {
     const fs = new DSFileSystem();
@@ -235,27 +235,155 @@ test('chmod -w /gamma; mkdir dirdenied from /gamma', () => {
 test('mkdir readonlyfs', () => {
     const fs = createTestFS();
     fs.readonly = true;
-    expect(() => 
+    expect(() =>
         fs.root.mkdir("readonlyfs")
     ).toThrow(
         new DSFileSystemReadonlyError('mkdir')
     )
 });
 
-test('mkdir readonlyfs', () => {
+test('chmod readonlyfs', () => {
     const fs = createTestFS();
     fs.readonly = true;
 
     const gamma = fs.root.getdir("/gamma/");
-    
-    expect(() => 
+
+    expect(() =>
         gamma.chmod(DSFilePerms.full())
     ).toThrow(
         new DSFileSystemReadonlyError('chmod')
     )
 });
+
+// filetype tests
+
+test('filetype gamma', async () => {
+    const fs = createTestFS();
+    const filetype = await fs.root.filetype();
+    expect(filetype).toEqual("directory");
+});
+
+// staticwebfile tests
+
+test('DSIStaticWebFile.filetype badurl', async () => {
+    const fs = new DSFileSystem();
+    const badurlfile = new DSIStaticWebFile(fs, "thisisabadurl");
+    const filetype = await badurlfile.filetype();
+    expect(filetype).toEqual("null");
+});
+
+test('DSIStaticWebFile.filetype badhostname', async () => {
+    const fs = new DSFileSystem();
+    const newfile = new DSIStaticWebFile(fs, "http://test.invalid/");
+    const filetype = await newfile.filetype();
+    expect(filetype).toEqual("null");
+});
+
+test('DSIStaticWebFile.filetype cantconnect', async () => {
+    const fs = new DSFileSystem();
+    const newfile = new DSIStaticWebFile(fs, "http://localhost:37654/");
+    const filetype = await newfile.filetype();
+    expect(filetype).toEqual("null");
+});
+
+test('DSIStaticWebFile.filetype 404', async () => {
+    const fs = new DSFileSystem();
+    const newfile = new DSIStaticWebFile(fs, "https://httpstat.us/404");
+    const filetype = await newfile.filetype();
+    expect(filetype).toEqual("null");
+});
+
+test('DSIStaticWebFile.filetype file://', async () => {
+    const fs = new DSFileSystem();
+    const newfile = new DSIStaticWebFile(fs, "file://thing");
+    const filetype = await newfile.filetype();
+    expect(filetype).toEqual("null");
+});
+
+test('DSIStaticWebFile.filetype http://example.com', async () => {
+    const fs = new DSFileSystem();
+    const newfile = new DSIStaticWebFile(fs, "http://example.com");
+    const filetype = await newfile.filetype();
+    expect(filetype).not.toEqual("null");
+});
+
+test('DSIStaticWebFile.filetype testpng', async () => {
+    const fs = new DSFileSystem();
+    const newfile = new DSIStaticWebFile(fs,
+        "http://www.libpng.org/pub/png/colorcube/pngs-nogamma/ffffff.png");
+    const filetype = await newfile.filetype();
+    expect(filetype).toEqual("image/png");
+});
+
+// addfile tests
+
+test('addfile illegaldirectory', () => {
+    const fs = new DSFileSystem();
+    const filename = "illegaldirectory";
+    expect(() =>
+        fs.root.addfile(filename, new DSIDirectory(fs, DSFilePerms.full()))
+    ).toThrow(
+        new DSIDirectoryIllegalAddfileError("file is directory")
+    )
+});
+
+test('addfile differentfs', () => {
+    const fs_a = new DSFileSystem();
+    const fs_b = new DSFileSystem();
+    const filename = "differentfs";
+    expect(() =>
+        fs_a.root.addfile(filename, new DSIStaticWebFile(fs_b, ""))
+    ).toThrow(
+        new DSIDirectoryIllegalAddfileError("filesystem mismatch")
+    )
+});
+
+test('addfile testfile', async () => {
+    const fs = new DSFileSystem();
+    const newfile = new DSIStaticWebFile(fs, "");
+    fs.root.addfile('testfile', newfile);
+    expect(fs.root.getfileinfo('testfile')?.inode).toEqual(newfile);
+});
+
+test('addfile duplicate', async () => {
+    const fs = new DSFileSystem();
+    fs.root.addfile('testfile', new DSIStaticWebFile(fs, ""));
+    expect(() =>
+        fs.root.addfile('testfile', new DSIStaticWebFile(fs, ""))
+    ).toThrow(
+        new DSIFileAlreadyExistsError('testfile')
+    )
+});
+
+test('addfile collisionwithdir', async () => {
+    const fs = createTestFS();
+    expect(() =>
+        fs.root.addfile('gamma', new DSIStaticWebFile(fs, ""))
+    ).toThrow(
+        new DSIFileAlreadyExistsError('gamma')
+    )
+});
+
+
+test('chmod staticwebfile', () => {
+    /*
+    expect(() => 
+        fs_a.root.addfile(filename, new DSIStaticWebFile(fs_b,""))
+    ).toThrow(
+        new DSFilePermsUnsupportedError("file is directory")
+    )
+        */
+});
+
 /*
 test('', () => {
 
 });
+
+    expect(() => 
+
+    ).toThrow(
+
+    )
+
 */

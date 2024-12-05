@@ -64,6 +64,9 @@ export class DSShell extends DSProcess {
                     case "history":
                         await this._commandHistory(tokens);
                         break;
+                    case "file":
+                        await this._commandFile(tokens);
+                        break;
                     default:
                         await this.t.baudText(`${command}: command not found\n`);
                 }
@@ -71,6 +74,16 @@ export class DSShell extends DSProcess {
                 await this.t.baudText(`${e.message}\n`);
             }
         }
+    }
+    private _commandFile(tokens: string[]) {
+        if (tokens.length != 2)
+            return this._usage("file", ["<filename>"], `expected 1 argument (${tokens.length - 1} given)\n`);
+        let filename = tokens[1];
+        const fileinfo = this.cwd.getfileinfo(filename);
+        if (!fileinfo)
+            return this.t.baudText(`'${filename}' not found\n`);
+        return fileinfo.inode.filetype().then(
+            filetype => this.t.baudText(filetype+'\n'));
     }
 
     private _usage(cmd: string, args: string[], error: string = undefined) {
@@ -100,9 +113,7 @@ export class DSShell extends DSProcess {
         let fileliststr = "";
 
         this.cwd.filelist.forEach((fileinfo) => {
-            fileliststr += fileinfo.inode.perms.r ? 'r' : '-';
-            fileliststr += fileinfo.inode.perms.w ? 'w' : '-';
-            fileliststr += fileinfo.inode.perms.x ? 'x' : '-';
+            fileliststr += fileinfo.inode.perms.permString();
             fileliststr += `  ${fileinfo.name}\n`;
         })
         return this.t.baudText(fileliststr);
@@ -211,11 +222,11 @@ class CommandLinePrompt {
         }
         t.stdout("\x1b[4l"); // Disable insert mode
         // Replace last history entry with final input
-        this._shell.history[this._shell.history.length-1] = this._userinput;
+        this._shell.history[this._shell.history.length - 1] = this._userinput;
         // If input is empty or a repeat then throw it away
         if (
-            (this._userinput == "") 
-            || (this._userinput == this._shell.history[this._shell.history.length-2])
+            (this._userinput == "")
+            || (this._userinput == this._shell.history[this._shell.history.length - 2])
         )
             this._shell.history.pop();
         return this._userinput;
