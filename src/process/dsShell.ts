@@ -12,7 +12,7 @@ export class DSShell extends DSProcess {
         readonly ppid: number,
         cwd: DSIDirectory
     ) {
-        super(pid,ppid,cwd);
+        super(pid, ppid, cwd);
         this.t = DSKernel.terminal;
     }
 
@@ -198,11 +198,48 @@ class CommandLinePrompt {
         return this._userinput;
     }
 
+    private _delFromCursor(): void {
+        this._userinput = this._userinput.slice(0, this._cursor) + this._userinput.slice(this._cursor + 1);
+        this._shell.t.stdout("\x1b[s"); // Save cursor position
+        this._shell.t.stdout("\x1b[K"); // Clear to EoL
+        this._shell.t.stdout(this._userinput.slice(this._cursor));
+        this._shell.t.stdout("\x1b[u"); // Restore cursor position
+    }
+
     private _processInput(data: string): boolean {
+        // handle DEL
+        if (data.charAt(0) == "\x7f") {
+            if (this._cursor > 0) {
+                this._cursor--;
+                this._shell.t.stdout("\x1b[D");
+                this._delFromCursor();
+            }
+            return false;
+        }
         // catch escape sequences
         if (data.charAt(0) == "\x1b") {
             switch (data.slice(1)) {
-                case "":
+                case "[D": // Left
+                    if (this._cursor > 0) {
+                        this._cursor--;
+                        this._shell.t.stdout(data);
+                    }
+                    break;
+                case "[C": // Right
+                    if (this._cursor < this._userinput.length) {
+                        this._cursor++;
+                        this._shell.t.stdout(data);
+                    }
+                    break;
+                case "[3~": // Delete
+                    if (this._cursor < this._userinput.length) {
+                        this._delFromCursor();
+                    }
+                    break;
+
+                case "[A": // Up
+                    break;
+                case "[B": // Down
                     break;
                 default:
                     console.log(`unknown escape sequence ${data}`);
@@ -212,6 +249,7 @@ class CommandLinePrompt {
         // If LF we're done
         if (data == "\r") {
             this._shell.t.stdout("\n");
+            console.log(this._userinput);
             return true;
         }
         // ok add the character at current cursor location and update cursor location
