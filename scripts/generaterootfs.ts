@@ -9,13 +9,13 @@ let imports = `//
 `;
 
 const header = `
-import { DSFilePerms, DSFileSystem, DSIDirectory } from "./dsFilesystem";
+import { DSFilePerms, DSFileSystem, DSIDirectory, DSIStaticWebFile } from "./dsFilesystem";
 
 export function buildrootfs(): DSFileSystem {
     const fs = new DSFileSystem();
     let dirstack: DSIDirectory[] = [];
     let curdir = fs.root;
-
+    let curfile: DSIStaticWebFile;
 `;
 const footer =
     `
@@ -66,7 +66,8 @@ function traverseAndGenerate(dir: string) {
             imports += `import ${varname} from "./${relPath}";\n`
             body += `
     // Creating ${relPath}
-    console.log(${varname});
+    curfile = new DSIStaticWebFile(fs, ${varname});
+    curdir.addfile("${entry.name}", curfile);
         `;
         } else {
             console.log(`skipping ${srcPath}`);

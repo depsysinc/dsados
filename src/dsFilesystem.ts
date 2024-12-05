@@ -8,13 +8,31 @@ export class DSFileSystemError extends Error {
 }
 
 export class DSFileSystemReadonlyError extends DSFileSystemError {
-    constructor (action: string) {
+    constructor(action: string) {
         super(`cannot '${action}' on readonly filesystem`);
         this.name = this.constructor.name;
     }
 }
 
-export class DSIDirectoryError extends DSFileSystemError {
+// Inode errors
+
+export class DSIFileError extends DSFileSystemError {
+    constructor(message: string) {
+        super(message);
+        this.name = this.constructor.name;
+    }
+}
+
+export class DSIFileAlreadyExistsError extends DSIFileError {
+    constructor(filename: string) {
+        super(`file '${filename}' already exists`);
+        this.name = this.constructor.name;
+    }
+}
+
+// Directory errors
+
+export class DSIDirectoryError extends DSIFileError {
     constructor(message: string) {
         super(message);
         this.name = this.constructor.name;
@@ -42,7 +60,30 @@ export class DSIDirectoryAlreadyExistsError extends DSIDirectoryError {
     }
 }
 
-export class DSFilePermsPermissionDeniedError extends DSFileSystemError {
+export class DSIDirectoryIllegalAddfileError extends DSIDirectoryError {
+    constructor(reason: string) {
+        super(`cannot add file: ${reason}`);
+        this.name = this.constructor.name;
+    }
+}
+
+// FilePerms errors
+
+export class DSFilePermsError extends DSFileSystemError {
+    constructor(message: string) {
+        super(message);
+        this.name = this.constructor.name;
+    }
+}
+
+export class DSFilePermsUnsupportedError extends DSFilePermsError {
+    constructor(permissions: string) {
+        super(`permissions '${permissions}' not supported on this filetype`);
+        this.name = this.constructor.name;
+    }
+}
+
+export class DSFilePermsPermissionDeniedError extends DSFilePermsError {
     constructor(message: string) {
         super(message);
         this.name = this.constructor.name;
@@ -111,6 +152,13 @@ export class DSFilePerms {
     get w() { return this._w; }
     get x() { return this._x; }
 
+    permString(): string {
+        let permstr = this.r ? 'r' : '-';
+        permstr += this.w ? 'w' : '-';
+        permstr += this.x ? 'x' : '-';
+        return permstr;
+    }
+
     // Factory method for readonly permissions
     static readonly(): DSFilePerms {
         return new DSFilePerms(true, false, false);
@@ -141,6 +189,14 @@ export abstract class DSInode {
     get perms() {
         return this._perms;
     }
+
+    get fs() {
+        return this._fs;
+    }
+
+    async filetype(): Promise<string> {
+        throw Error("illegal abstract method call!");
+    };
 
     chmod(fileperms: DSFilePerms) {
         if (this._fs.readonly)
@@ -178,6 +234,10 @@ export class DSIDirectory extends DSInode {
         this._filelist.push(new DSFileInfo(this, "."));
         this._filelist.push(new DSFileInfo(this.parent, ".."));
 
+    }
+
+    async filetype(): Promise<string> {
+        return 'directory';
     }
 
     get fileinfo(): DSFileInfo {
@@ -270,9 +330,62 @@ export class DSIDirectory extends DSInode {
         return newdir;
     }
 
+    addfile(filename: string, newfile: DSInode) {
+        // Check that this isn't a directory
+        if (newfile instanceof DSIDirectory)
+            throw new DSIDirectoryIllegalAddfileError("file is directory");
+        // Check that the directory and file are in the same fs
+        if (newfile.fs != this.fs)
+            throw new DSIDirectoryIllegalAddfileError("filesystem mismatch");
+        // Check for collision
+        if (this.getfileinfo(filename))
+            throw new DSIFileAlreadyExistsError(filename);
+        // OK, add the file
+        this._filelist.push(
+            new DSFileInfo(newfile, filename)
+        );
+        return newfile;
+    }
 }
 
-export class DSIWebFile extends DSInode {
-    // local filename
-    // URL
+export class DSIStaticWebFile extends DSInode {
+    private _filetype: string;
+    private _lasterror: string;
+
+    constructor(fs: DSFileSystem, readonly url: string) {
+        super(fs, DSFilePerms.readonly());
+    }
+
+    get lasterror(): string {
+        return this._lasterror;
+    }
+
+    async filetype(): Promise<string> {
+        // If we don't have the filetype look it up
+        if (this._filetype == undefined) {
+            try {
+                const response = await fetch(this.url, { method: 'HEAD' });
+                if (!response.ok) {
+                    throw new Error(`HTTP status ${response.status}`);
+                } else {
+                    this._filetype = response.headers.get('Content-Type') || "null";
+                }
+            } catch (e) {
+                if (e.cause)
+                    e = e.cause;
+                this._lasterror = `${e.name} : ${e.message}`;
+
+                this._filetype = "null";
+            }
+        }
+        // return it
+        return this._filetype;
+    }
+
+    chmod(newperms: DSFilePerms) {
+        // Check for illegal permissions
+        if (newperms.w || newperms.x)
+            throw new DSFilePermsUnsupportedError(newperms.permString());
+        super.chmod(newperms);
+    }
 }
