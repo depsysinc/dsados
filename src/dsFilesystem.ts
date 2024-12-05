@@ -7,6 +7,13 @@ export class DSFileSystemError extends Error {
     }
 }
 
+export class DSFileSystemReadonlyError extends DSFileSystemError {
+    constructor (action: string) {
+        super(`cannot '${action}' on readonly filesystem`);
+        this.name = this.constructor.name;
+    }
+}
+
 export class DSIDirectoryError extends DSFileSystemError {
     constructor(message: string) {
         super(message);
@@ -67,13 +74,22 @@ export class DSFilePermsWriteError extends DSFilePermsPermissionDeniedError {
 
 export class DSFileSystem {
     private _root: DSIDirectory;
+    private _readonly: boolean = false;
 
     get root(): DSIDirectory {
         return this._root;
     }
 
     constructor() {
-        this._root = new DSIDirectory(this, DSFilePerms.rx());
+        this._root = new DSIDirectory(this, DSFilePerms.full());
+    }
+
+    get readonly(): boolean {
+        return this._readonly;
+    }
+
+    set readonly(readonly: boolean) {
+        this._readonly = readonly;
     }
 }
 
@@ -127,6 +143,8 @@ export abstract class DSInode {
     }
 
     chmod(fileperms: DSFilePerms) {
+        if (this._fs.readonly)
+            throw new DSFileSystemReadonlyError('chmod');
         this._perms = fileperms;
     }
 }
@@ -239,6 +257,8 @@ export class DSIDirectory extends DSInode {
         // Check permissions
         if (!this.perms.w)
             throw new DSFilePermsWriteError(dirname);
+        if (this._fs.readonly)
+            throw new DSFileSystemReadonlyError('mkdir');
         // Check for collision
         if (this.getfileinfo(dirname))
             throw new DSIDirectoryAlreadyExistsError(dirname);
@@ -249,4 +269,10 @@ export class DSIDirectory extends DSInode {
         );
         return newdir;
     }
+
+}
+
+export class DSIWebFile extends DSInode {
+    // local filename
+    // URL
 }

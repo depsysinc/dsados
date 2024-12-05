@@ -84,8 +84,14 @@ export class DSShell extends DSProcess {
 
         // Get the file list
         let fileliststr = "";
+        const pidwidth = 6;
+        let proclist = `${"PID".padStart(pidwidth)} CMD\n`;
+
         this.cwd.filelist.forEach((fileinfo) => {
-            fileliststr += `${fileinfo.name}\n`;
+            fileliststr += fileinfo.inode.perms.r ? 'r' : '-';
+            fileliststr += fileinfo.inode.perms.w ? 'w' : '-';
+            fileliststr += fileinfo.inode.perms.x ? 'x' : '-';
+            fileliststr += `  ${fileinfo.name}\n`;
         })
         return this.t.baudText(fileliststr);
 
@@ -97,15 +103,6 @@ export class DSShell extends DSProcess {
         let dirname = tokens[1];
 
         this.chdir(dirname);
-        /*
-        const fileinfo = this.cwd.getfileinfo(dirname);
-        if (!fileinfo)
-            return this.t.baudText("error: No such file or directory\n");
-        if (!(fileinfo.inode instanceof DSIDirectory)) {
-            return this.t.baudText(`error: ${dirname} is not a directory\n`);
-        }
-        this._cwd = fileinfo.inode;
-        */
     }
 
     private _commandMkdir(tokens: string[]) {
@@ -177,7 +174,7 @@ class CommandLinePrompt {
     private _inputresolver: (value: string | PromiseLike<string>) => void;
 
     constructor(private _shell: DSShell) {
-        this._promptprefix = "guest@depsys.io:";
+        this._promptprefix = "depsys.io:";
     }
 
     async promptForInput(): Promise<string> {

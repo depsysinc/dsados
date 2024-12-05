@@ -1,15 +1,14 @@
 # depsysweb
 
 ## TODO
-*  Implement a file subsystem
-  * Nested Filesystems
-    * concept of 'mount'
-  * Static filesystem (built from package)
+* Implement a file subsystem
+  * Add file Inode types
   * S3 backed filesystem
-  * implement cat in dssh
-  * implement DSIBrowserFile -> BrowserStorage?
-*  dssh
+  * BrowserStorage backed filesystem 
+* /proc
+* dssh
   * support delete and left/right arrow keys
+  * implement cat in dssh
 *  Implement custom gl effects calls
   * Implement slow fuzzy warmup
   * Synchronize with first boot sequence
@@ -18,6 +17,8 @@
 *  Enable images
 
 ## Setup
+* [enable docker support in wsl 2 distros](https://docs.docker.com/desktop/features/wsl/#enabling-docker-support-in-wsl-2-distros)
+  * NB: If unix://var/docker socket disappears, check `DockerDesktop->Settings->Resources->WSL Integration->Enable Integration with default distro`
 * In wsl bash terminal
   * `git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/bin/git-credential-manager.exe"`
 * Clone depsysinc/xterm.js 

@@ -2,15 +2,23 @@ import '@xterm/xterm/css/xterm.css';
 
 import { DSTerminal } from "./dsTerminal";
 import { DSFileSystem, DSIDirectory } from "./dsFilesystem";
+import { buildrootfs } from "./dsRootFS";
 import { DSProcess } from "./dsProcess";
 import { DSShell } from "./process/dsShell"
+
+class DSFSTableEntry {
+    constructor(
+        readonly mount: DSIDirectory,
+        readonly fs: DSFileSystem
+    ) {}
+}
 
 export class DSKernel {
     static version: string = "V1.0";
 
     static terminal: DSTerminal;
 
-    static filesystem: DSFileSystem;
+    static fstable: DSFSTableEntry[] = [];
 
     static procstack: DSProcess[] = [];
     static nextpid: number = 1;
@@ -36,8 +44,9 @@ export class DSKernel {
             `  Device : ${navigator.userAgent}\n`,
         );
         // Init filesystem
-        const fs = this.filesystem = new DSFileSystem();
-        await t.baudText(`dsfs: init\n`)
+        await t.baudText(`mount: root fs\n`)
+        const rootfs = buildrootfs();
+        this.fstable.push(new DSFSTableEntry(rootfs.root,rootfs));
 
         // Start init process
         await t.baudText("proc: exec init\n");
@@ -61,7 +70,7 @@ export class DSKernel {
         // This is a FILO stack based process table so the parent is always
         // the currently running process.  If this is init, then we make PPID 0
         const ppid = this.curproc ? this.curproc.pid : 0;
-        const cwd = this.curproc ? this.curproc.cwd : this.filesystem.root;
+        const cwd = this.curproc ? this.curproc.cwd : this.fstable[0].mount;
         // TODO: ensure no existing process with the next pid
         const newproc = new processType(this.nextpid++, ppid, cwd);
         

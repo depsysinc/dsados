@@ -1,4 +1,4 @@
-import { DSFileSystem, DSIDirectoryAlreadyExistsError, DSIDirectory, DSIDirectoryInvalidPathError, DSFilePerms, DSFilePermsReadError, DSFilePermsExecError, DSIDirectoryIllegalFilenameError, DSFilePermsWriteError } from "../src/dsFilesystem"
+import { DSFileSystem, DSIDirectoryAlreadyExistsError, DSIDirectory, DSIDirectoryInvalidPathError, DSFilePerms, DSFilePermsReadError, DSFilePermsExecError, DSIDirectoryIllegalFilenameError, DSFilePermsWriteError, DSFileSystemReadonlyError } from "../src/dsFilesystem"
 
 test('fs empty', () => {
     const fs = new DSFileSystem();
@@ -230,6 +230,30 @@ test('chmod -w /gamma; mkdir dirdenied from /gamma', () => {
 
 });
 
+// Readonly filesystem
+
+test('mkdir readonlyfs', () => {
+    const fs = createTestFS();
+    fs.readonly = true;
+    expect(() => 
+        fs.root.mkdir("readonlyfs")
+    ).toThrow(
+        new DSFileSystemReadonlyError('mkdir')
+    )
+});
+
+test('mkdir readonlyfs', () => {
+    const fs = createTestFS();
+    fs.readonly = true;
+
+    const gamma = fs.root.getdir("/gamma/");
+    
+    expect(() => 
+        gamma.chmod(DSFilePerms.full())
+    ).toThrow(
+        new DSFileSystemReadonlyError('chmod')
+    )
+});
 /*
 test('', () => {
 
