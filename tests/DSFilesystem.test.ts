@@ -1,5 +1,7 @@
 import { DSFileSystem, DSIDirectoryAlreadyExistsError, DSIDirectory, DSIDirectoryInvalidPathError, DSFilePerms, DSFilePermsReadError, DSFilePermsExecError, DSIDirectoryIllegalFilenameError, DSFilePermsWriteError, DSFileSystemReadonlyError, DSIDirectoryError, DSIDirectoryIllegalAddfileError, DSIStaticWebFile, DSFilePermsUnsupportedError, DSIFileAlreadyExistsError } from "../src/dsFilesystem"
 
+const webtest = (process.env.RUN_WEB_TESTS === "true") ? test : test.skip;
+
 test('fs empty', () => {
     const fs = new DSFileSystem();
     // Check .
@@ -199,7 +201,7 @@ test('chmod -r /gamma; ls', () => {
     expect(() =>
         gamma.filelist
     ).toThrow(
-        new DSFilePermsReadError("gamma")
+        new DSFilePermsReadError()
     );
 })
 
@@ -211,7 +213,7 @@ test('chmod -x /gamma getdir /gamma/deep', () => {
     expect(() =>
         fs.root.getdir("/gamma/deep")
     ).toThrow(
-        new DSFilePermsExecError("/gamma/deep")
+        new DSFilePermsExecError()
     );
 });
 
@@ -225,7 +227,7 @@ test('chmod -w /gamma; mkdir dirdenied from /gamma', () => {
     expect(() =>
         gamma.mkdir(dirdenied)
     ).toThrow(
-        new DSFilePermsWriteError(dirdenied)
+        new DSFilePermsWriteError()
     );
 
 });
@@ -286,7 +288,7 @@ test('DSIStaticWebFile.filetype cantconnect', async () => {
     expect(filetype).toEqual("null");
 });
 
-test('DSIStaticWebFile.filetype 404', async () => {
+webtest('DSIStaticWebFile.filetype 404', async () => {
     const fs = new DSFileSystem();
     const newfile = new DSIStaticWebFile(fs, "https://httpstat.us/404");
     const filetype = await newfile.filetype();
@@ -300,14 +302,14 @@ test('DSIStaticWebFile.filetype file://', async () => {
     expect(filetype).toEqual("null");
 });
 
-test('DSIStaticWebFile.filetype http://example.com', async () => {
+webtest('DSIStaticWebFile.filetype http://example.com', async () => {
     const fs = new DSFileSystem();
     const newfile = new DSIStaticWebFile(fs, "http://example.com");
     const filetype = await newfile.filetype();
     expect(filetype).not.toEqual("null");
 });
 
-test('DSIStaticWebFile.filetype testpng', async () => {
+webtest('DSIStaticWebFile.filetype testpng', async () => {
     const fs = new DSFileSystem();
     const newfile = new DSIStaticWebFile(fs,
         "http://www.libpng.org/pub/png/colorcube/pngs-nogamma/ffffff.png");
@@ -338,14 +340,14 @@ test('addfile differentfs', () => {
     )
 });
 
-test('addfile testfile', async () => {
+test('addfile testfile', () => {
     const fs = new DSFileSystem();
     const newfile = new DSIStaticWebFile(fs, "");
     fs.root.addfile('testfile', newfile);
     expect(fs.root.getfileinfo('testfile')?.inode).toEqual(newfile);
 });
 
-test('addfile duplicate', async () => {
+test('addfile duplicate', () => {
     const fs = new DSFileSystem();
     fs.root.addfile('testfile', new DSIStaticWebFile(fs, ""));
     expect(() =>
@@ -355,7 +357,7 @@ test('addfile duplicate', async () => {
     )
 });
 
-test('addfile collisionwithdir', async () => {
+test('addfile collisionwithdir', () => {
     const fs = createTestFS();
     expect(() =>
         fs.root.addfile('gamma', new DSIStaticWebFile(fs, ""))
@@ -364,26 +366,38 @@ test('addfile collisionwithdir', async () => {
     )
 });
 
+// StaticWebFile tests
 
 test('chmod staticwebfile', () => {
-    /*
-    expect(() => 
-        fs_a.root.addfile(filename, new DSIStaticWebFile(fs_b,""))
+    const fs = new DSFileSystem();
+    const newfile = fs.root.addfile("staticwebfile", new DSIStaticWebFile(fs, ""))
+    const badperms = DSFilePerms.full();
+    expect(() =>
+        newfile.chmod(badperms)
     ).toThrow(
-        new DSFilePermsUnsupportedError("file is directory")
+        new DSFilePermsUnsupportedError(badperms.permString())
     )
-        */
 });
 
+test('contentAsText noreadperms', async () => {
+    const fs = new DSFileSystem();
+    const newfile = fs.root.addfile("staticwebfile", new DSIStaticWebFile(fs, ""))
+    newfile.chmod(DSFilePerms.none());
+
+    expect(newfile.contentAsText()).rejects.toThrow(
+        new DSFilePermsReadError()
+    )
+});
 /*
+ 
 test('', () => {
 
 });
 
-    expect(() => 
+expect(() => 
 
-    ).toThrow(
+).toThrow(
 
-    )
+)
 
 */
