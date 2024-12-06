@@ -145,6 +145,7 @@ test('getdir / from /', () => {
 
 /*
 /
+|-- testfile1.txt
 |-- alpha
     |-- foo
     |-- bar
@@ -152,10 +153,13 @@ test('getdir / from /', () => {
     |-- deep
         |-- tree
             |-- branch
+            |-- testfile2.txt
 */
 function createTestFS(): DSFileSystem {
     const fs = new DSFileSystem();
     fs.root.chmod(DSFilePerms.full());
+
+    const testfile1 = fs.root.addfile("testfile1.txt", new DSIStaticWebFile(fs,""));
 
     const alpha = fs.root.mkdir("alpha");
     const foo = alpha.mkdir("foo");
@@ -165,6 +169,8 @@ function createTestFS(): DSFileSystem {
     const deep = gamma.mkdir("deep");
     const tree = deep.mkdir("tree");
     const branch = tree.mkdir("branch");
+
+    const testfile2 = branch.addfile("testfile2.txt", new DSIStaticWebFile(fs,""));
 
     return fs;
 }
@@ -196,6 +202,61 @@ test('getdir ../../../../alpha/foo from /gamma/deep/tree/branch', () => {
     const foo = branch.getdir("../../../../alpha/foo");
     expect(foo).toEqual(fs.root.getdir("/alpha/foo"));
 });
+
+// Getfile tests
+
+test('getfile nosuchfile', () => {
+    const fs = createTestFS();
+    expect(() => fs.root.getfile("nosuchfile")).toThrow(
+        new DSIDirectoryInvalidPathError("nosuchfile")
+    );
+});
+
+test('getfile testfile1.txt', () => {
+    const fs = createTestFS();
+    const testfile1info = fs.root.getfileinfo("testfile1.txt");
+    expect(fs.root.getfile("testfile1.txt")).toEqual(testfile1info?.inode);
+});
+
+test('getfile /gamma/deep/tree/branch/testfile2.txt', () => {
+    const fs = createTestFS();
+    const path = "/gamma/deep/tree/branch/testfile2.txt";
+    const testfile2info = fs.root.getdir("/gamma/deep/tree/branch").getfileinfo("testfile2.txt");
+    expect(fs.root.getfile(path)).toEqual(testfile2info?.inode);
+});
+
+test('getfile gamma/', () => {
+    const fs = createTestFS();
+    const path = "/gamma/";
+    expect(() => fs.root.getfile(path)).toThrow(
+        new DSIDirectoryInvalidPathError(path)
+    );
+});
+
+test("getfile /gamma/bogus/path/file.txt", () => {
+    const fs = createTestFS();
+    const path = "/gamma/bogus/path/file.txt";
+    expect(() => fs.root.getfile(path)).toThrow(
+        // NB: nested getdir only returns dir portion in exception
+        new DSIDirectoryInvalidPathError("/gamma/bogus/path")
+    );
+});
+
+test('getfile /gamma/deep/tree', () => {
+    const fs = createTestFS();
+    const path = "/gamma/deep/tree";
+    const treedirinfo = fs.root.getdir("/gamma/deep/").getfileinfo("tree");
+    expect(fs.root.getfile(path)).toEqual(treedirinfo?.inode);
+});
+
+test('getfile /gamma/deep/tree/bogusfile.txt', () => {
+    const fs = createTestFS();
+    const path = "/gamma/deep/tree/bogusfile.txt";
+    expect(() => fs.root.getfile(path)).toThrow(
+        new DSIDirectoryInvalidPathError(path)
+    );
+});
+
 
 // chmod tests
 
@@ -404,6 +465,8 @@ test('contentAsText noreadperms', async () => {
         new DSFilePermsReadError()
     )
 });
+
+
 /*
  
 test('', () => {

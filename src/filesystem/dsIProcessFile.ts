@@ -1,8 +1,25 @@
-import { DSFilePerms, DSFileSystem, DSInode } from "../dsFileSystem"
+import {
+    DSFilePerms,
+    DSFilePermsPermissionDeniedError,
+    DSFileSystem,
+    DSIDirectory,
+    DSInode
+} from "../dsFileSystem"
 import { DSProcess } from "../dsProcess"
 
-export class DSIProcessFile extends DSInode {
-    constructor(fs: DSFileSystem, private _process: DSProcess) {
+export class DSIProcessFile<T extends DSProcess> extends DSInode {
+    constructor(
+        fs: DSFileSystem,
+        private _processClass: new (pid: number, ppid: number, _cwd: DSIDirectory) => T
+    ) {
         super(fs, DSFilePerms.execonly())
+    }
+
+    getProcessClass() {
+        return this._processClass;
+    }
+
+    chmod(fileperms: DSFilePerms) {
+        throw new DSFilePermsPermissionDeniedError("operation not supported on filetype");
     }
 }

@@ -3,15 +3,10 @@
 ## TODO
 * process
   * implement environment variables
+  * have dssh respect PATH
 * Implement a file subsystem
-  * Add file Inode types
-    * refactor filetypes into their own modules
-    * add process filetype
-    * change exec to take DSProcessFile
-    * move init into process
-    * add processes to genrootfs
-  * S3 backed filesystem
   * BrowserStorage backed filesystem 
+  * S3 backed filesystem
 * /proc
 * dssh
   * implement search for executable in PATH
