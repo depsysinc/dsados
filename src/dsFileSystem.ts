@@ -179,6 +179,10 @@ export class DSFilePerms {
         return new DSFilePerms(true, false, false);
     }
 
+    static execonly(): DSFilePerms {
+        return new DSFilePerms(false, false, true);
+    }
+
     // Factory method for read-execute permissions
     static rx(): DSFilePerms {
         return new DSFilePerms(true, false, true);
@@ -210,13 +214,11 @@ export abstract class DSInode {
     }
 
     async filetype(): Promise<string> {
-        throw Error("illegal abstract method call!");
+        throw Error("operation not supported on filetype");
     };
 
     async contentAsText(): Promise<string> {
-        // Check permissions here
-        this.perms.checkRead();
-        return;
+        throw new DSIFileError("operation not supported on filetype");
     }
 
     chmod(fileperms: DSFilePerms) {
@@ -259,10 +261,6 @@ export class DSIDirectory extends DSInode {
 
     async filetype(): Promise<string> {
         return 'directory';
-    }
-
-    async contentAsText(): Promise<string> {
-        throw new DSIFileError("operation not supported on directory");
     }
 
     get fileinfo(): DSFileInfo {
@@ -370,60 +368,3 @@ export class DSIDirectory extends DSInode {
     }
 }
 
-export class DSIStaticWebFile extends DSInode {
-    private _filetype: string;
-    private _lasterror: string;
-
-    constructor(fs: DSFileSystem, readonly url: string) {
-        super(fs, DSFilePerms.readonly());
-    }
-
-    get lasterror(): string {
-        return this._lasterror;
-    }
-
-    async filetype(): Promise<string> {
-        // If we don't have the filetype look it up
-        if (this._filetype == undefined) {
-            try {
-                const response = await fetch(this.url, { method: 'HEAD' });
-                if (!response.ok) {
-                    throw new Error(`HTTP status ${response.status}`);
-                } else {
-                    this._filetype = response.headers.get('Content-Type') || "null";
-                }
-            } catch (e) {
-                if (e.cause)
-                    e = e.cause;
-                this._lasterror = `${e.name} : ${e.message}`;
-
-                this._filetype = "null";
-            }
-        }
-        // return it
-        return this._filetype;
-    }
-
-    async contentAsText(): Promise<string> {
-        this.perms.checkRead();
-        try {
-            const response = await fetch(this.url);
-            if (!response.ok) {
-                throw new Error(`HTTP status ${response.status}`);
-            } else {
-                return response.text();
-            }
-        } catch (e) {
-            if (e.cause)
-                e = e.cause;
-            this._lasterror = `${e.name} : ${e.message}`;
-        }
-    }
-
-    chmod(newperms: DSFilePerms) {
-        // Check for illegal permissions
-        if (newperms.w || newperms.x)
-            throw new DSFilePermsUnsupportedError(newperms.permString());
-        super.chmod(newperms);
-    }
-}

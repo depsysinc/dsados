@@ -1,4 +1,20 @@
-import { DSFileSystem, DSIDirectoryAlreadyExistsError, DSIDirectory, DSIDirectoryInvalidPathError, DSFilePerms, DSFilePermsReadError, DSFilePermsExecError, DSIDirectoryIllegalFilenameError, DSFilePermsWriteError, DSFileSystemReadonlyError, DSIDirectoryError, DSIDirectoryIllegalAddfileError, DSIStaticWebFile, DSFilePermsUnsupportedError, DSIFileAlreadyExistsError } from "../src/dsFilesystem"
+import { 
+    DSFileSystem, 
+    DSIDirectoryAlreadyExistsError, 
+    DSIDirectory, 
+    DSIDirectoryInvalidPathError, 
+    DSFilePerms, 
+    DSFilePermsReadError, 
+    DSFilePermsExecError, 
+    DSIDirectoryIllegalFilenameError, 
+    DSFilePermsWriteError, 
+    DSFileSystemReadonlyError, 
+    DSIDirectoryIllegalAddfileError, 
+    DSFilePermsUnsupportedError, 
+    DSIFileAlreadyExistsError 
+} from "../src/dsFileSystem"
+import {DSIStaticWebFile} from "../src/filesystem/dsIStaticWebFile"
+
 
 const webtest = (process.env.RUN_WEB_TESTS === "true") ? test : test.skip;
 

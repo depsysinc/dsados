@@ -6,7 +6,8 @@ import root_data_depsys_txt from "./root/data/depsys.txt";
 import root_data_gorzocrop_png from "./root/data/gorzocrop.png";
 import root_etc_dsos_conf from "./root/etc/dsos.conf";
 
-import { DSFilePerms, DSFileSystem, DSIDirectory, DSIStaticWebFile } from "./dsFilesystem";
+import { DSFilePerms, DSFileSystem, DSIDirectory } from "./dsFileSystem";
+import { DSIStaticWebFile } from "./filesystem/dsIStaticWebFile";
 
 export function buildrootfs(): DSFileSystem {
     const fs = new DSFileSystem();

@@ -1,4 +1,4 @@
-import { DSIDirectory } from "./dsFilesystem";
+import { DSIDirectory } from "./dsFileSystem";
 
 export abstract class DSProcess {
     protected _exitPromise: Promise<number>;

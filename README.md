@@ -5,7 +5,10 @@
   * implement environment variables
 * Implement a file subsystem
   * Add file Inode types
-    * process type
+    * refactor filetypes into their own modules
+    * add process filetype
+    * change exec to take DSProcessFile
+    * move init into process
     * add processes to genrootfs
   * S3 backed filesystem
   * BrowserStorage backed filesystem 

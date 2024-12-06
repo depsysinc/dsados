@@ -1,7 +1,7 @@
-import { DSFileInfo, DSIDirectory } from "../dsFilesystem";
 import { DSProcess } from "../dsProcess";
 import { DSKernel } from "../dsKernel";
 import { DSTerminal } from "../dsTerminal";
+import { DSIDirectory } from "../dsFileSystem";
 
 export class DSShell extends DSProcess {
     private _prompt: CommandLinePrompt;

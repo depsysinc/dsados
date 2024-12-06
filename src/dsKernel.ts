@@ -1,10 +1,10 @@
 import '@xterm/xterm/css/xterm.css';
 
 import { DSTerminal } from "./dsTerminal";
-import { DSFileSystem, DSIDirectory } from "./dsFilesystem";
+import { DSFileSystem, DSIDirectory } from "./dsFileSystem";
 import { buildrootfs } from "./dsRootFS";
 import { DSProcess } from "./dsProcess";
-import { DSShell } from "./process/dsShell"
+import { DSShell } from "./process/dssh"
 
 class DSFSTableEntry {
     constructor(

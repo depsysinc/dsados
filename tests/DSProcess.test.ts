@@ -1,5 +1,5 @@
 import { DSProcess } from "../src/dsProcess";
-import { DSFilePerms, DSFileSystem, DSIDirectory } from "../src/dsFilesystem";
+import { DSFilePerms, DSFileSystem, DSIDirectory } from "../src/dsFileSystem";
 
 // Tests to make sure pushing and popping of procstack works
 class TestProcess extends DSProcess {
