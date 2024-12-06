@@ -285,6 +285,21 @@ export class DSIDirectory extends DSInode {
         }
         return path;
     }
+    getfile(path: string): DSInode {
+        // Separate file from directory
+        const sepIdx = path.lastIndexOf('/');
+        let fileinfo: DSFileInfo;
+        if (sepIdx == -1) {
+            fileinfo = this.getfileinfo(path);
+        } else {
+            const filename = path.slice(sepIdx+1);
+            const dirname = path.slice(0,sepIdx);
+            fileinfo = this.getdir(dirname).getfileinfo(filename);
+        }
+        if (!fileinfo)
+            throw new DSIDirectoryInvalidPathError(path);
+        return fileinfo.inode;
+    }
 
     getdir(path: string): DSIDirectory {
         // Check empty root case
