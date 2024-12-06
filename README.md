@@ -7,7 +7,7 @@
   * docview
     * Paragraphs, sections
     * images
-  * imageview
+  * imgview
     * addon-image or custom?
   * dssh
     * search for executable in PATH
@@ -18,7 +18,7 @@
 * fs
   * BrowserStorage backed filesystem 
   * S3 backed filesystem
-* Terminal
+* term
   * Implement custom gl effects calls
     * slow fuzzy warmup
       * Synchronize with first boot sequence
