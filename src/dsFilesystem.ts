@@ -198,6 +198,10 @@ export abstract class DSInode {
         throw Error("illegal abstract method call!");
     };
 
+    async contentAsText(): Promise<string> {
+        throw Error("illegal abstract method call!");
+    }
+
     chmod(fileperms: DSFilePerms) {
         if (this._fs.readonly)
             throw new DSFileSystemReadonlyError('chmod');
@@ -238,6 +242,10 @@ export class DSIDirectory extends DSInode {
 
     async filetype(): Promise<string> {
         return 'directory';
+    }
+
+    async contentAsText(): Promise<string> {
+        throw new DSIFileError("operation not supported on directory");
     }
 
     get fileinfo(): DSFileInfo {
@@ -380,6 +388,21 @@ export class DSIStaticWebFile extends DSInode {
         }
         // return it
         return this._filetype;
+    }
+
+    async contentAsText(): Promise<string> {
+        try {
+            const response = await fetch(this.url);
+            if (!response.ok) {
+                throw new Error(`HTTP status ${response.status}`);
+            } else {
+                return response.text();
+            }
+        } catch (e) {
+            if (e.cause)
+                e = e.cause;
+            this._lasterror = `${e.name} : ${e.message}`;
+        }
     }
 
     chmod(newperms: DSFilePerms) {

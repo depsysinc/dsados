@@ -1,4 +1,4 @@
-import { DSIDirectory } from "../dsFilesystem";
+import { DSFileInfo, DSIDirectory } from "../dsFilesystem";
 import { DSProcess } from "../dsProcess";
 import { DSKernel } from "../dsKernel";
 import { DSTerminal } from "../dsTerminal";
@@ -67,6 +67,9 @@ export class DSShell extends DSProcess {
                     case "file":
                         await this._commandFile(tokens);
                         break;
+                    case "cat":
+                        await this._commandCat(tokens);
+                        break;
                     default:
                         await this.t.baudText(`${command}: command not found\n`);
                 }
@@ -75,6 +78,20 @@ export class DSShell extends DSProcess {
             }
         }
     }
+
+    private _commandCat(tokens: string[]) {
+        if (tokens.length != 2)
+            return this._usage("cat", ["<filename>"], `expected 1 argument (${tokens.length - 1} given)\n`);
+        let filename = tokens[1];
+        const fileinfo = this.cwd.getfileinfo(filename);
+        if (!fileinfo)
+            return this.t.baudText(`'${filename}' not found\n`);
+        
+        return fileinfo.inode.contentAsText().then(text => 
+            this.t.baudText(text)
+        );
+    }
+
     private _commandFile(tokens: string[]) {
         if (tokens.length != 2)
             return this._usage("file", ["<filename>"], `expected 1 argument (${tokens.length - 1} given)\n`);
@@ -83,7 +100,7 @@ export class DSShell extends DSProcess {
         if (!fileinfo)
             return this.t.baudText(`'${filename}' not found\n`);
         return fileinfo.inode.filetype().then(
-            filetype => this.t.baudText(filetype+'\n'));
+            filetype => this.t.baudText(filetype + '\n'));
     }
 
     private _usage(cmd: string, args: string[], error: string = undefined) {

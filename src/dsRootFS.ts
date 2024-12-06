@@ -3,6 +3,7 @@
 //
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
 import root_data_depsys_txt from "./root/data/depsys.txt";
+import root_data_gorzocrop_png from "./root/data/gorzocrop.png";
 import root_etc_dsos_conf from "./root/etc/dsos.conf";
 
 import { DSFilePerms, DSFileSystem, DSIDirectory, DSIStaticWebFile } from "./dsFilesystem";
@@ -24,6 +25,10 @@ export function buildrootfs(): DSFileSystem {
     // Creating root/data/depsys.txt
     curfile = new DSIStaticWebFile(fs, root_data_depsys_txt);
     curdir.addfile("depsys.txt", curfile);
+        
+    // Creating root/data/gorzocrop.png
+    curfile = new DSIStaticWebFile(fs, root_data_gorzocrop_png);
+    curdir.addfile("gorzocrop.png", curfile);
         
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
