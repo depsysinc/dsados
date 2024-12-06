@@ -44,7 +44,7 @@ export class DSKernel {
             `  Device : ${navigator.userAgent}\n`,
         );
         // Init filesystem
-        await t.baudText(`mount: root fs\n`)
+        await t.baudText(`fs: mount rootfs\n`)
         const rootfs = buildrootfs();
         this.fstable.push(new DSFSTableEntry(rootfs.root,rootfs));
 

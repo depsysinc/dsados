@@ -91,22 +91,22 @@ export class DSFilePermsPermissionDeniedError extends DSFilePermsError {
 }
 
 export class DSFilePermsReadError extends DSFilePermsPermissionDeniedError {
-    constructor(dirname: string) {
-        super(`cannot read '${dirname}': Permission denied`);
+    constructor() {
+        super(`cannot read file: Permission denied`);
         this.name = this.constructor.name;
     }
 }
 
 export class DSFilePermsExecError extends DSFilePermsPermissionDeniedError {
-    constructor(dirname: string) {
-        super(`cannot exec '${dirname}': Permission denied`);
+    constructor() {
+        super(`cannot exec file: Permission denied`);
         this.name = this.constructor.name;
     }
 }
 
 export class DSFilePermsWriteError extends DSFilePermsPermissionDeniedError {
-    constructor(dirname: string) {
-        super(`cannot write '${dirname}': Permission denied`);
+    constructor() {
+        super(`cannot write file: Permission denied`);
         this.name = this.constructor.name;
     }
 }
@@ -159,6 +159,21 @@ export class DSFilePerms {
         return permstr;
     }
 
+    checkRead() {
+        if (!this._r)
+            throw new DSFilePermsReadError();
+    }
+
+    checkWrite() {
+        if (!this._w)
+            throw new DSFilePermsWriteError();
+    }
+
+    checkExec() {
+        if (!this._x)
+            throw new DSFilePermsExecError();
+    }
+
     // Factory method for readonly permissions
     static readonly(): DSFilePerms {
         return new DSFilePerms(true, false, false);
@@ -199,7 +214,9 @@ export abstract class DSInode {
     };
 
     async contentAsText(): Promise<string> {
-        throw Error("illegal abstract method call!");
+        // Check permissions here
+        this.perms.checkRead();
+        return;
     }
 
     chmod(fileperms: DSFilePerms) {
@@ -253,8 +270,7 @@ export class DSIDirectory extends DSInode {
     }
 
     get filelist(): DSFileInfo[] {
-        if (!this.perms.r)
-            throw new DSFilePermsReadError(this.fileinfo.name);
+        this.perms.checkRead();
         return this._filelist;
     }
 
@@ -285,8 +301,7 @@ export class DSIDirectory extends DSInode {
         let curdir: DSIDirectory = this;
         for (let i = 0; i < dirs.length; i++) {
             // Check traversal permissions
-            if (!curdir.perms.x)
-                throw new DSFilePermsExecError(path);
+            curdir.perms.checkExec();
             // Try to find the directory
             const dirname = dirs[i];
             const fileinfo = curdir.getfileinfo(dirname);
@@ -323,8 +338,7 @@ export class DSIDirectory extends DSInode {
         // TODO use getdir to handle traversal
         this._checkfilename(dirname);
         // Check permissions
-        if (!this.perms.w)
-            throw new DSFilePermsWriteError(dirname);
+        this.perms.checkWrite();
         if (this._fs.readonly)
             throw new DSFileSystemReadonlyError('mkdir');
         // Check for collision
@@ -391,6 +405,7 @@ export class DSIStaticWebFile extends DSInode {
     }
 
     async contentAsText(): Promise<string> {
+        this.perms.checkRead();
         try {
             const response = await fetch(this.url);
             if (!response.ok) {

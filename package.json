@@ -33,7 +33,8 @@
     "genrootfs": "ts-node scripts/generaterootfs.ts",
     "watch": "webpack --watch",
     "serve": "webpack serve --mode=development",
-    "test": "jest"
+    "test": "jest",
+    "webtests": "RUN_WEB_TESTS=true jest"
   },
   "dependencies": {
     "@xterm/addon-fit": "^0.10.0",

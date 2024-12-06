@@ -6,6 +6,7 @@
 * Implement a file subsystem
   * Add file Inode types
     * process type
+    * add processes to genrootfs
   * S3 backed filesystem
   * BrowserStorage backed filesystem 
 * /proc
@@ -31,12 +32,9 @@
 * Clone depsysinc/depsysweb
   * Dev Containers: Clone Repository in Named Container Volume (depsysweb)
 ```
-cd /workspaces/xterm.js  # Optional
-yarn link                # Optional
 cd /workspaces/xterm.js/addons/addon-webgl
 yarn link
 cd /workspaces/depsysweb
-yarn link @xterm/xterm   # Optional
 yarn link @xterm/addon-webgl
 ```
 
