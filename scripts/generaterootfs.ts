@@ -122,6 +122,10 @@ for (const entry of entries) {
     `;
     
 }
+const bin_footer = `
+    // BIN FOOTER
+    bindir.chmod(DSFilePerms.rx());
+`;
 
 console.log(`Doing static file traversal in ${staticFileDir}`);
 staticTraverseAndGenerate(staticFileDir);
@@ -134,6 +138,7 @@ fs.writeFileSync(outputFile,
     + buildrootfs_header 
     + bin_header
     + bin_body
+    + bin_footer
     + static_traversal_header
     + static_traversal_body 
     + main_footer

@@ -34,6 +34,9 @@ export function buildrootfs(): DSFileSystem {
     binfile = new DSIProcessFile(fs, PRInit);
     bindir.addfile("init", binfile);
     
+    // BIN FOOTER
+    bindir.chmod(DSFilePerms.rx());
+
     // STATIC TRAVERSAL HEADER
     let dirstack: DSIDirectory[] = [];
     let curdir = fs.root;

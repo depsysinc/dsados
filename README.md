@@ -11,6 +11,7 @@
   * handle scripting
   * implement command history persistence
   * implement [tab] complete
+  * implement chmod
 * Terminal
   * Implement custom gl effects calls
     * Implement slow fuzzy warmup
