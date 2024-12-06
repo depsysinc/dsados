@@ -19,14 +19,14 @@ export class PRInit extends DSProcess {
         return "init";
     }
 
-    main(): void {
-        this._spawnloop();
-    }
-
-    private async _spawnloop() {
+    protected async main(): Promise<void> {
         while (true) {
             await this.t.baudText("init: spawning root shell\n");
-            await DSKernel.exec("/bin/dssh");
+            try {
+                await DSKernel.exec("/bin/dssh");
+            } catch (e) {
+                await this.t.baudText(`init: root shell exception: ${e.message}\n`);
+            }
         }
     }
 }

@@ -3,21 +3,22 @@
 ## TODO
 * process
   * implement environment variables
-  * have dssh respect PATH
 * Implement a file subsystem
   * BrowserStorage backed filesystem 
   * S3 backed filesystem
-* /proc
 * dssh
   * implement search for executable in PATH
   * handle scripting
   * implement command history persistence
-*  Implement custom gl effects calls
-  * Implement slow fuzzy warmup
-  * Synchronize with first boot sequence
-  * Make faster after recent boots
-*  Enable click and touch
-*  Enable images
+  * implement [tab] complete
+* Terminal
+  * Implement custom gl effects calls
+    * Implement slow fuzzy warmup
+    * Synchronize with first boot sequence
+    * Make faster after recent boots
+  * Enable click and touch
+  * Enable images
+* Implement /proc
 
 ## Setup
 * [enable docker support in wsl 2 distros](https://docs.docker.com/desktop/features/wsl/#enabling-docker-support-in-wsl-2-distros)

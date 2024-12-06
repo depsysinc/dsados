@@ -1,8 +1,13 @@
 import { DSIDirectory } from "./dsFileSystem";
 
+export class DSProcessError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = this.constructor.name;
+    }
+}
+
 export abstract class DSProcess {
-    protected _exitPromise: Promise<number>;
-    protected _exitPromiseResolver: (value: number | PromiseLike<number>) => void;
 
     get cwd() : DSIDirectory {
         return this._cwd;
@@ -12,22 +17,16 @@ export abstract class DSProcess {
         readonly pid: number,
         readonly ppid: number,
         private _cwd: DSIDirectory
-    ) {
-        this._exitPromise = new Promise<number>((resolve) => {
-            this._exitPromiseResolver = resolve;
-        });
-    }
+    ) { }
     
     abstract get procname(): string;
-    protected abstract main(): void;
 
-    start(): Promise<number> {
-        this.main();
-        return this._exitPromise;
-    }
+    protected async main(): Promise<void> {
+        throw new DSProcessError("Illegal base class main() call");
+    };
 
-    protected _exit(retval: number): void {
-        this._exitPromiseResolver(retval);
+    start(): Promise<void> {
+        return this.main();
     }
 
     // Default ignore handlers

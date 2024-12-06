@@ -20,9 +20,10 @@ export class DSShell extends DSProcess {
     get procname(): string {
         return "dssh";
     }
-    protected main(): void {
+
+    protected async main(): Promise<void> {
         this._prompt = new CommandLinePrompt(this);
-        this._commandLoop();
+        return this._commandLoop();
     }
 
     private async _commandLoop() {
@@ -38,7 +39,7 @@ export class DSShell extends DSProcess {
                     case undefined: // empty command
                         break;
                     case "exit":
-                        this._exit(0);
+                        // Clean exit
                         return;
                     case "sleep":
                         await this._commandSleep(tokens);
