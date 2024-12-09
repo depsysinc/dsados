@@ -13,6 +13,7 @@ import { DSIStaticWebFile } from "./filesystem/dsIStaticWebFile";
 import { DSShell } from "./process/dssh";
 import { PRInit } from "./process/init";
 // STATIC TRAVERSAL IMPORTS
+import root_data_bazisa_txt from "./root/data/bazisa.txt";
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
 import root_data_depsys_txt from "./root/data/depsys.txt";
 import root_data_gorzocrop_png from "./root/data/gorzocrop.png";
@@ -48,6 +49,10 @@ export function buildrootfs(): DSFileSystem {
     dirstack.push(curdir);
     curdir = curdir.mkdir('data');
     
+    // Creating root/data/bazisa.txt
+    curfile = new DSIStaticWebFile(fs, root_data_bazisa_txt);
+    curdir.addfile("bazisa.txt", curfile);
+        
     // Creating root/data/deprecated_systems_incorporated.txt
     curfile = new DSIStaticWebFile(fs, root_data_deprecated_systems_incorporated_txt);
     curdir.addfile("deprecated_systems_incorporated.txt", curfile);

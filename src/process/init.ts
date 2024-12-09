@@ -21,7 +21,17 @@ export class PRInit extends DSProcess {
 
     protected async main(): Promise<void> {
         while (true) {
-            await this.t.baudText("init: spawning root shell\n");
+            await this.t.baudText("renegotiating baud ", 70);
+            for (let i = 1; i <= 4; i++) {
+            await this.t.stdout('.');
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            }
+
+            this.t.reset();
+            const logofile = this.cwd.getfile('/data/depsys.txt');
+            const logotxt = await logofile.contentAsText();
+            await this.t.baudText(logotxt, 1);
+
             try {
                 await DSKernel.exec("/bin/dssh");
             } catch (e) {

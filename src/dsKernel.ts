@@ -55,7 +55,7 @@ export class DSKernel {
         this.terminal.stdout(`BOOTING DepSysOS ${DSKernel.version}...\n\n`);
 
         const t = this.terminal;
-        t.baud = 0;
+        t.baud = 15;
         await t.baudText(
             `dsterm: init\n` +
             `  Grid   : ${t.cols} X ${t.rows}\n` +
@@ -68,7 +68,6 @@ export class DSKernel {
 
         // Start init process
         await t.baudText("proc: exec init\n");
-        t.baud = 10;
         try {
             await DSKernel.exec("/bin/init");
         } catch (e) {
