@@ -1,6 +1,14 @@
 # depsysweb
 
 ## TODO
+* term
+  * Different fonts for different vintages of computer
+  * Implement custom gl effects calls
+    * slow fuzzy warmup
+      * Synchronize with first boot sequence
+      * Make faster after recent boots (requires cookies)
+  * Enable click and touch
+  * Enable images
 * process
   * argv
   * envp
@@ -18,14 +26,7 @@
 * fs
   * BrowserStorage backed filesystem 
   * S3 backed filesystem
-* term
-  * Implement custom gl effects calls
-    * slow fuzzy warmup
-      * Synchronize with first boot sequence
-      * Make faster after recent boots (requires cookies)
-  * Enable click and touch
-  * Enable images
-* /proc
+  * /proc
 
 ## Setup
 * [enable docker support in wsl 2 distros](https://docs.docker.com/desktop/features/wsl/#enabling-docker-support-in-wsl-2-distros)

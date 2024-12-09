@@ -27,6 +27,7 @@ const config = {
     devServer: {
         open: false,
         host: '0.0.0.0', // Required for container to host port forwarding
+        allowedHosts: 'all',
     },
     plugins: [
         new HtmlWebpackPlugin({
