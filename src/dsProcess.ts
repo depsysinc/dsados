@@ -16,7 +16,9 @@ export abstract class DSProcess {
     constructor(
         readonly pid: number,
         readonly ppid: number,
-        private _cwd: DSIDirectory
+        private _cwd: DSIDirectory,
+        readonly argv: string[],
+        readonly envp: Record<string, string>
     ) { }
     
     abstract get procname(): string;

@@ -2,6 +2,7 @@ import { DSProcess } from "../dsProcess";
 import { DSKernel } from "../dsKernel";
 import { DSTerminal } from "../dsTerminal";
 import { DSIDirectory } from "../dsFileSystem";
+import { sleep } from "../dsLib";
 
 export class DSShell extends DSProcess {
     private _prompt: CommandLinePrompt;
@@ -9,11 +10,14 @@ export class DSShell extends DSProcess {
     t: DSTerminal;
 
     constructor(
-        readonly pid: number,
-        readonly ppid: number,
-        cwd: DSIDirectory
+        pid: number,
+        ppid: number,
+        cwd: DSIDirectory,
+        argv: string[],
+        envp: Record<string, string>
+
     ) {
-        super(pid, ppid, cwd);
+        super(pid, ppid, cwd, argv, envp);
         this.t = DSKernel.terminal;
     }
 
@@ -184,7 +188,7 @@ export class DSShell extends DSProcess {
         let delay = Number(tokens[1]);
         if (isNaN(delay) || !Number.isInteger(delay) || delay <= 0)
             return this._usage("sleep", ["<milliseconds>"], `expected positive whole number argument (${delay})\n`);
-        return new Promise((resolve) => setTimeout(resolve, delay));
+        return sleep(delay);
     }
 
     // Handlers

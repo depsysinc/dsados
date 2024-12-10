@@ -55,20 +55,41 @@ export class DSKernel {
         this.terminal.stdout(`BOOTING DepSysOS ${DSKernel.version}...\n\n`);
 
         const t = this.terminal;
-        t.baud = 15;
-        await t.baudText(
-            `dsterm: init\n` +
-            `  Grid   : ${t.cols} X ${t.rows}\n` +
-            `  Device : ${navigator.userAgent}\n`,
-        );
-        // Init filesystem
-        await t.baudText(`fs: mount rootfs\n`)
-        const rootfs = buildrootfs();
-        this.fstable.push(new DSFSTableEntry(rootfs.root, rootfs));
+        t.baud = 0; // 15;
 
-        // Start init process
-        await t.baudText("proc: exec init\n");
         try {
+            await t.baudText(
+                `term: init\n` +
+                `     grid : ${t.cols} X ${t.rows}\n`);
+
+            // User Agent stuff
+            const agentregex = /^([^\/]+\/[0-9.]+).*?\((.+?)\)\s*([^\/]+\/[0-9.]+(?:\s\(.*?\))?)(.*)$/;
+            const agentmatch = navigator.userAgent.match(agentregex);
+            if (agentmatch) {
+                const standard = agentmatch[1] || "UNKNOWN";
+                const device = agentmatch[2] || "UNKNOWN";
+                const impl = agentmatch[3] || "UNKNOWN";
+
+                await t.baudText(
+                    ` standard : ${standard}\n` +
+                    `   device : ${device}\n` +
+                    `     impl : ${impl}\n`
+                );
+
+                const altsregex = /(\s+[^\/]+\/[0-9.]+)/g
+                const altsmatch = agentmatch[4].match(altsregex);
+                for (let i = 0; i < altsmatch.length; i++)
+                    await t.baudText(`             - ${altsmatch[i].trim()}\n`);
+
+            }
+
+            // Init filesystem
+            await t.baudText(`fs: mount rootfs\n`)
+            const rootfs = buildrootfs();
+            this.fstable.push(new DSFSTableEntry(rootfs.root, rootfs));
+
+            // Start init process
+            await t.baudText("proc: exec init\n");
             await DSKernel.exec("/bin/init");
         } catch (e) {
             this.panic(e);
@@ -96,7 +117,7 @@ export class DSKernel {
         const ppid = this.curproc ? this.curproc.pid : 0;
         const cwd = this.curproc ? this.curproc.cwd : this.fstable[0].mount;
         // TODO: ensure no existing process with the next pid
-        const newproc = new processClass(this.nextpid++, ppid, cwd);
+        const newproc = new processClass(this.nextpid++, ppid, cwd, argv, envp);
 
         this.procstack.push(newproc);
 

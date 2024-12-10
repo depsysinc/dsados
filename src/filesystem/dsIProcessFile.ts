@@ -10,7 +10,13 @@ import { DSProcess } from "../dsProcess"
 export class DSIProcessFile<T extends DSProcess> extends DSInode {
     constructor(
         fs: DSFileSystem,
-        private _processClass: new (pid: number, ppid: number, _cwd: DSIDirectory) => T
+        private _processClass: new (
+            pid: number,
+            ppid: number,
+            _cwd: DSIDirectory,
+            argv: string[],
+            envp: Record<string, string>
+        ) => T
     ) {
         super(fs, DSFilePerms.execonly())
     }

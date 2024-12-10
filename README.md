@@ -5,13 +5,13 @@
   * Different fonts for different vintages of computer
   * Implement custom gl effects calls
     * slow fuzzy warmup
-      * Synchronize with first boot sequence
       * Make faster after recent boots (requires cookies)
   * Enable click and touch
   * Enable images
+* dslib
+  * file reading
+  * sleep
 * process
-  * argv
-  * envp
   * docview
     * Paragraphs, sections
     * images
