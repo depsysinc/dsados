@@ -34,13 +34,15 @@ export class DSShell extends DSProcess {
 
         while (true) {
             try {
-
                 const input = await this._prompt.promptForInput();
                 const tokens = splitRespectingQuotes(input);
                 const command = tokens[0];
 
                 switch (command) {
                     case undefined: // empty command
+                        break;
+                    case "env":
+                        await this._commandEnv(tokens);
                         break;
                     case "exit":
                         // Clean exit
@@ -76,12 +78,50 @@ export class DSShell extends DSProcess {
                         await this._commandCat(tokens);
                         break;
                     default:
-                        await this.t.baudText(`${command}: command not found\n`);
+                        await this._findAndExec(tokens);
+
                 }
             } catch (e) {
                 await this.t.baudText(`${e.message}\n`);
             }
         }
+    }
+
+    private _usage(cmd: string, args: string[], error: string = undefined) {
+        let usagemsg = "";
+        if (error)
+            usagemsg += `error: ${error}\n`;
+        usagemsg += `Usage: ${cmd} ${args.join(" ")}\n`;
+        return this.t.baudText(usagemsg);
+    };
+
+    private async _findAndExec(tokens: string[]) {
+        const command = tokens[0];
+        const path = this.envp['PATH'];
+        if (path) {
+            const paths = path.split(";");
+            for (let i = 0; i < paths.length; i++) {
+                // try to find the file
+                const filepath = paths[i] + '/' + command;
+                try {
+                    const file = this.cwd.getfile(filepath);
+                    return DSKernel.exec(filepath, tokens, this.envp);
+                } catch (e) {
+                    // next
+                }
+            }
+        }
+        return this.t.baudText(`${command}: command not found\n`);
+    }
+
+    private _commandEnv(tokens: string[]) {
+        if (tokens.length != 1)
+            return this._usage("env", [], `expected no arguments (${tokens.length - 1} given)\n`);
+        let envstr = "";
+        Object.entries(this.envp).forEach(([key, value]) => {
+            envstr += `${key}=${value}\n`;
+        });
+        return this.t.baudText(envstr);
     }
 
     private _commandCat(tokens: string[]) {
@@ -91,8 +131,8 @@ export class DSShell extends DSProcess {
         const fileinfo = this.cwd.getfileinfo(filename);
         if (!fileinfo)
             return this.t.baudText(`'${filename}' not found\n`);
-        
-        return fileinfo.inode.contentAsText().then(text => 
+
+        return fileinfo.inode.contentAsText().then(text =>
             this.t.baudText(text)
         );
     }
@@ -107,14 +147,6 @@ export class DSShell extends DSProcess {
         return fileinfo.inode.filetype().then(
             filetype => this.t.baudText(filetype + '\n'));
     }
-
-    private _usage(cmd: string, args: string[], error: string = undefined) {
-        let usagemsg = "";
-        if (error)
-            usagemsg += `error: ${error}\n`;
-        usagemsg += `Usage: ${cmd} ${args.join(" ")}\n`;
-        return this.t.baudText(usagemsg);
-    };
 
     private _commandHistory(tokens: string[]) {
         if (tokens.length != 1)
