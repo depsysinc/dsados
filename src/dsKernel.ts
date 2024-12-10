@@ -107,9 +107,10 @@ export class DSKernel {
     ): Promise<number> {
         // Find the file
         const execfile = this.rootdir.getfile(path);
-        if (!(execfile instanceof DSIProcessFile)) {
+        if (!(execfile instanceof DSIProcessFile))
             throw new DSKernelExecError("Unsupported filetype");
-        }
+        if (!execfile.perms.x)
+            throw new DSKernelExecError(`cannot exec '${path}': Permission Denied`);
         const processClass = execfile.getProcessClass();
 
         // This is a FILO stack based process table so the parent is always
@@ -121,9 +122,11 @@ export class DSKernel {
 
         this.procstack.push(newproc);
 
-        await newproc.start();
-
-        this.procstack.pop();
+        try {
+            await newproc.start();
+        } finally {
+            this.procstack.pop();
+        } 
 
         return;
     }

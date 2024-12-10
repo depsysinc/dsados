@@ -8,21 +8,21 @@
       * Make faster after recent boots (requires cookies)
   * Enable click and touch
   * Enable images
-* dslib
-  * file reading
-  * sleep
 * process
+  * dssh
+    * search for executable in PATH
+    * scripting
+    * setting env variables
+    * command history persistence across boots
+    * [tab] complete
+    * chmod
+    * mv
+    * cp
   * docview
     * Paragraphs, sections
     * images
   * imgview
     * addon-image or custom?
-  * dssh
-    * search for executable in PATH
-    * scripting
-    * command history persistence
-    * [tab] complete
-    * chmod
 * fs
   * BrowserStorage backed filesystem 
   * S3 backed filesystem
