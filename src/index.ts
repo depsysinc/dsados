@@ -5,6 +5,7 @@ import { DSKernel } from './dsKernel';
 async function initApp(): Promise<void> {
     console.log("DepSys terminal firmware initializing");
 
+    await document.fonts.load('16px BOOTFont')
     await document.fonts.load('16px CRTFont');
 
     // Create a div container for the terminal

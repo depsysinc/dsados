@@ -31,7 +31,7 @@ export class DSTerminal {
             {
                 cols: 20,              // Set the number of columns (width)
                 rows: 10,              // Set the number of rows (height)
-                fontFamily: 'CRTFont, monospace', // Set the font family
+                fontFamily: 'BOOTFont, monospace', // Set the font family
                 fontSize: 32,          // Set the font size
                 fontWeight: 'normal',  // Optional: font weight
                 cursorBlink: true,
@@ -40,10 +40,8 @@ export class DSTerminal {
         );
 
         // Open the terminal in the specified container
-        if (!isMobileDevice()) {
             this._webglAddon = new WebglAddon();
             t.loadAddon(this._webglAddon);
-        }
 
         this._fitAddon = new FitAddon();
         t.loadAddon(this._fitAddon);
@@ -60,6 +58,7 @@ export class DSTerminal {
 
         // Call resize directly (no propagation because we're booting)
         this._resize();
+        this._webglAddon?.startFadeIn(1500);
 
         window.addEventListener('resize', () => { this.handleResize() });
 
