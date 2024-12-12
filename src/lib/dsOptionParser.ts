@@ -1,7 +1,3 @@
-export function sleep(delay: number) {
-    return new Promise((resolve) => setTimeout(resolve, delay));
-}
-
 export class DSOptionParserError extends Error {
     constructor(message: string) {
         super(message);
@@ -178,7 +174,7 @@ export class DSOptionParser {
         const helpopt = this.getShortOption("h");
         if (helpopt.seen)
             throw new DSOptionParserError(this.usage());
-        
+
         return nextarg;
 }
 
