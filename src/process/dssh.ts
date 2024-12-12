@@ -2,7 +2,7 @@ import { DSProcess } from "../dsProcess";
 import { DSKernel } from "../dsKernel";
 import { DSTerminal } from "../dsTerminal";
 import { DSIDirectory } from "../dsFileSystem";
-import { sleep } from "../lib/dsOptionParser";
+import { sleep } from "../lib/dsLib";
 
 export class DSShell extends DSProcess {
     private _prompt: CommandLinePrompt;
