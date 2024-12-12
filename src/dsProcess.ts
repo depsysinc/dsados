@@ -21,7 +21,9 @@ export abstract class DSProcess {
         readonly envp: Record<string, string>
     ) { }
     
-    abstract get procname(): string;
+    get procname(): string {
+        return this.argv[0];
+    }
 
     protected async main(): Promise<void> {
         throw new DSProcessError("Illegal base class main() call");

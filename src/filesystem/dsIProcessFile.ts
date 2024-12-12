@@ -25,6 +25,10 @@ export class DSIProcessFile<T extends DSProcess> extends DSInode {
         return this._processClass;
     }
 
+    async filetype(): Promise<string> {
+        return 'program';
+    }
+
     chmod(fileperms: DSFilePerms) {
         throw new DSFilePermsPermissionDeniedError("operation not supported on filetype");
     }

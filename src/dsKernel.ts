@@ -90,7 +90,7 @@ export class DSKernel {
 
             // Start init process
             await t.baudText("proc: exec init\n");
-            await DSKernel.exec("/bin/init");
+            await DSKernel.exec("/bin/init",["init"]);
         } catch (e) {
             this.panic(e);
             return;
@@ -102,7 +102,7 @@ export class DSKernel {
 
     static async exec(
         path: string,
-        argv: string[] = [],
+        argv: string[],
         envp: Record<string, string> = {}
     ): Promise<number> {
         // Find the file

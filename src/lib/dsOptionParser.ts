@@ -27,16 +27,18 @@ export class DSOptionParser {
     constructor(
         readonly command: string,
         addhelp: boolean = true,
-        readonly description: string = undefined) {
-            if (addhelp) 
-                this.addoption({
-                    long: "help",
-                    short: "h",
-                    required: false,
-                    takesArgument: false,
-                    argName: "",
-                    description: "output usage information and exit"
-                });
+        readonly description: string = undefined,
+        readonly args: string = undefined
+    ) {
+        if (addhelp)
+            this.addoption({
+                long: "help",
+                short: "h",
+                required: false,
+                takesArgument: false,
+                argName: "",
+                description: "output usage information and exit"
+            });
     }
 
     addoption(opt: DSOption): void {
@@ -93,7 +95,10 @@ export class DSOptionParser {
         if (usageopt.length > 2)
             usagestr += usageopt + "] ";
         // TODO: add arg taking options
-        usagestr += usagereqargs + usageoptargs + "\n";
+        usagestr += usagereqargs + usageoptargs;
+        if (this.args)
+            usagestr += this.args
+        usagestr += "\n";
         if (this.description)
             usagestr += "\n" + this.description + "\n\n";
         usagestr += optlist;
@@ -176,14 +181,6 @@ export class DSOptionParser {
             throw new DSOptionParserError(this.usage());
 
         return nextarg;
-}
+    }
 
 }
-
-export function usage(cmd: string, args: string[], error: string = undefined) {
-    let usagemsg = "";
-    if (error)
-        usagemsg += `error: ${error}\n`;
-    usagemsg += `Usage: ${cmd} ${args.join(" ")}\n`;
-    return this.t.baudText(usagemsg);
-};

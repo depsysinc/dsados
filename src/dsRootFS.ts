@@ -10,9 +10,17 @@ import { DSIProcessFile } from "./filesystem/dsIProcessFile";
 import { DSIStaticWebFile } from "./filesystem/dsIStaticWebFile";
 
 // BIN IMPORTS
+import { PRCat } from "./process/cat";
 import { DSShell } from "./process/dssh";
+import { PREcho } from "./process/echo";
+import { PREnv } from "./process/env";
+import { PRFile } from "./process/file";
 import { PRInit } from "./process/init";
+import { PRLs } from "./process/ls";
+import { PRMkdir } from "./process/mkdir";
 import { PRPs } from "./process/ps";
+import { PRPwd } from "./process/pwd";
+import { PRSleep } from "./process/sleep";
 // STATIC TRAVERSAL IMPORTS
 import root_data_bazisa_txt from "./root/data/bazisa.txt";
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
@@ -30,14 +38,38 @@ export function buildrootfs(): DSFileSystem {
 
     // BIN BODY
 
+    binfile = new DSIProcessFile(fs, PRCat);
+    bindir.addfile("cat", binfile);
+    
     binfile = new DSIProcessFile(fs, DSShell);
     bindir.addfile("dssh", binfile);
+    
+    binfile = new DSIProcessFile(fs, PREcho);
+    bindir.addfile("echo", binfile);
+    
+    binfile = new DSIProcessFile(fs, PREnv);
+    bindir.addfile("env", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRFile);
+    bindir.addfile("file", binfile);
     
     binfile = new DSIProcessFile(fs, PRInit);
     bindir.addfile("init", binfile);
     
+    binfile = new DSIProcessFile(fs, PRLs);
+    bindir.addfile("ls", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRMkdir);
+    bindir.addfile("mkdir", binfile);
+    
     binfile = new DSIProcessFile(fs, PRPs);
     bindir.addfile("ps", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRPwd);
+    bindir.addfile("pwd", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRSleep);
+    bindir.addfile("sleep", binfile);
     
     // BIN FOOTER
     bindir.chmod(DSFilePerms.rx());

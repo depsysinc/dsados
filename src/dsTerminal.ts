@@ -31,7 +31,7 @@ export class DSTerminal {
             {
                 cols: 20,              // Set the number of columns (width)
                 rows: 10,              // Set the number of rows (height)
-                fontFamily: 'BOOTFont, monospace', // Set the font family
+                fontFamily: 'CRTFont, monospace', // Set the font family
                 fontSize: 32,          // Set the font size
                 fontWeight: 'normal',  // Optional: font weight
                 cursorBlink: true,
