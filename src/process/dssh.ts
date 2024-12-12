@@ -2,7 +2,7 @@ import { DSProcess } from "../dsProcess";
 import { DSKernel } from "../dsKernel";
 import { DSTerminal } from "../dsTerminal";
 import { DSIDirectory } from "../dsFileSystem";
-import { sleep } from "../dsLib";
+import { sleep } from "../lib/dsOptionParser";
 
 export class DSShell extends DSProcess {
     private _prompt: CommandLinePrompt;
@@ -52,9 +52,6 @@ export class DSShell extends DSProcess {
                         break;
                     case "echo":
                         await this._commandEcho(tokens);
-                        break;
-                    case "ps":
-                        await this._commandPs(tokens);
                         break;
                     case "pwd":
                         await this._commandPwd(tokens);
@@ -195,19 +192,6 @@ export class DSShell extends DSProcess {
             return this._usage("pwd", [], `expected no arguments (${tokens.length - 1} given)\n`);
 
         return this.t.baudText(this.cwd.path + "\n");
-    }
-
-    private _commandPs(tokens: string[]) {
-        if (tokens.length != 1)
-            return this._usage("ps", [], `expected no arguments (${tokens.length - 1} given)\n`);
-
-        const pidwidth = 6;
-        let proclist = `${"PID".padStart(pidwidth)} CMD\n`;
-        DSKernel.procstack.forEach((proc, idx) => {
-            const active = proc.pid == DSKernel.curproc.pid ? " *" : "";
-            proclist += `${String(proc.pid).padStart(pidwidth)} ${proc.procname}${active}\n`;
-        });
-        return this.t.baudText(proclist);
     }
 
     private _commandEcho(tokens: string[]) {

@@ -12,6 +12,7 @@ import { DSIStaticWebFile } from "./filesystem/dsIStaticWebFile";
 // BIN IMPORTS
 import { DSShell } from "./process/dssh";
 import { PRInit } from "./process/init";
+import { PRPs } from "./process/ps";
 // STATIC TRAVERSAL IMPORTS
 import root_data_bazisa_txt from "./root/data/bazisa.txt";
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
@@ -34,6 +35,9 @@ export function buildrootfs(): DSFileSystem {
     
     binfile = new DSIProcessFile(fs, PRInit);
     bindir.addfile("init", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRPs);
+    bindir.addfile("ps", binfile);
     
     // BIN FOOTER
     bindir.chmod(DSFilePerms.rx());

@@ -5,12 +5,12 @@ import { DSFilePerms, DSFileSystem, DSIDirectory } from "../src/dsFileSystem";
 class TestProcess extends DSProcess {
     constructor(pwd: DSIDirectory) {
 
-        super(0,0,pwd);
+        super(0,0,pwd,[],{});
     }
     get procname(): string {
         return "TestFSProcess";
     }
-    protected main(): void {
+    protected async main(): Promise<void> {
         throw new Error("Should never be called!");
     }
     
