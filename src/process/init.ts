@@ -1,16 +1,12 @@
-import { DSProcess } from "../dsProcess";
+import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSKernel } from "../dsKernel";
 
 export class PRInit extends DSProcess {
 
-    get procname(): string {
-        return "init";
-    }
-
     protected async main(): Promise<void> {
         let t = DSKernel.terminal;
         if (this.pid != 1)
-            throw new Error("error: init must be first process");
+            throw new DSProcessError("error: init must be first process");
         /*
         await t.baudText("renegotiating baud ", 70);
         for (let i = 1; i <= 4; i++) {
@@ -23,10 +19,11 @@ export class PRInit extends DSProcess {
         const logotxt = await logofile.contentAsText();
         await t.baudText(logotxt, 1);
         */
-        await t.baudText("init: exec root shell\n");
+        const procpath = "/bin/dssh";
+        await t.baudText(`init: exec ${procpath}\n`);
         while (true) {
             try {
-                await DSKernel.exec("/bin/dssh", [], { PATH: "/bin" });
+                await DSKernel.exec(procpath, ["dssh"], { PATH: "/bin" });
             } catch (e) {
                 await t.baudText(`init: root shell exception: ${e.message}\n`);
             }

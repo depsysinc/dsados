@@ -273,9 +273,9 @@ export class DSIDirectory extends DSInode {
     }
 
     get path(): string {
-        let curdir: DSIDirectory = this;
-        if (curdir == this._fs.root)
+        if (this == this.parent)
             return '/';
+        let curdir: DSIDirectory = this;
         let path = "";
         while (curdir.parent != curdir) {
             // Find ourselves in the parent
@@ -285,6 +285,15 @@ export class DSIDirectory extends DSInode {
         }
         return path;
     }
+
+    get rootdir(): DSIDirectory {
+        let curdir: DSIDirectory = this;
+        while (curdir.parent != curdir) {
+            curdir = curdir.parent;
+        }
+        return curdir;
+    }
+
     getfile(path: string): DSInode {
         // Separate file from directory
         const sepIdx = path.lastIndexOf('/');
@@ -304,14 +313,18 @@ export class DSIDirectory extends DSInode {
     getdir(path: string): DSIDirectory {
         // Check empty root case
         if (/^\/+$/.test(path))
-            return this._fs.root;
+            return this.rootdir;
 
         const pathRegex = /[^/]+/g;
         const dirs = path.match(pathRegex);
         if (!dirs)
             throw new DSIDirectoryInvalidPathError(path);
 
-        let curdir: DSIDirectory = this;
+        let curdir: DSIDirectory;
+        if (path.startsWith('/'))
+            curdir = this.rootdir;
+        else
+            curdir = this;
         for (let i = 0; i < dirs.length; i++) {
             // Check traversal permissions
             curdir.perms.checkExec();

@@ -189,6 +189,14 @@ test('getdir / from subdir', () => {
     expect(root).toEqual(fs.root);
 });
 
+test('getdir /gamma/deep/tree/branch from /alpha', () => {
+    const fs = createTestFS();
+    const alpha = fs.root.getdir("/alpha");
+    const branch = alpha.getdir("/gamma/deep/tree/branch");
+    const branchfromroot = fs.root.getdir("/gamma/deep/tree/branch");
+    expect(branch).toEqual(branchfromroot);
+});
+
 test('getdir ../../.. from /gamma/deep/tree/branch', () => {
     const fs = createTestFS();
     const branch = fs.root.getdir("/gamma/deep/tree/branch");
@@ -257,6 +265,13 @@ test('getfile /gamma/deep/tree/bogusfile.txt', () => {
     );
 });
 
+test('getfile /gamma/deep/tree/branch/testfile2.txt from /alpha', () => {
+    const fs = createTestFS();
+    const path = "/gamma/deep/tree/branch/testfile2.txt";
+    const testfile2info = fs.root.getdir("/gamma/deep/tree/branch").getfileinfo("testfile2.txt");
+    const fromdir = fs.root.getdir("/alpha");
+    expect(fromdir.getfile(path)).toEqual(testfile2info?.inode);
+});
 
 // chmod tests
 

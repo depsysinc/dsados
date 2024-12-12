@@ -21,10 +21,6 @@ export class DSShell extends DSProcess {
         this.t = DSKernel.terminal;
     }
 
-    get procname(): string {
-        return "dssh";
-    }
-
     protected async main(): Promise<void> {
         this._prompt = new CommandLinePrompt(this);
         return this._commandLoop();
@@ -41,38 +37,14 @@ export class DSShell extends DSProcess {
                 switch (command) {
                     case undefined: // empty command
                         break;
-                    case "env":
-                        await this._commandEnv(tokens);
-                        break;
                     case "exit":
                         // Clean exit
                         return;
-                    case "sleep":
-                        await this._commandSleep(tokens);
-                        break;
-                    case "echo":
-                        await this._commandEcho(tokens);
-                        break;
-                    case "pwd":
-                        await this._commandPwd(tokens);
-                        break;
-                    case "mkdir":
-                        await this._commandMkdir(tokens);
-                        break;
-                    case "ls":
-                        await this._commandLs(tokens);
-                        break;
                     case "cd":
                         await this._commandCd(tokens);
                         break;
                     case "history":
                         await this._commandHistory(tokens);
-                        break;
-                    case "file":
-                        await this._commandFile(tokens);
-                        break;
-                    case "cat":
-                        await this._commandCat(tokens);
                         break;
                     default:
                         await this._findAndExec(tokens);
@@ -101,7 +73,7 @@ export class DSShell extends DSProcess {
                 // try to find the file
                 const filepath = paths[i] + '/' + command;
                 try {
-                    const file = this.cwd.getfile(filepath);
+                    this.cwd.getfile(filepath);
                     return DSKernel.exec(filepath, tokens, this.envp);
                 } catch (e) {
                     // next
@@ -111,43 +83,9 @@ export class DSShell extends DSProcess {
         return this.t.baudText(`${command}: command not found\n`);
     }
 
-    private _commandEnv(tokens: string[]) {
-        if (tokens.length != 1)
-            return this._usage("env", [], `expected no arguments (${tokens.length - 1} given)\n`);
-        let envstr = "";
-        Object.entries(this.envp).forEach(([key, value]) => {
-            envstr += `${key}=${value}\n`;
-        });
-        return this.t.baudText(envstr);
-    }
-
-    private _commandCat(tokens: string[]) {
-        if (tokens.length != 2)
-            return this._usage("cat", ["<filename>"], `expected 1 argument (${tokens.length - 1} given)\n`);
-        let filename = tokens[1];
-        const fileinfo = this.cwd.getfileinfo(filename);
-        if (!fileinfo)
-            return this.t.baudText(`'${filename}' not found\n`);
-
-        return fileinfo.inode.contentAsText().then(text =>
-            this.t.baudText(text)
-        );
-    }
-
-    private _commandFile(tokens: string[]) {
-        if (tokens.length != 2)
-            return this._usage("file", ["<filename>"], `expected 1 argument (${tokens.length - 1} given)\n`);
-        let filename = tokens[1];
-        const fileinfo = this.cwd.getfileinfo(filename);
-        if (!fileinfo)
-            return this.t.baudText(`'${filename}' not found\n`);
-        return fileinfo.inode.filetype().then(
-            filetype => this.t.baudText(filetype + '\n'));
-    }
-
     private _commandHistory(tokens: string[]) {
         if (tokens.length != 1)
-            return this._usage("ls", [], `expected no arguments (${tokens.length - 1} given)\n`);
+            return this._usage("history", [], `expected no arguments (${tokens.length - 1} given)\n`);
         let histstr = "";
         const idxwidth = 4;
         this.history.forEach((command, idx) => {
@@ -156,55 +94,12 @@ export class DSShell extends DSProcess {
         return this.t.baudText(histstr);
     };
 
-    private _commandLs(tokens: string[]) {
-        if (tokens.length != 1)
-            return this._usage("ls", [], `expected no arguments (${tokens.length - 1} given)\n`);
-
-        // Get the file list
-        let fileliststr = "";
-
-        this.cwd.filelist.forEach((fileinfo) => {
-            fileliststr += fileinfo.inode.perms.permString();
-            fileliststr += `  ${fileinfo.name}\n`;
-        })
-        return this.t.baudText(fileliststr);
-
-    }
-
     private _commandCd(tokens: string[]) {
         if (tokens.length != 2)
             return this._usage("cd", ["<dirname>"], `expected 1 argument (${tokens.length - 1} given)\n`);
         let dirname = tokens[1];
 
         this.chdir(dirname);
-    }
-
-    private _commandMkdir(tokens: string[]) {
-        if (tokens.length != 2)
-            return this._usage("mkdir", ["<dirname>"], `expected 1 argument (${tokens.length - 1} given)\n`);
-        let dirname = tokens[1];
-
-        this.cwd.mkdir(dirname);
-    }
-
-    private _commandPwd(tokens: string[]) {
-        if (tokens.length != 1)
-            return this._usage("pwd", [], `expected no arguments (${tokens.length - 1} given)\n`);
-
-        return this.t.baudText(this.cwd.path + "\n");
-    }
-
-    private _commandEcho(tokens: string[]) {
-        return this.t.baudText(tokens.slice(1).join(" ") + "\n");
-    }
-
-    private _commandSleep(tokens: string[]) {
-        if (tokens.length != 2)
-            return this._usage("sleep", ["<milliseconds>"], `expected 1 argument (${tokens.length - 1} given)\n`);
-        let delay = Number(tokens[1]);
-        if (isNaN(delay) || !Number.isInteger(delay) || delay <= 0)
-            return this._usage("sleep", ["<milliseconds>"], `expected positive whole number argument (${delay})\n`);
-        return sleep(delay);
     }
 
     // Handlers
