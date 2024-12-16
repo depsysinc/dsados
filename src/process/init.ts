@@ -7,7 +7,7 @@ export class PRInit extends DSProcess {
         let t = DSKernel.terminal;
         if (this.pid != 1)
             throw new DSProcessError("error: init must be first process");
-        /*
+/*
         await t.baudText("renegotiating baud ", 70);
         for (let i = 1; i <= 4; i++) {
             await t.stdout('.');
@@ -18,7 +18,7 @@ export class PRInit extends DSProcess {
         const logofile = this.cwd.getfile('/data/depsys.txt');
         const logotxt = await logofile.contentAsText();
         await t.baudText(logotxt, 1);
-        */
+  */      
         const procpath = "/bin/dssh";
         await t.baudText(`init: exec ${procpath}\n`);
         while (true) {

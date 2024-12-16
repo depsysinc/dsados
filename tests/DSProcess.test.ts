@@ -1,5 +1,5 @@
 import { DSProcess } from "../src/dsProcess";
-import { DSFilePerms, DSFileSystem, DSIDirectory } from "../src/dsFileSystem";
+import { DSFilePerms, DSFileSystem, DSIDirectory, DSRAMFileSystem } from "../src/dsFileSystem";
 
 // Tests to make sure pushing and popping of procstack works
 class TestProcess extends DSProcess {
@@ -17,7 +17,7 @@ class TestProcess extends DSProcess {
 }
 
 function createTestFS(): DSFileSystem {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     fs.root.chmod(DSFilePerms.full());
 
     const alpha = fs.root.mkdir("alpha");

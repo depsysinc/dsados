@@ -11,7 +11,8 @@ import {
     DSFileSystemReadonlyError, 
     DSIDirectoryIllegalAddfileError, 
     DSFilePermsUnsupportedError, 
-    DSIFileAlreadyExistsError 
+    DSIFileAlreadyExistsError, 
+    DSRAMFileSystem
 } from "../src/dsFileSystem"
 import {DSIStaticWebFile} from "../src/filesystem/dsIStaticWebFile"
 
@@ -19,7 +20,7 @@ import {DSIStaticWebFile} from "../src/filesystem/dsIStaticWebFile"
 const webtest = (process.env.RUN_WEB_TESTS === "true") ? test : test.skip;
 
 test('fs empty', () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     // Check .
     const curdirfromstring = fs.root.getfileinfo(".");
     expect(curdirfromstring).toBeDefined();
@@ -43,7 +44,7 @@ test('fs empty', () => {
 // TESTS mkdir
 
 test('mkdir', () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     const root = fs.root;
     root.chmod(DSFilePerms.full());
 
@@ -58,7 +59,7 @@ test('mkdir', () => {
 });
 
 test('mkdir with name collision', () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     const root = fs.root;
     root.chmod(DSFilePerms.full());
 
@@ -71,7 +72,7 @@ test('mkdir with name collision', () => {
 });
 
 test('mkdir with illegal character', () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     const root = fs.root;
     root.chmod(DSFilePerms.full());
 
@@ -87,13 +88,13 @@ test('mkdir with illegal character', () => {
 // TESTS paths
 
 test('path empty fs', () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     const path = fs.root.path;
     expect(path).toEqual("/");
 });
 
 test('path 3 levels', () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     fs.root.chmod(DSFilePerms.full());
 
     const dirA = fs.root.mkdir("dirA");
@@ -107,7 +108,7 @@ test('path 3 levels', () => {
 // TODO Test that you can't change dirs to a file
 
 test('getdir <bad path>', () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
 
     expect(() =>
         fs.root.getdir('')
@@ -117,7 +118,7 @@ test('getdir <bad path>', () => {
 });
 
 test('getdir <non existent path>', () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     expect(() =>
         fs.root.getdir('florb')
     ).toThrow(
@@ -126,19 +127,19 @@ test('getdir <non existent path>', () => {
 });
 
 test('getdir . from /', () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
 
     expect(fs.root.getdir('.')).toEqual(fs.root);
 });
 
 test('getdir .. from /', () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
 
     expect(fs.root.getdir('..')).toEqual(fs.root);
 });
 
 test('getdir / from /', () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
 
     expect(fs.root.getdir('/')).toEqual(fs.root);
 });
@@ -155,8 +156,8 @@ test('getdir / from /', () => {
             |-- branch
             |-- testfile2.txt
 */
-function createTestFS(): DSFileSystem {
-    const fs = new DSFileSystem();
+function createTestFS(): DSRAMFileSystem {
+    const fs = new DSRAMFileSystem();
     fs.root.chmod(DSFilePerms.full());
 
     const testfile1 = fs.root.addfile("testfile1.txt", new DSIStaticWebFile(fs,""));
@@ -360,49 +361,49 @@ test('filetype gamma', async () => {
 // staticwebfile tests
 
 test('DSIStaticWebFile.filetype badurl', async () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     const badurlfile = new DSIStaticWebFile(fs, "thisisabadurl");
     const filetype = await badurlfile.filetype();
     expect(filetype).toEqual("null");
 });
 
 test('DSIStaticWebFile.filetype badhostname', async () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     const newfile = new DSIStaticWebFile(fs, "http://test.invalid/");
     const filetype = await newfile.filetype();
     expect(filetype).toEqual("null");
 });
 
 test('DSIStaticWebFile.filetype cantconnect', async () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     const newfile = new DSIStaticWebFile(fs, "http://localhost:37654/");
     const filetype = await newfile.filetype();
     expect(filetype).toEqual("null");
 });
 
 webtest('DSIStaticWebFile.filetype 404', async () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     const newfile = new DSIStaticWebFile(fs, "https://httpstat.us/404");
     const filetype = await newfile.filetype();
     expect(filetype).toEqual("null");
 });
 
 test('DSIStaticWebFile.filetype file://', async () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     const newfile = new DSIStaticWebFile(fs, "file://thing");
     const filetype = await newfile.filetype();
     expect(filetype).toEqual("null");
 });
 
 webtest('DSIStaticWebFile.filetype http://example.com', async () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     const newfile = new DSIStaticWebFile(fs, "http://example.com");
     const filetype = await newfile.filetype();
     expect(filetype).not.toEqual("null");
 });
 
 webtest('DSIStaticWebFile.filetype testpng', async () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     const newfile = new DSIStaticWebFile(fs,
         "http://www.libpng.org/pub/png/colorcube/pngs-nogamma/ffffff.png");
     const filetype = await newfile.filetype();
@@ -412,7 +413,7 @@ webtest('DSIStaticWebFile.filetype testpng', async () => {
 // addfile tests
 
 test('addfile illegaldirectory', () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     const filename = "illegaldirectory";
     expect(() =>
         fs.root.addfile(filename, new DSIDirectory(fs, DSFilePerms.full()))
@@ -422,8 +423,8 @@ test('addfile illegaldirectory', () => {
 });
 
 test('addfile differentfs', () => {
-    const fs_a = new DSFileSystem();
-    const fs_b = new DSFileSystem();
+    const fs_a = new DSRAMFileSystem();
+    const fs_b = new DSRAMFileSystem();
     const filename = "differentfs";
     expect(() =>
         fs_a.root.addfile(filename, new DSIStaticWebFile(fs_b, ""))
@@ -433,14 +434,14 @@ test('addfile differentfs', () => {
 });
 
 test('addfile testfile', () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     const newfile = new DSIStaticWebFile(fs, "");
     fs.root.addfile('testfile', newfile);
     expect(fs.root.getfileinfo('testfile')?.inode).toEqual(newfile);
 });
 
 test('addfile duplicate', () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     fs.root.addfile('testfile', new DSIStaticWebFile(fs, ""));
     expect(() =>
         fs.root.addfile('testfile', new DSIStaticWebFile(fs, ""))
@@ -461,7 +462,7 @@ test('addfile collisionwithdir', () => {
 // StaticWebFile tests
 
 test('chmod staticwebfile', () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     const newfile = fs.root.addfile("staticwebfile", new DSIStaticWebFile(fs, ""))
     const badperms = DSFilePerms.full();
     expect(() =>
@@ -472,7 +473,7 @@ test('chmod staticwebfile', () => {
 });
 
 test('contentAsText noreadperms', async () => {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
     const newfile = fs.root.addfile("staticwebfile", new DSIStaticWebFile(fs, ""))
     newfile.chmod(DSFilePerms.none());
 

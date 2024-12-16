@@ -5,6 +5,7 @@ import { DSFileSystem, DSIDirectory } from "./dsFileSystem";
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
 import { buildrootfs } from "./dsRootFS";
 import { DSProcess } from "./dsProcess";
+import { sleep } from './lib/dsLib';
 
 class DSFSTableEntry {
     constructor(
@@ -52,10 +53,28 @@ export class DSKernel {
         console.log("Initializing Terminal")
         this.terminal = new DSTerminal(terminalContainer);
 
-        this.terminal.stdout(`BOOTING DepSysOS ${DSKernel.version}...\n\n`);
+        // Boot garbage
+        const termsize = this.terminal.cols * this.terminal.rows;
+        let randstr = "";
+        let randchars = "";
+        for (let i = 0x00B7; i < 0x00BE; i++)
+            randchars += String.fromCodePoint(i);
+        for (let i = 0x00C0; i < 0x00FF; i++)
+            randchars += String.fromCodePoint(i);
+        for (let i = 0; i < termsize; i++)
+            randstr += randchars.charAt(Math.floor(Math.random() * randchars.length));
+        this.terminal.stdout("\x1b[7m");
+        this.terminal.stdout(randstr);
+        this.terminal.stdout("\x1b[27m");
+        let bootfactor = 0;
+        await sleep(1000 * bootfactor);
 
+        this.terminal.reset();
+        await sleep(500 * bootfactor);
+        this.terminal.stdout(`BOOTING DepSysOS ${DSKernel.version}...\n\n`);
+        await sleep(1000 * bootfactor);
         const t = this.terminal;
-        t.baud = 0; // 15;
+        t.baud = 15*bootfactor;
 
         try {
             await t.baudText(
@@ -90,7 +109,7 @@ export class DSKernel {
 
             // Start init process
             await t.baudText("proc: exec init\n");
-            await DSKernel.exec("/bin/init",["init"]);
+            await DSKernel.exec("/bin/init", ["init"]);
         } catch (e) {
             this.panic(e);
             return;
@@ -126,7 +145,7 @@ export class DSKernel {
             await newproc.start();
         } finally {
             this.procstack.pop();
-        } 
+        }
 
         return;
     }

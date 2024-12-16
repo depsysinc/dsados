@@ -5,7 +5,7 @@
  * Run 'yarn genrootfs' to regenerate
  * 
  */
-import { DSFilePerms, DSFileSystem, DSIDirectory, DSInode } from "./dsFileSystem";
+import { DSFilePerms, DSFileSystem, DSRAMFileSystem, DSIDirectory, DSInode } from "./dsFileSystem";
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
 import { DSIStaticWebFile } from "./filesystem/dsIStaticWebFile";
 
@@ -30,7 +30,7 @@ import root_etc_dsos_conf from "./root/etc/dsos.conf";
 
 // BUILDROOTFS HEADER
 export function buildrootfs(): DSFileSystem {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
 
     // BIN HEADER
     const bindir = fs.root.mkdir('bin');

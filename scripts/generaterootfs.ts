@@ -11,7 +11,7 @@ let header = `/*
  * Run 'yarn genrootfs' to regenerate
  * 
  */
-import { DSFilePerms, DSFileSystem, DSIDirectory, DSInode } from "./dsFileSystem";
+import { DSFilePerms, DSFileSystem, DSRAMFileSystem, DSIDirectory, DSInode } from "./dsFileSystem";
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
 import { DSIStaticWebFile } from "./filesystem/dsIStaticWebFile";
 
@@ -20,7 +20,7 @@ import { DSIStaticWebFile } from "./filesystem/dsIStaticWebFile";
 const buildrootfs_header = `
 // BUILDROOTFS HEADER
 export function buildrootfs(): DSFileSystem {
-    const fs = new DSFileSystem();
+    const fs = new DSRAMFileSystem();
 `;
 
 const main_footer =

@@ -113,17 +113,19 @@ export class DSFilePermsWriteError extends DSFilePermsPermissionDeniedError {
 
 // Main classes
 
-export class DSFileSystem {
-    private _root: DSIDirectory;
-    private _readonly: boolean = false;
+export abstract class DSFileSystem {
+    protected _root: DSIDirectory;
+    protected _readonly: boolean = false;
 
     get root(): DSIDirectory {
         return this._root;
     }
 
-    constructor() {
-        this._root = new DSIDirectory(this, DSFilePerms.full());
-    }
+    protected constructor() { }
+
+    abstract added(inode: DSInode): void;
+
+    abstract changed(inode: DSInode): void;
 
     get readonly(): boolean {
         return this._readonly;
@@ -132,6 +134,17 @@ export class DSFileSystem {
     set readonly(readonly: boolean) {
         this._readonly = readonly;
     }
+}
+
+export class DSRAMFileSystem extends DSFileSystem {
+    constructor() {
+        super();
+        this._root = new DSIDirectory(this, DSFilePerms.full());
+    }
+
+    added(inode: DSInode) { }
+    changed(inode: DSInode): void { }
+
 }
 
 /*
@@ -151,6 +164,20 @@ export class DSFilePerms {
     get r() { return this._r; }
     get w() { return this._w; }
     get x() { return this._x; }
+
+    toJSON(): object {
+        return {
+            r: this._r,
+            w: this._w,
+            x: this._x,
+        }
+    }
+
+    setFromJSON(perms: any) {
+        this._r = perms.r;
+        this._w = perms.w;
+        this._x = perms.x;
+    }
 
     permString(): string {
         let permstr = this.r ? 'r' : '-';
@@ -200,10 +227,24 @@ export class DSFilePerms {
 }
 
 export abstract class DSInode {
-
+    id: number = undefined;
     protected constructor(
         protected _fs: DSFileSystem,
-        private _perms: DSFilePerms) { }
+        private _perms: DSFilePerms
+    ) { }
+
+    toJSON(): object {
+        return {
+            id: this.id,
+            type: this.constructor.name,
+            perms: this._perms.toJSON()
+        };
+    }
+
+    protected setFromJSON(object: any) {
+        this.id = object.id;
+        this._perms.setFromJSON(object.perms);
+    }
 
     get perms() {
         return this._perms;
@@ -225,6 +266,8 @@ export abstract class DSInode {
         if (this._fs.readonly)
             throw new DSFileSystemReadonlyError('chmod');
         this._perms = fileperms;
+
+        this.fs.changed(this); // DSIDBFS hook
     }
 }
 
@@ -233,6 +276,13 @@ export class DSFileInfo {
         readonly inode: DSInode,
         private _name: string,
     ) { }
+
+    toJSON() {
+        return {
+            name: this._name,
+            inodeid: this.inode.id
+        }
+    }
 
     get name() {
         return this._name;
@@ -247,7 +297,9 @@ export class DSIDirectory extends DSInode {
         fs: DSFileSystem,
         perms: DSFilePerms,
         parent: (DSIDirectory | undefined) = undefined) {
+
         super(fs, perms);
+
         if (parent == undefined)
             this.parent = this;
         else
@@ -257,6 +309,23 @@ export class DSIDirectory extends DSInode {
         this._filelist.push(new DSFileInfo(this, "."));
         this._filelist.push(new DSFileInfo(this.parent, ".."));
 
+        this._fs.added(this);  // DSIDBFS hook
+    }
+
+    setFromJSON(json: any): void {
+        super.setFromJSON(json);
+    }
+
+    toJSON(): object {
+        let filelist: { name: string; inodeid: number; }[] = [];
+        this._filelist.forEach((fileinfo) => {
+            // Skip special dirs '.' and '..'
+            if ((fileinfo.name != '.') && (fileinfo.name != '..'))
+                filelist.push(fileinfo.toJSON())
+        });
+        return Object.assign({
+            filelist: filelist,
+        }, super.toJSON());
     }
 
     async filetype(): Promise<string> {
@@ -301,8 +370,8 @@ export class DSIDirectory extends DSInode {
         if (sepIdx == -1) {
             fileinfo = this.getfileinfo(path);
         } else {
-            const filename = path.slice(sepIdx+1);
-            const dirname = path.slice(0,sepIdx);
+            const filename = path.slice(sepIdx + 1);
+            const dirname = path.slice(0, sepIdx);
             fileinfo = this.getdir(dirname).getfileinfo(filename);
         }
         if (!fileinfo)
@@ -375,6 +444,7 @@ export class DSIDirectory extends DSInode {
         this._filelist.push(
             new DSFileInfo(newdir, dirname)
         );
+        this._fs.changed(this);  // DSIDBFS hook
         return newdir;
     }
 
