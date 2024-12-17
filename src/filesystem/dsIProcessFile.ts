@@ -6,6 +6,7 @@ import {
     DSInode
 } from "../dsFileSystem"
 import { DSProcess } from "../dsProcess"
+import { DSStream } from "../dsStream";
 
 export class DSIProcessFile<T extends DSProcess> extends DSInode {
     constructor(
@@ -15,7 +16,9 @@ export class DSIProcessFile<T extends DSProcess> extends DSInode {
             ppid: number,
             _cwd: DSIDirectory,
             argv: string[],
-            envp: Record<string, string>
+            envp: Record<string, string>,
+            stdin: DSStream,
+            stdout: DSStream
         ) => T
     ) {
         super(fs, DSFilePerms.execonly())
