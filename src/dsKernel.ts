@@ -7,6 +7,7 @@ import { DSIProcessFile } from "./filesystem/dsIProcessFile";
 import { buildrootfs } from "./dsRootFS";
 import { DSProcess } from "./dsProcess";
 import { sleep } from './lib/dsLib';
+import { DSStream } from './dsStream';
 
 class DSFSTableEntry {
     constructor(
@@ -183,7 +184,7 @@ export class DSKernel {
         const ppid = this.curproc ? this.curproc.pid : 0;
         const cwd = this.curproc ? this.curproc.cwd : this.fstable[0].mount;
         // TODO: ensure no existing process with the next pid
-        const newproc = new processClass(this.nextpid++, ppid, cwd, argv, envp);
+        const newproc = new processClass(this.nextpid++, ppid, cwd, argv, envp, new DSStream(), undefined);
 
         this.procstack.push(newproc);
 
@@ -223,6 +224,6 @@ export class DSKernel {
     static handleStdin(data: string) {
         if (!this.curproc)
             return;
-        this.curproc.handleStdin(data);
+        this.curproc.stdin.write(data);
     }
 }

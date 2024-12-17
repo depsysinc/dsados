@@ -9,19 +9,8 @@ export class DSShell extends DSProcess {
     history: string[] = [];
     t: DSTerminal;
 
-    constructor(
-        pid: number,
-        ppid: number,
-        cwd: DSIDirectory,
-        argv: string[],
-        envp: Record<string, string>
-
-    ) {
-        super(pid, ppid, cwd, argv, envp);
-        this.t = DSKernel.terminal;
-    }
-
     protected async main(): Promise<void> {
+        this.t = DSKernel.terminal;
         this._prompt = new CommandLinePrompt(this);
         return this._commandLoop();
     }
@@ -101,12 +90,6 @@ export class DSShell extends DSProcess {
 
         this.chdir(dirname);
     }
-
-    // Handlers
-    handleStdin(data: string): void {
-        if (this._prompt)
-            this._prompt.handleStdin(data);
-    }
 }
 
 function splitRespectingQuotes(input: string): string[] {
@@ -128,9 +111,6 @@ class CommandLinePrompt {
     private _cursor: number = 0;
     private _historyIdx: number;
 
-    private _inputbuffer: string[] = [];
-    private _inputresolver: (value: string | PromiseLike<string>) => void;
-
     constructor(private _shell: DSShell) {
         this._promptprefix = "depsys.io:";
     }
@@ -149,7 +129,7 @@ class CommandLinePrompt {
         this._historyIdx = this._shell.history.length;
         this._shell.history.push("");
         while (true) {
-            const data = await this._getInput();
+            const data = await this._shell.stdin.read();
             if (this._processInput(data))
                 break;
         }
@@ -243,27 +223,5 @@ class CommandLinePrompt {
 
         this._shell.t.stdout(data);
         return false;
-    }
-
-    private _getInput(): Promise<string> {
-        // If there is input in the buffer then return it
-        if (this._inputbuffer.length > 0)
-            return Promise.resolve(this._inputbuffer.shift());
-        // If not set up a promise for signalling
-        return new Promise<string>((resolve) => {
-            this._inputresolver = resolve;
-        });
-    }
-
-    handleStdin(data: string): void {
-        // Check if someone's waiting for the input
-        if (this._inputresolver) {
-            // NB: If someone's waiting then by definition the buffer is empty 
-            this._inputresolver(data);
-            this._inputresolver = undefined;
-        } else {
-            // If nobody's waiting then enqueue the input
-            this._inputbuffer.push(data);
-        }
     }
 }

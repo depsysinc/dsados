@@ -1,4 +1,5 @@
 import { DSIDirectory } from "./dsFileSystem";
+import { DSStream } from "./dsStream";
 
 export class DSProcessError extends Error {
     constructor(message: string) {
@@ -18,7 +19,9 @@ export abstract class DSProcess {
         readonly ppid: number,
         private _cwd: DSIDirectory,
         readonly argv: string[],
-        readonly envp: Record<string, string>
+        readonly envp: Record<string, string>,
+        readonly stdin: DSStream,
+        readonly stdout: DSStream,
     ) { }
     
     get procname(): string {
@@ -35,7 +38,6 @@ export abstract class DSProcess {
 
     // Default ignore handlers
     handleResize(): void {} 
-    handleStdin(data: string): void {}
 
     chdir(dirname: string) {
         this._cwd = this._cwd.getdir(dirname);
