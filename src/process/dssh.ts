@@ -1,16 +1,11 @@
 import { DSProcess } from "../dsProcess";
 import { DSKernel } from "../dsKernel";
-import { DSTerminal } from "../dsTerminal";
-import { DSIDirectory } from "../dsFileSystem";
-import { sleep } from "../lib/dsLib";
 
 export class DSShell extends DSProcess {
     private _prompt: CommandLinePrompt;
     history: string[] = [];
-    t: DSTerminal;
 
     protected async main(): Promise<void> {
-        this.t = DSKernel.terminal;
         this._prompt = new CommandLinePrompt(this);
         return this._commandLoop();
     }
@@ -40,7 +35,7 @@ export class DSShell extends DSProcess {
 
                 }
             } catch (e) {
-                await this.t.baudText(`${e.message}\n`);
+                await this.stdout.write(`${e.message}\n`);
             }
         }
     }
@@ -50,7 +45,7 @@ export class DSShell extends DSProcess {
         if (error)
             usagemsg += `error: ${error}\n`;
         usagemsg += `Usage: ${cmd} ${args.join(" ")}\n`;
-        return this.t.baudText(usagemsg);
+        return this.stdout.write(usagemsg);
     };
 
     private async _findAndExec(tokens: string[]) {
@@ -69,7 +64,7 @@ export class DSShell extends DSProcess {
                 }
             }
         }
-        return this.t.baudText(`${command}: command not found\n`);
+        return this.stdout.write(`${command}: command not found\n`);
     }
 
     private _commandHistory(tokens: string[]) {
@@ -80,7 +75,7 @@ export class DSShell extends DSProcess {
         this.history.forEach((command, idx) => {
             histstr += `${String(idx).padStart(idxwidth)} ${command}\n`;
         });
-        return this.t.baudText(histstr);
+        return this.stdout.write(histstr);
     };
 
     private _commandCd(tokens: string[]) {
@@ -118,14 +113,14 @@ class CommandLinePrompt {
     async promptForInput(): Promise<string> {
         this._userinput = "";
         this._cursor = 0;
-
-        const t = this._shell.t;
+        
+        const stdout = this._shell.stdout;
         this._prompt = this._promptprefix;
         this._prompt += this._shell.cwd.path;
         this._prompt += "$ ";
-        await t.baudText(this._prompt);
+        this._shell.stdout.write(this._prompt);
 
-        t.stdout("\x1b[4h"); // Enable insert mode
+        stdout.write("\x1b[4h"); // Enable insert mode
         this._historyIdx = this._shell.history.length;
         this._shell.history.push("");
         while (true) {
@@ -133,7 +128,7 @@ class CommandLinePrompt {
             if (this._processInput(data))
                 break;
         }
-        t.stdout("\x1b[4l"); // Disable insert mode
+        stdout.write("\x1b[4l"); // Disable insert mode
         // Replace last history entry with final input
         this._shell.history[this._shell.history.length - 1] = this._userinput;
         // If input is empty or a repeat then throw it away
@@ -146,18 +141,22 @@ class CommandLinePrompt {
     }
 
     private _rewriteUserInput() {
-        this._shell.t.stdout(`\x1b[${this._prompt.length + 1}G`); // Put cursor at end of prompt
-        this._shell.t.stdout("\x1b[K"); // Clear to EoL
-        this._shell.t.stdout(this._userinput); // write the entry
+        const stdout = this._shell.stdout;
+
+        stdout.write(`\x1b[${this._prompt.length + 1}G`); // Put cursor at end of prompt
+        stdout.write("\x1b[K"); // Clear to EoL
+        stdout.write(this._userinput); // write the entry
         this._cursor = this._userinput.length; // set cursor to end of entry
     }
 
     private _delFromCursor(): void {
+        const stdout = this._shell.stdout;
+
         this._userinput = this._userinput.slice(0, this._cursor) + this._userinput.slice(this._cursor + 1);
-        this._shell.t.stdout("\x1b[s"); // Save cursor position
-        this._shell.t.stdout("\x1b[K"); // Clear to EoL
-        this._shell.t.stdout(this._userinput.slice(this._cursor));
-        this._shell.t.stdout("\x1b[u"); // Restore cursor position
+        stdout.write("\x1b[s"); // Save cursor position
+        stdout.write("\x1b[K"); // Clear to EoL
+        stdout.write(this._userinput.slice(this._cursor));
+        stdout.write("\x1b[u"); // Restore cursor position
     }
 
     private _processInput(data: string): boolean {
@@ -165,7 +164,7 @@ class CommandLinePrompt {
         if (data.charAt(0) == "\x7f") {
             if (this._cursor > 0) {
                 this._cursor--;
-                this._shell.t.stdout("\x1b[D");
+                this._shell.stdout.write("\x1b[D");
                 this._delFromCursor();
             }
             return false;
@@ -176,13 +175,13 @@ class CommandLinePrompt {
                 case "[D": // Left
                     if (this._cursor > 0) {
                         this._cursor--;
-                        this._shell.t.stdout(data);
+                        this._shell.stdout.write(data);
                     }
                     break;
                 case "[C": // Right
                     if (this._cursor < this._userinput.length) {
                         this._cursor++;
-                        this._shell.t.stdout(data);
+                        this._shell.stdout.write(data);
                     }
                     break;
                 case "[3~": // Delete
@@ -212,7 +211,7 @@ class CommandLinePrompt {
         }
         // If LF we're done
         if (data == "\r") {
-            this._shell.t.stdout("\n");
+            this._shell.stdout.write("\n");
             return true;
         }
         // ok add the character at current cursor location and update cursor location
@@ -221,7 +220,7 @@ class CommandLinePrompt {
             + this._userinput.slice(this._cursor);
         this._cursor++;
 
-        this._shell.t.stdout(data);
+        this._shell.stdout.write(data);
         return false;
     }
 }

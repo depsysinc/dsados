@@ -3,6 +3,7 @@ import { WebglAddon } from '@xterm/addon-webgl';
 import { FitAddon } from '@xterm/addon-fit';
 
 import { DSKernel } from './dsKernel';
+import { DSStream } from './dsStream';
 
 function isMobileDevice(): boolean {
     const userAgent = navigator.userAgent;
@@ -16,6 +17,8 @@ export class DSTerminal {
     private _webglAddon: WebglAddon;
     private _fitAddon: FitAddon;
     baud: number = 1;
+    readonly outputstream: DSStream = new DSStream();
+    readonly inputstream: DSStream = new DSStream();
 
     get cols(): number {
         return this._terminal.cols;
@@ -62,15 +65,20 @@ export class DSTerminal {
 
         window.addEventListener('resize', () => { this.handleResize() });
 
-        t.onData((data): void => { this.handleStdin(data); });
+        // hook up text io
+        t.onData((data): void => { this.outputstream.write(data); });
 
+        this._handleInput();
         // TODO: Add listeners for keystrokes, clicks, and touches
 
         t.focus();
     }
 
-    handleStdin(data: string): void {
-        DSKernel.handleStdin(data);
+    private async _handleInput() {
+        while (true) {
+            const data = await this.inputstream.read();
+            await this.baudText(data); 
+        }
     }
 
     async baudText(msg: string, delay: number = undefined): Promise<void> {

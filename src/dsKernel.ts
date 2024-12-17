@@ -7,7 +7,6 @@ import { DSIProcessFile } from "./filesystem/dsIProcessFile";
 import { buildrootfs } from "./dsRootFS";
 import { DSProcess } from "./dsProcess";
 import { sleep } from './lib/dsLib';
-import { DSStream } from './dsStream';
 
 class DSFSTableEntry {
     constructor(
@@ -83,7 +82,7 @@ export class DSKernel {
         this.terminal.stdout(`BOOTING DepSysOS ${DSKernel.version}...\n\n`);
         await sleep(1000 * bootfactor);
         const t = this.terminal;
-        t.baud = 15*bootfactor;
+        t.baud = 15 * bootfactor;
 
         try {
             await t.baudText(
@@ -121,7 +120,7 @@ export class DSKernel {
             DSKernel.mount('/', rootfs);
 
             await t.baudText(`fsck: localfs\n`)
-            const localfs = new DSIDBFileSystem("depsys_local_fs",1);
+            const localfs = new DSIDBFileSystem("depsys_local_fs", 1);
             await localfs.open();
             fsckresults = localfs.fsck();
             await t.baudText(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
@@ -141,7 +140,7 @@ export class DSKernel {
         this.panic(new Error("UNEXPECTED INIT EXIT"));
     }
 
-    static mount (mountpath: string, fs: DSFileSystem) {
+    static mount(mountpath: string, fs: DSFileSystem) {
         // Check rootfs case
         if (this.fstable.length == 0) {
             if (mountpath != "/")
@@ -183,8 +182,18 @@ export class DSKernel {
         // the currently running process.  If this is init, then we make PPID 0
         const ppid = this.curproc ? this.curproc.pid : 0;
         const cwd = this.curproc ? this.curproc.cwd : this.fstable[0].mount;
+        const stdin = this.curproc ? this.curproc.stdin : this.terminal.outputstream;
+        const stdout = this.curproc ? this.curproc.stdout : this.terminal.inputstream;
         // TODO: ensure no existing process with the next pid
-        const newproc = new processClass(this.nextpid++, ppid, cwd, argv, envp, new DSStream(), undefined);
+        const newproc = new processClass(
+            this.nextpid++,
+            ppid,
+            cwd,
+            argv,
+            envp,
+            stdin,
+            stdout
+        );
 
         this.procstack.push(newproc);
 
@@ -221,9 +230,4 @@ export class DSKernel {
             return;
         this.curproc.handleResize();
     };
-    static handleStdin(data: string) {
-        if (!this.curproc)
-            return;
-        this.curproc.stdin.write(data);
-    }
 }
