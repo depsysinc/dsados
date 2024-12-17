@@ -112,6 +112,10 @@ export class DSFilePermsWriteError extends DSFilePermsPermissionDeniedError {
 }
 
 // Main classes
+interface FSCKResults {
+    inodecount: number;
+    directorycount: number;
+}
 
 export abstract class DSFileSystem {
     protected _root: DSIDirectory;
@@ -126,6 +130,15 @@ export abstract class DSFileSystem {
     abstract added(inode: DSInode): void;
 
     abstract changed(inode: DSInode): void;
+
+    fsck(): FSCKResults {
+        const results: FSCKResults = {
+            inodecount: 1,    // Include root directory
+            directorycount: 1
+        };
+        this.root.checkDir(results);
+        return results;
+    }
 
     get readonly(): boolean {
         return this._readonly;
@@ -273,9 +286,17 @@ export abstract class DSInode {
 
 export class DSFileInfo {
     constructor(
-        readonly inode: DSInode,
+        private _inode: DSInode,
         private _name: string,
     ) { }
+
+    get inode(): DSInode {
+        return this._inode;
+    }
+
+    set inode(inode: DSInode) {
+        this._inode = inode
+    }
 
     toJSON() {
         return {
@@ -326,6 +347,33 @@ export class DSIDirectory extends DSInode {
         return Object.assign({
             filelist: filelist,
         }, super.toJSON());
+    }
+
+    checkDir(results: FSCKResults) {
+        this._filelist.forEach((fileinfo) => {
+            if (fileinfo.inode instanceof DSIDirectory) {
+                if (fileinfo.inode.fs != this.fs) {
+                    // SKIP: Don't leave the current filesystem
+                } else if (fileinfo.name == '.') {
+                    if (fileinfo.inode != this)
+                        throw new DSFileSystemError("Bad '.' link");
+                } else if (fileinfo.name == '..') {
+                    if (fileinfo.inode != this.parent)
+                        throw new DSFileSystemError("Bad '..' link");
+                } else {
+                    results.inodecount++;
+                    results.directorycount++;
+                    // Check .. link of child
+                    const childdir:DSIDirectory = fileinfo.inode;
+                    if (childdir.getfileinfo('..').inode != this)
+                        throw new DSFileSystemError("Bad child '..' link");
+                    // Now enter child
+                    childdir.checkDir(results);
+                }
+            } else {
+                results.inodecount++;
+            }
+        });
     }
 
     async filetype(): Promise<string> {

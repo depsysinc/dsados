@@ -40,7 +40,7 @@ export class DSIDBFileSystem extends DSFileSystem {
         const transaction = this._db.transaction("inodes", "readwrite");
         const store = transaction.objectStore("inodes");
 
-        // console.log("ADDED:", inode.toJSON());
+        //console.log("ADDED:", inode.toJSON());
         const request = store.add(inode.toJSON());
 
         request.onsuccess = (event) => {
@@ -108,6 +108,8 @@ export class DSIDBFileSystem extends DSFileSystem {
                     const cursor = (event.target as IDBRequest).result;
                     if (cursor) {
                         inodemap.set(cursor.key, cursor.value);
+                        if (this._nextid <= cursor.key)
+                            this._nextid = cursor.key + 1;
                         cursor.continue();
                     } else {
                         resolve();
@@ -137,7 +139,7 @@ export class DSIDBFileSystem extends DSFileSystem {
             const filelist = inodeobj.filelist;
             filelist.forEach((fileinfoobj) => {
                 dir.filelist.push(new DSFileInfo(
-                    this._deserialize(inodemap, fileinfoobj.inodeid, parent),
+                    this._deserialize(inodemap, fileinfoobj.inodeid, dir),
                     fileinfoobj.name
                 ));
             });
