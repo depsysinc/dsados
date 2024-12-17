@@ -1,7 +1,8 @@
 import '@xterm/xterm/css/xterm.css';
 
 import { DSTerminal } from "./dsTerminal";
-import { DSFileSystem, DSIDirectory } from "./dsFileSystem";
+import { DSFileInfo, DSFileSystem, DSIDirectory } from "./dsFileSystem";
+import { DSIDBFileSystem } from "./filesystem/dsIDBFileSystem";
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
 import { buildrootfs } from "./dsRootFS";
 import { DSProcess } from "./dsProcess";
@@ -22,6 +23,13 @@ export class DSKernelError extends Error {
 }
 
 export class DSKernelExecError extends DSKernelError {
+    constructor(message: string) {
+        super(message);
+        this.name = this.constructor.name;
+    }
+}
+
+export class DSKernelMountError extends DSKernelError {
     constructor(message: string) {
         super(message);
         this.name = this.constructor.name;
@@ -103,12 +111,25 @@ export class DSKernel {
             }
 
             // Init filesystem
-            await t.baudText(`fs: mount rootfs\n`)
+            await t.baudText(`fsck: rootfs\n`)
             const rootfs = buildrootfs();
-            this.fstable.push(new DSFSTableEntry(rootfs.root, rootfs));
+            let fsckresults = rootfs.fsck();
+            await t.baudText(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
+
+            await t.baudText(`mount: rootfs\n`)
+            DSKernel.mount('/', rootfs);
+
+            await t.baudText(`fsck: localfs\n`)
+            const localfs = new DSIDBFileSystem("depsys_local_fs",1);
+            await localfs.open();
+            fsckresults = localfs.fsck();
+            await t.baudText(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
+
+            await t.baudText(`mount: localfs\n`)
+            DSKernel.mount('/local', localfs);
 
             // Start init process
-            await t.baudText("proc: exec init\n");
+            await t.baudText("exec: init\n");
             await DSKernel.exec("/bin/init", ["init"]);
         } catch (e) {
             this.panic(e);
@@ -117,6 +138,31 @@ export class DSKernel {
 
         // Should never get here
         this.panic(new Error("UNEXPECTED INIT EXIT"));
+    }
+
+    static mount (mountpath: string, fs: DSFileSystem) {
+        // Check rootfs case
+        if (this.fstable.length == 0) {
+            if (mountpath != "/")
+                throw new DSKernelMountError("First fs must have '/' mountpath");
+            this.fstable.push(new DSFSTableEntry(fs.root, fs));
+        } else {
+            this.fstable.push(new DSFSTableEntry(fs.root, fs));
+            if (!mountpath.startsWith("/"))
+                throw new DSKernelMountError("Must be absolute path");
+            const sepIdx = mountpath.lastIndexOf('/');
+            const newdirname = mountpath.slice(sepIdx + 1);
+            const parentpath = mountpath.slice(0, sepIdx + 1);
+            if (newdirname.length == 0)
+                throw new DSKernelMountError("Cannot have zero length mount directory");
+            const parent = this.rootdir.getdir(parentpath);
+            if (parent.getfileinfo(newdirname))
+                throw new DSKernelMountError("Directory entry already exists");
+
+            parent.filelist.push(new DSFileInfo(fs.root, newdirname));
+            fs.root.getfileinfo("..").inode = parent;
+            fs.root.parent = parent;
+        }
     }
 
     static async exec(

@@ -56,6 +56,7 @@ test('DSIDBFS changed mkdir', async () => {
     const fs2 = new DSIDBFileSystem(dbname, 1);
     await fs2.open();
 
+    
     expect(fs2.root.getdir("/alpha")).toBeDefined();
     expect(fs2.root.getdir("/alpha/uno")).toBeDefined();
     expect(fs2.root.getdir("/alpha/uno").perms).toEqual(DSFilePerms.full());
@@ -63,4 +64,7 @@ test('DSIDBFS changed mkdir', async () => {
     expect(fs2.root.getdir("/alpha/due").perms).toEqual(DSFilePerms.readonly());
     expect(fs2.root.getdir("/deep/branch/leaf")).toBeDefined();
     expect(fs2.root.getdir("/deep/branch/leaf").perms).toEqual(DSFilePerms.execonly());
+
+    expect(fs2.fsck()).toEqual({inodecount: 7, directorycount: 7});
+    
 });
