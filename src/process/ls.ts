@@ -1,5 +1,4 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSKernel } from "../dsKernel";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
 export class PRLs extends DSProcess {
@@ -14,7 +13,6 @@ export class PRLs extends DSProcess {
         if (nextarg != -1)
             throw new DSProcessError(optparser.usage());
         
-        let t = DSKernel.terminal;
         // Get the file list
         let fileliststr = "";
 
@@ -22,7 +20,8 @@ export class PRLs extends DSProcess {
             fileliststr += fileinfo.inode.perms.permString();
             fileliststr += `  ${fileinfo.name}\n`;
         })
-        return t.baudText(fileliststr);
+        this.stdout.write(fileliststr);
+        return; 
     }
 
 }
