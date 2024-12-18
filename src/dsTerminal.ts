@@ -77,11 +77,11 @@ export class DSTerminal {
     private async _handleInput() {
         while (true) {
             const data = await this.inputstream.read();
-            await this.baudText(data); 
+            await this.baudWrite(data); 
         }
     }
 
-    async baudText(msg: string, delay: number = undefined): Promise<void> {
+    async baudWrite(msg: string, delay: number = undefined): Promise<void> {
         // Handle default delay case
         if (delay == undefined)
             delay = this.baud;
@@ -111,7 +111,7 @@ export class DSTerminal {
         }
     }
 
-    stdout(msg: string) {
+    write(msg: string) {
         this._terminal.write(msg);
     }
 

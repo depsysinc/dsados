@@ -71,21 +71,21 @@ export class DSKernel {
             randchars += String.fromCodePoint(i);
         for (let i = 0; i < termsize; i++)
             randstr += randchars.charAt(Math.floor(Math.random() * randchars.length));
-        this.terminal.stdout("\x1b[7m");
-        this.terminal.stdout(randstr);
-        this.terminal.stdout("\x1b[27m");
-        let bootfactor = 0;
+        this.terminal.write("\x1b[7m");  // Invert video
+        this.terminal.write(randstr);
+        this.terminal.write("\x1b[27m"); // Regular video
+        let bootfactor = 1;
         await sleep(1000 * bootfactor);
-
         this.terminal.reset();
+
         await sleep(500 * bootfactor);
-        this.terminal.stdout(`BOOTING DepSysOS ${DSKernel.version}...\n\n`);
+        this.terminal.write(`BOOTING DepSysOS ${DSKernel.version}...\n\n`);
         await sleep(1000 * bootfactor);
         const t = this.terminal;
         t.baud = 15 * bootfactor;
 
         try {
-            await t.baudText(
+            await t.baudWrite(
                 `term: init\n` +
                 `     grid : ${t.cols} X ${t.rows}\n`);
 
@@ -97,7 +97,7 @@ export class DSKernel {
                 const device = agentmatch[2] || "UNKNOWN";
                 const impl = agentmatch[3] || "UNKNOWN";
 
-                await t.baudText(
+                await t.baudWrite(
                     ` standard : ${standard}\n` +
                     `   device : ${device}\n` +
                     `     impl : ${impl}\n`
@@ -106,30 +106,30 @@ export class DSKernel {
                 const altsregex = /(\s+[^\/]+\/[0-9.]+)/g
                 const altsmatch = agentmatch[4].match(altsregex);
                 for (let i = 0; i < altsmatch.length; i++)
-                    await t.baudText(`             - ${altsmatch[i].trim()}\n`);
+                    await t.baudWrite(`             - ${altsmatch[i].trim()}\n`);
 
             }
 
             // Init filesystem
-            await t.baudText(`fsck: rootfs\n`)
+            await t.baudWrite(`fsck: rootfs\n`)
             const rootfs = buildrootfs();
             let fsckresults = rootfs.fsck();
-            await t.baudText(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
+            await t.baudWrite(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
 
-            await t.baudText(`mount: rootfs\n`)
+            await t.baudWrite(`mount: rootfs\n`)
             DSKernel.mount('/', rootfs);
 
-            await t.baudText(`fsck: localfs\n`)
+            await t.baudWrite(`fsck: localfs\n`)
             const localfs = new DSIDBFileSystem("depsys_local_fs", 1);
             await localfs.open();
             fsckresults = localfs.fsck();
-            await t.baudText(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
+            await t.baudWrite(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
 
-            await t.baudText(`mount: localfs\n`)
+            await t.baudWrite(`mount: localfs\n`)
             DSKernel.mount('/local', localfs);
 
             // Start init process
-            await t.baudText("exec: init\n");
+            await t.baudWrite("exec: init\n");
             await DSKernel.exec("/bin/init", ["init"]);
         } catch (e) {
             this.panic(e);
@@ -211,13 +211,13 @@ export class DSKernel {
 
         const t = this.terminal;
         t.reset();
-        t.stdout(
+        t.write(
             `${'*'.repeat(t.cols - 1)}\n` +
             `${' '.repeat(t.cols / 2 - 8)}>>> PANIC <<<\n` +
             `${'*'.repeat(t.cols - 1)}\n` +
             `\nDepSysOS ${DSKernel.version}\n`)
-        this.terminal.stdout(e.stack);
-        this.terminal.stdout("\n\nReset Required")
+        this.terminal.write(e.stack);
+        this.terminal.write("\n\nReset Required")
     }
 
     static get curproc(): DSProcess {

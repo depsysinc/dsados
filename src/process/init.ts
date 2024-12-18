@@ -20,12 +20,12 @@ export class PRInit extends DSProcess {
         await t.baudText(logotxt, 1);
   */      
         const procpath = "/bin/dssh";
-        await t.baudText(`init: exec ${procpath}\n`);
+        this.stdout.write(`init: exec ${procpath}\n`);
         while (true) {
             try {
                 await DSKernel.exec(procpath, ["dssh"], { PATH: "/bin" });
             } catch (e) {
-                await t.baudText(`init: root shell exception: ${e.message}\n`);
+                this.stdout.write(`init: root shell exception: ${e.message}\n`);
             }
         }
     }
