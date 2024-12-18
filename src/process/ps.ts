@@ -14,14 +14,14 @@ export class PRPs extends DSProcess {
         if (nextarg != -1)
             throw new DSProcessError(optparser.usage());
         
-        let t = DSKernel.terminal;
         const pidwidth = 6;
         let proclist = `${"PID".padStart(pidwidth)} CMD\n`;
         DSKernel.procstack.forEach((proc, idx) => {
             const active = proc.pid == DSKernel.curproc.pid ? " *" : "";
             proclist += `${String(proc.pid).padStart(pidwidth)} ${proc.procname}${active}\n`;
         });
-        return t.baudText(proclist);
+        this.stdout.write(proclist);
+        return;
     }
 
 }

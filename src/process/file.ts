@@ -1,5 +1,4 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSKernel } from "../dsKernel";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
 export class PRFile extends DSProcess {
@@ -14,14 +13,13 @@ export class PRFile extends DSProcess {
         let nextarg = optparser.parseWithUsageAndHelp(this.argv);
         if (nextarg == -1)
             throw new DSProcessError(optparser.usage());
-        
-        let t = DSKernel.terminal;
+
         let filename = this.argv[nextarg];
         try {
             const inode = this.cwd.getfile(filename);
-            return inode.filetype().then(
-                (filetype) => t.baudText(filetype + '\n'));
-            } catch (e) {
+            const filetype = await inode.filetype();
+            this.stdout.write(filetype + '\n');
+        } catch (e) {
             throw new DSProcessError(`'${filename}' not found\n`);
         }
     }

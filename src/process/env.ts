@@ -1,5 +1,4 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSKernel } from "../dsKernel";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
 export class PREnv extends DSProcess {
@@ -14,11 +13,11 @@ export class PREnv extends DSProcess {
         if (nextarg != -1)
             throw new DSProcessError(optparser.usage());
         
-        let t = DSKernel.terminal;
         let envstr = "";
         Object.entries(this.envp).forEach(([key, value]) => {
             envstr += `${key}=${value}\n`;
         });
-        return t.baudText(envstr);
+        this.stdout.write(envstr);
+        return;
     }
 }

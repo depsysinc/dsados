@@ -1,5 +1,4 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSKernel } from "../dsKernel";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
 export class PRMkdir extends DSProcess {
@@ -15,7 +14,6 @@ export class PRMkdir extends DSProcess {
         if (nextarg == -1)
             throw new DSProcessError(optparser.usage());
         
-        let t = DSKernel.terminal;
         let dirname = this.argv[nextarg];
         this.cwd.mkdir(dirname);
     }

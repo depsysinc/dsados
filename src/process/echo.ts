@@ -1,5 +1,4 @@
-import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSKernel } from "../dsKernel";
+import { DSProcess } from "../dsProcess";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
 export class PREcho extends DSProcess {
@@ -12,7 +11,8 @@ export class PREcho extends DSProcess {
             "[...]"
         );
         optparser.parseWithUsageAndHelp(this.argv);
-        
-        let t = DSKernel.terminal;
-        return t.baudText(this.argv.slice(1).join(" ") + "\n");    }
+
+        this.stdout.write(this.argv.slice(1).join(" ") + "\n");
+        return;
+    }
 }

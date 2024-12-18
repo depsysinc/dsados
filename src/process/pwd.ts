@@ -1,5 +1,4 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSKernel } from "../dsKernel";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
 export class PRPwd extends DSProcess {
@@ -14,7 +13,7 @@ export class PRPwd extends DSProcess {
         if (nextarg != -1)
             throw new DSProcessError(optparser.usage());
 
-        let t = DSKernel.terminal;
-        return t.baudText(this.cwd.path + "\n");
+        this.stdout.write(this.cwd.path + "\n");
+        return; 
     }
 }

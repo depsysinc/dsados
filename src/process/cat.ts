@@ -1,5 +1,4 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSKernel } from "../dsKernel";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
 export class PRCat extends DSProcess {
@@ -14,20 +13,18 @@ export class PRCat extends DSProcess {
         let nextarg = optparser.parseWithUsageAndHelp(this.argv);
         if (nextarg == -1)
             throw new DSProcessError(optparser.usage());
-        
-        let t = DSKernel.terminal;
+
         let filename = this.argv[nextarg];
         try {
             const inode = this.cwd.getfile(filename);
-            return inode.contentAsText().then(text =>
-                t.baudText(text)
-            );
+            const text = await inode.contentAsText();
+            this.stdout.write(text);
         } catch (e) {
             throw new DSProcessError(`'${filename}' not found\n`);
         }
-        
 
-        
+
+
     }
 
 }
