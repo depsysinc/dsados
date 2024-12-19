@@ -1,4 +1,4 @@
-import { DSStream } from "../src/dsStream"
+import { DSStream, DSStreamClosedError } from "../src/dsStream"
 
 
 test('DSStream write then read', async () => {
@@ -41,13 +41,71 @@ test('DSStream write, write, read, read', async () => {
 test('DSStream read then write (block on promise)', async () => {
     const stream = new DSStream();
 
-    let output: string | undefined = undefined;
-
     const promise = stream.read();
     expect(promise).toBeInstanceOf(Promise<string>);
-    
+
     stream.write("output");
     await expect(promise).resolves.toEqual("output");
+});
+
+test('DSStream close then read', async () => {
+    const stream = new DSStream();
+
+    expect(stream.closed).toEqual(false);
+    stream.close();
+    expect(stream.closed).toEqual(true);
+
+    const promise = stream.read();
+
+    await expect(promise).rejects.toEqual(new DSStreamClosedError("End of Stream"));
+});
+
+test('DSStream read then close', async () => {
+    const stream = new DSStream();
+
+    const promise = stream.read();
+
+    stream.close();
+
+    await expect(promise).rejects.toEqual(new DSStreamClosedError("End of Stream"));
+});
+
+test('DSStream write, close, read, read', async () => {
+    const stream = new DSStream();
+
+    stream.write("test string");
+    stream.close();
+
+    let promise = stream.read();
+    await expect(promise).resolves.toEqual("test string");
+
+    promise = stream.read();
+    await expect(promise).rejects.toEqual(new DSStreamClosedError("End of Stream"));
+});
+
+test('DSStream write, read, read, close', async () => {
+    const stream = new DSStream();
+
+    stream.write("test string");
+
+    let promise = stream.read();
+    await expect(promise).resolves.toEqual("test string");
+
+    promise = stream.read();
+    stream.close();
+    await expect(promise).rejects.toEqual(new DSStreamClosedError("End of Stream"));
+});
+
+test('DSStream close then write', () => {
+    const stream = new DSStream();
+
+    stream.close();
+
+    expect(() =>
+        stream.write("test")
+    ).toThrow(
+        new DSStreamClosedError("Cannot write to closed stream")
+    );
 });
 
 /*

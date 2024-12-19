@@ -17,8 +17,8 @@ export class DSTerminal {
     private _webglAddon: WebglAddon;
     private _fitAddon: FitAddon;
     baud: number = 1;
-    readonly outputstream: DSStream = new DSStream();
-    readonly inputstream: DSStream = new DSStream();
+    readonly outputstream: DSStream = new DSStream(true);
+    readonly inputstream: DSStream = new DSStream(true);
 
     get cols(): number {
         return this._terminal.cols;

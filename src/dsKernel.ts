@@ -74,7 +74,7 @@ export class DSKernel {
         this.terminal.write("\x1b[7m");  // Invert video
         this.terminal.write(randstr);
         this.terminal.write("\x1b[27m"); // Regular video
-        let bootfactor = 1;
+        let bootfactor = 0;
         await sleep(1000 * bootfactor);
         this.terminal.reset();
 
@@ -190,7 +190,7 @@ export class DSKernel {
             ppid,
             cwd,
             argv,
-            envp,
+            {...envp}, // Copy the passed in env
             stdin,
             stdout
         );

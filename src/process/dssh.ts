@@ -1,5 +1,12 @@
-import { DSProcess } from "../dsProcess";
+import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSKernel } from "../dsKernel";
+
+export class DSShellError extends DSProcessError {
+    constructor(message: string) {
+        super(message);
+        this.name = this.constructor.name;
+    }
+}
 
 export class DSShell extends DSProcess {
     private _prompt: CommandLinePrompt;
@@ -11,31 +18,96 @@ export class DSShell extends DSProcess {
     }
 
     private async _commandLoop() {
-
+        let linebuffer: string[] = [];
         while (true) {
             try {
-                const input = await this._prompt.promptForInput();
-                const tokens = splitRespectingQuotes(input);
-                const command = tokens[0];
+                let originput = "";
+                if (this.stdin.isatty) {
+                    originput = await this._prompt.promptForInput();
+                } else {
+                    if (linebuffer.length == 0) {
+                        let buffer: string;
+                        try {
+                            buffer = await this.stdin.read();
+                        } catch (e) {
+                            // Can't do any type detection as rejects always
+                            // end up type Error (sad face) 
+                            // Instead we check if the stream has been closed and return
+                            // otherwise propagate
+                            if (this.stdin.close)
+                                return;
+                            throw e;
+                        }
+                        linebuffer = linebuffer.concat(buffer.split(/\r?\n|\r/));
+                    }
+                    originput = linebuffer.shift();
+                }
 
-                switch (command) {
-                    case undefined: // empty command
-                        break;
-                    case "exit":
-                        // Clean exit
-                        return;
-                    case "cd":
-                        await this._commandCd(tokens);
-                        break;
-                    case "history":
-                        await this._commandHistory(tokens);
-                        break;
-                    default:
-                        await this._findAndExec(tokens);
+                // Strip comments
+                let strippedinput = originput.split("#")[0];
 
+                // Interpolate variables
+                let interpolatedinput = "";
+                let i = 0;
+                while (true) {
+                    // If current character is a '$' then interpolate
+                    if (strippedinput[i] === '$') {
+                        const match = strippedinput.slice(i + 1).match(/^([A-Za-z_][A-Za-z0-9_]*)/);
+                        if (match) {
+                            const varname = match[0];
+                            if (this.envp.hasOwnProperty(varname)) {
+                                interpolatedinput += this.envp[varname];
+                            }
+                            i += 1 + varname.length;
+                        } else {
+                            interpolatedinput += '$'
+                            i++;
+                        }
+                    }
+                    // Now find the next '$'
+                    const varpos=strippedinput.slice(i).indexOf("$");
+                    if (varpos == -1) {
+                        interpolatedinput += strippedinput.slice(i);
+                        break;
+                    }
+                    interpolatedinput += strippedinput.slice(i,i+varpos);
+                    i += varpos;
+                }
+
+                // Parse into tokens
+                const tokens = splitRespectingQuotes(interpolatedinput);
+
+                if (/^\s*$/.test(interpolatedinput)) {
+                    // Empty line, do nothing
+
+                } else if (tokens[0].includes("=")) { // VAR=VALUE
+                    const lsrs = interpolatedinput.match(/^([^=\s]+)=(?:"([^"]*)"|([^=\s]*))$/);
+                    if (!lsrs)
+                        throw new DSShellError("badly formed variable assignment");
+
+                    const varname = lsrs[1];
+                    const varval = lsrs[2] ? lsrs[2] : lsrs[3];
+                    this.envp[varname] = varval;
+
+                } else { // COMMAND
+                    const command = tokens[0];
+                    switch (command) {
+                        case "exit":
+                            // Clean exit
+                            return;
+                        case "cd":
+                            await this._commandCd(tokens);
+                            break;
+                        case "history":
+                            await this._commandHistory(tokens);
+                            break;
+
+                        default:
+                            await this._findAndExec(tokens);
+                    }
                 }
             } catch (e) {
-                await this.stdout.write(`${e.message}\n`);
+                this.stdout.write(`${e.message}\n`);
             }
         }
     }
@@ -113,7 +185,7 @@ class CommandLinePrompt {
     async promptForInput(): Promise<string> {
         this._userinput = "";
         this._cursor = 0;
-        
+
         const stdout = this._shell.stdout;
         this._prompt = this._promptprefix;
         this._prompt += this._shell.cwd.path;

@@ -10,23 +10,20 @@
   * Enable images
 * process
   * dssh
-    * search for executable in PATH
     * scripting
-    * setting env variables
+      * if statements
     * command history persistence across boots
     * [tab] complete
-    * chmod
-    * mv
-    * cp
+  * chmod
+  * mv
+  * cp
   * docview
     * Paragraphs, sections
     * images
   * imgview
     * addon-image or custom?
 * fs
-  * BrowserStorage backed filesystem 
   * S3 backed filesystem
-  * /proc
 
 ## Setup
 * [enable docker support in wsl 2 distros](https://docs.docker.com/desktop/features/wsl/#enabling-docker-support-in-wsl-2-distros)
