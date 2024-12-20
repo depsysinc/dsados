@@ -6,7 +6,7 @@ import { DSIDBFileSystem } from "./filesystem/dsIDBFileSystem";
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
 import { buildrootfs } from "./dsRootFS";
 import { DSProcess } from "./dsProcess";
-import { sleep } from './lib/dsLib';
+import { nvram_get, nvram_set, sleep } from './lib/dsLib';
 
 class DSFSTableEntry {
     constructor(
@@ -74,7 +74,19 @@ export class DSKernel {
         this.terminal.write("\x1b[7m");  // Invert video
         this.terminal.write(randstr);
         this.terminal.write("\x1b[27m"); // Regular video
-        let bootfactor = 0;
+
+        // Read NVRAM
+        let bootcount = parseInt(nvram_get("bootcount"));
+        if (isNaN(bootcount))
+            bootcount = 0;
+        nvram_set("bootcount", String(bootcount + 1));
+
+        let bootfactor = parseInt(nvram_get("bootfactor"));
+        if (isNaN(bootfactor)) {
+            bootfactor = 1;
+            nvram_set("bootfactor", String(bootfactor));
+        }
+
         await sleep(1000 * bootfactor);
         this.terminal.reset();
 
@@ -83,6 +95,10 @@ export class DSKernel {
         await sleep(1000 * bootfactor);
         const t = this.terminal;
         t.baud = 15 * bootfactor;
+
+        if (bootcount == 0) {
+            await t.baudWrite(`New terminal detected, doing first time configuration\n\n`);
+        }
 
         try {
             await t.baudWrite(
@@ -128,8 +144,19 @@ export class DSKernel {
             await t.baudWrite(`mount: localfs\n`)
             DSKernel.mount('/local', localfs);
 
+            if (bootcount == 0) {
+                await t.baudWrite("nvram: enable fastboot");
+                const oldbaud = t.baud;
+                t.baud = 400;
+                await t.baudWrite("...\n");
+                nvram_set("bootfactor", "0");
+                nvram_set("baud", "1");
+                t.baud = oldbaud;
+            }
             // Start init process
             await t.baudWrite("exec: init\n");
+            
+            t.baud = +nvram_get("baud");
             await DSKernel.exec("/bin/init", ["init"]);
         } catch (e) {
             this.panic(e);
@@ -190,7 +217,7 @@ export class DSKernel {
             ppid,
             cwd,
             argv,
-            {...envp}, // Copy the passed in env
+            { ...envp }, // Copy the passed in env
             stdin,
             stdout
         );
