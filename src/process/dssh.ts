@@ -1,15 +1,27 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSKernel } from "../dsKernel";
+import { DSStreamClosedError } from "../dsStream";
 
 export class DSShellError extends DSProcessError {
     constructor(message: string) {
         super(message);
+        Object.setPrototypeOf(this, DSShellError.prototype);
         this.name = this.constructor.name;
+    }
+}
+
+class IFBlock {
+    condition: boolean;
+    inelse: boolean = false;
+    constructor(condition: boolean) {
+        this.condition = condition;
     }
 }
 
 export class DSShell extends DSProcess {
     private _prompt: CommandLinePrompt;
+    private _ifstack: IFBlock[] = [];
+
     history: string[] = [];
 
     protected async main(): Promise<void> {
@@ -30,11 +42,7 @@ export class DSShell extends DSProcess {
                         try {
                             buffer = await this.stdin.read();
                         } catch (e) {
-                            // Can't do any type detection as rejects always
-                            // end up type Error (sad face) 
-                            // Instead we check if the stream has been closed and return
-                            // otherwise propagate
-                            if (this.stdin.close)
+                            if (e instanceof DSStreamClosedError)
                                 return;
                             throw e;
                         }
@@ -65,12 +73,12 @@ export class DSShell extends DSProcess {
                         }
                     }
                     // Now find the next '$'
-                    const varpos=strippedinput.slice(i).indexOf("$");
+                    const varpos = strippedinput.slice(i).indexOf("$");
                     if (varpos == -1) {
                         interpolatedinput += strippedinput.slice(i);
                         break;
                     }
-                    interpolatedinput += strippedinput.slice(i,i+varpos);
+                    interpolatedinput += strippedinput.slice(i, i + varpos);
                     i += varpos;
                 }
 
@@ -80,8 +88,39 @@ export class DSShell extends DSProcess {
                 if (/^\s*$/.test(interpolatedinput)) {
                     // Empty line, do nothing
 
-                } else if (tokens[0].includes("=")) { // VAR=VALUE
-                    const lsrs = interpolatedinput.match(/^([^=\s]+)=(?:"([^"]*)"|([^=\s]*))$/);
+                } else if (tokens[0] == "if") {  // IF
+                    const match = interpolatedinput.match(/^\s*if\s*\[([^\]]+)\]\s*$/)
+                    if (!match)
+                        throw new DSShellError("malformed if statement");
+                    const expr = splitRespectingQuotes(match[1]);
+                    if (expr.length == 0)
+                        throw new DSShellError("malformed if statement");
+                    if (this._evaluating())
+                        this._ifstack.push(new IFBlock(this._evalExpression(expr)));
+                    else
+                        this._ifstack.push(new IFBlock(false));
+
+                } else if (tokens[0] == "else") {  // ELSE
+                    if (tokens.length != 1)
+                        throw new DSShellError("malformed if statement");
+                    if (this._ifstack.length == 0)
+                        throw new DSShellError("unexpected else, no matching if");
+                    const ifblock = this._ifstack[this._ifstack.length - 1];
+                    if (ifblock.inelse)
+                        throw new DSShellError("unexpected else, already in else body");
+                    ifblock.inelse = true;
+
+                } else if (tokens[0] == "endif") {  // ENDIF
+                    if (tokens.length != 1)
+                        throw new DSShellError("malformed if statement");
+                    if (this._ifstack.length == 0)
+                        throw new DSShellError("unexpected endif, no matching if");
+                    this._ifstack.pop();
+
+                } else if (!this._evaluating()) {
+                    // do nothing
+                } else if (tokens[0].includes("=")) { // ENV VARIABLES (VAR=VALUE)
+                    const lsrs = interpolatedinput.match(/^\s*([^=\s]+)=(?:"([^"]*)"|([^=\s]*))\s*$/);
                     if (!lsrs)
                         throw new DSShellError("badly formed variable assignment");
 
@@ -89,7 +128,7 @@ export class DSShell extends DSProcess {
                     const varval = lsrs[2] ? lsrs[2] : lsrs[3];
                     this.envp[varname] = varval;
 
-                } else { // COMMAND
+                } else { // COMMANDS
                     const command = tokens[0];
                     switch (command) {
                         case "exit":
@@ -108,7 +147,33 @@ export class DSShell extends DSProcess {
                 }
             } catch (e) {
                 this.stdout.write(`${e.message}\n`);
+                if (e instanceof DSShellError) {
+                    throw e;
+                }
             }
+        }
+    }
+    private _evaluating(): boolean {
+        if (this._ifstack.length == 0)
+            return true;
+        for (let i = 0; i < this._ifstack.length; i++) {
+            const ifblock = this._ifstack[i];
+            if ((!ifblock.condition && !ifblock.inelse) ||
+                (ifblock.condition && ifblock.inelse))
+                return false;
+        }
+        return true;
+    }
+
+    private _evalExpression(expr: string[]): boolean {
+        const op = expr[0];
+        switch (op) {
+            case "-true":
+                return true;
+            case "-false":
+                return false;
+            default:
+                throw new DSShellError("invalid if condition");
         }
     }
 

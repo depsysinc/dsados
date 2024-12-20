@@ -1,6 +1,7 @@
 export class DSStreamError extends Error {
     constructor(message: string) {
         super(message);
+        Object.setPrototypeOf(this, DSStreamError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -8,6 +9,7 @@ export class DSStreamError extends Error {
 export class DSStreamClosedError extends DSStreamError {
     constructor(message: string) {
         super(message);
+        Object.setPrototypeOf(this, DSStreamClosedError.prototype);
         this.name = this.constructor.name;
     }
 }

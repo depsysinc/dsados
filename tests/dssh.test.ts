@@ -1,7 +1,7 @@
 import { DSRAMFileSystem } from "../src/dsFileSystem";
 import { buildrootfs } from "../src/dsRootFS";
 import { DSStream } from "../src/dsStream";
-import { DSShell } from "../src/process/dssh";
+import { DSShell, DSShellError } from "../src/process/dssh";
 
 function makedssh() {
     const stdin = new DSStream();
@@ -51,12 +51,14 @@ test('dssh "exit # comment"', async () => {
     expect(dssh.stdout.readsPending()).toEqual(0);
 });
 
+// VARIABLE ASSIGNMENT
+
 test('dssh testvar==testval', async () => {
     const dssh = makedssh();
     const dsshpromise = dssh.start();
     dssh.stdin.write('testvar==testval');
     dssh.stdin.close();
-    await expect(dsshpromise).resolves.toBeUndefined();
+    await expect(dsshpromise).rejects.toBeInstanceOf(DSShellError);
     await expect(dssh.stdout.read()).resolves.toEqual("badly formed variable assignment\n");
 });
 
@@ -65,7 +67,7 @@ test('dssh testvar=testval garbage', async () => {
     const dsshpromise = dssh.start();
     dssh.stdin.write('testvar=testval garbage');
     dssh.stdin.close();
-    await expect(dsshpromise).resolves.toBeUndefined();
+    await expect(dsshpromise).rejects.toBeInstanceOf(DSShellError);
     await expect(dssh.stdout.read()).resolves.toEqual("badly formed variable assignment\n");
 });
 
@@ -86,6 +88,8 @@ test('dssh testvar="testval with spaces"', async () => {
     await expect(dsshpromise).resolves.toBeUndefined();
     expect(dssh.envp["testvar"]).toEqual("testval with spaces");
 });
+
+// VARIABLE INTERPOLATION
 
 test('dssh $EMPTYVARIABLE', async () => {
     const dssh = makedssh();
@@ -163,6 +167,196 @@ test('dssh TESTVAR=$UNDEFVAR$', async () => {
     expect(dssh.envp["TESTVAR"]).toEqual("$");
 });
 
+// IF statements
+test('dssh if [-true]', async () => {
+    const dssh = makedssh();
+    const dsshpromise = dssh.start();
+    const stmt =
+        `if [-true]\n`
+        + `    TESTVAR=true\n`
+        + `endif\n`
+    dssh.stdin.write(stmt);
+    dssh.stdin.close();
+    await expect(dsshpromise).resolves.toBeUndefined();
+    expect(dssh.envp["TESTVAR"]).toEqual("true");
+});
+
+test('dssh if [-false]', async () => {
+    const dssh = makedssh();
+    const dsshpromise = dssh.start();
+    const stmt =
+        `if [-false]\n`
+        + `    TESTVAR=true\n`
+        + `endif\n`
+    dssh.stdin.write(stmt);
+    dssh.stdin.close();
+    await expect(dsshpromise).resolves.toBeUndefined();
+    expect(dssh.envp).not.toHaveProperty("TESTVAR");
+});
+
+test('dssh if [-true] else', async () => {
+    const dssh = makedssh();
+    const dsshpromise = dssh.start();
+    const stmt =
+        `if [-true]\n`
+        + `    IFVAR=true\n`
+        + `else\n`
+        + `    ELSEVAR=true\n`
+        + `endif\n`
+    dssh.stdin.write(stmt);
+    dssh.stdin.close();
+    await expect(dsshpromise).resolves.toBeUndefined();
+    expect(dssh.envp["IFVAR"]).toEqual("true");
+    expect(dssh.envp).not.toHaveProperty("ELSEVAR");
+});
+
+test('dssh if [-false] else', async () => {
+    const dssh = makedssh();
+    const dsshpromise = dssh.start();
+    const stmt =
+        `if [-false]\n`
+        + `    IFVAR=true\n`
+        + `else\n`
+        + `    ELSEVAR=true\n`
+        + `endif\n`
+    dssh.stdin.write(stmt);
+    dssh.stdin.close();
+    await expect(dsshpromise).resolves.toBeUndefined();
+    expect(dssh.envp).not.toHaveProperty("IFVAR");
+    expect(dssh.envp["ELSEVAR"]).toEqual("true");
+});
+
+test('dssh nested if true true', async () => {
+    const dssh = makedssh();
+    const dsshpromise = dssh.start();
+    const stmt =
+        `if [-true]\n`
+        + `    IFAVAR=true\n`
+        + `    if [-true]\n`
+        + `         IFBVAR=true\n`
+        + `    endif\n`
+        + `endif\n`
+    dssh.stdin.write(stmt);
+    dssh.stdin.close();
+    await expect(dsshpromise).resolves.toBeUndefined();
+    expect(dssh.envp["IFAVAR"]).toEqual("true");
+    expect(dssh.envp["IFBVAR"]).toEqual("true");
+});
+
+test('dssh nested if true false', async () => {
+    const dssh = makedssh();
+    const dsshpromise = dssh.start();
+    const stmt =
+        `if [-true]\n`
+        + `    IFAVAR=true\n`
+        + `    if [-false]\n`
+        + `         IFBVAR=true\n`
+        + `    endif\n`
+        + `endif\n`
+    dssh.stdin.write(stmt);
+    dssh.stdin.close();
+    await expect(dsshpromise).resolves.toBeUndefined();
+    expect(dssh.envp["IFAVAR"]).toEqual("true");
+    expect(dssh.envp).not.toHaveProperty("IFBVAR");
+});
+
+test('dssh nested if else true true true', async () => {
+    const dssh = makedssh();
+    const dsshpromise = dssh.start();
+    const stmt =
+        `if [-true]\n`
+        + `    IFAVAR=true\n`
+        + `    if [-true]\n`
+        + `         IFBVAR=true\n`
+        + `    else\n`
+        + `         ELSEBVAR=true\n`
+        + `    endif\n`
+        + `else\n`
+        + `    ELSEAVAR=true\n`
+        + `    if [-true]\n`
+        + `         IFCVAR=true\n`
+        + `    else\n`
+        + `         ELSECVAR=true\n`
+        + `    endif\n`
+        + `endif\n`
+    dssh.stdin.write(stmt);
+    dssh.stdin.close();
+    await expect(dsshpromise).resolves.toBeUndefined();
+    expect(dssh.envp["IFAVAR"]).toEqual("true");
+    expect(dssh.envp).not.toHaveProperty("ELSEAVAR");
+
+    expect(dssh.envp["IFBVAR"]).toEqual("true");
+    expect(dssh.envp).not.toHaveProperty("ELSEBVAR");
+
+    expect(dssh.envp).not.toHaveProperty("IFCVAR");
+    expect(dssh.envp).not.toHaveProperty("ELSECVAR");
+
+});
+
+test('dssh nested if else false true true', async () => {
+    const dssh = makedssh();
+    const dsshpromise = dssh.start();
+    const stmt =
+        `if [-false]\n`
+        + `    IFAVAR=true\n`
+        + `    if [-true]\n`
+        + `         IFBVAR=true\n`
+        + `    else\n`
+        + `         ELSEBVAR=true\n`
+        + `    endif\n`
+        + `else\n`
+        + `    ELSEAVAR=true\n`
+        + `    if [-true]\n`
+        + `         IFCVAR=true\n`
+        + `    else\n`
+        + `         ELSECVAR=true\n`
+        + `    endif\n`
+        + `endif\n`
+    dssh.stdin.write(stmt);
+    dssh.stdin.close();
+    await expect(dsshpromise).resolves.toBeUndefined();
+    expect(dssh.envp).not.toHaveProperty("IFAVAR");
+    expect(dssh.envp["ELSEAVAR"]).toEqual("true");
+
+    expect(dssh.envp).not.toHaveProperty("IFBVAR");
+    expect(dssh.envp).not.toHaveProperty("ELSEBVAR");
+    
+    expect(dssh.envp["IFCVAR"]).toEqual("true");
+    expect(dssh.envp).not.toHaveProperty("ELSECVAR");
+});
+
+test('dssh nested if else true false true', async () => {
+    const dssh = makedssh();
+    const dsshpromise = dssh.start();
+    const stmt =
+        `if [-true]\n`
+        + `    IFAVAR=true\n`
+        + `    if [-false]\n`
+        + `         IFBVAR=true\n`
+        + `    else\n`
+        + `         ELSEBVAR=true\n`
+        + `    endif\n`
+        + `else\n`
+        + `    ELSEAVAR=true\n`
+        + `    if [-true]\n`
+        + `         IFCVAR=true\n`
+        + `    else\n`
+        + `         ELSECVAR=true\n`
+        + `    endif\n`
+        + `endif\n`
+    dssh.stdin.write(stmt);
+    dssh.stdin.close();
+    await expect(dsshpromise).resolves.toBeUndefined();
+    expect(dssh.envp["IFAVAR"]).toEqual("true");
+    expect(dssh.envp).not.toHaveProperty("ELSEAVAR");
+
+    expect(dssh.envp).not.toHaveProperty("IFBVAR");
+    expect(dssh.envp["ELSEBVAR"]).toEqual("true");
+
+    expect(dssh.envp).not.toHaveProperty("IFCVAR");
+    expect(dssh.envp).not.toHaveProperty("ELSECVAR");
+
+});
 /*
 test('', () => {
 

@@ -1,7 +1,13 @@
 # depsysweb
 
 ## TODO
+* general
+  * review all Exceptions for prototype correctness
+* nvram
+  * store startup speed and baud
 * term
+  * create framerender callback hook
+  * pull out effects into depsysweb
   * Different fonts for different vintages of computer
   * Implement custom gl effects calls
     * slow fuzzy warmup
@@ -10,8 +16,6 @@
   * Enable images
 * process
   * dssh
-    * scripting
-      * if statements
     * command history persistence across boots
     * [tab] complete
   * chmod

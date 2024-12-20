@@ -4,6 +4,7 @@ import { DSStream } from "./dsStream";
 export class DSProcessError extends Error {
     constructor(message: string) {
         super(message);
+        Object.setPrototypeOf(this, DSProcessError.prototype);
         this.name = this.constructor.name;
     }
 }
