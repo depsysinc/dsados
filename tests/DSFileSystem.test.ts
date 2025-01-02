@@ -1,20 +1,20 @@
-import { 
-    DSFileSystem, 
-    DSIDirectoryAlreadyExistsError, 
-    DSIDirectory, 
-    DSIDirectoryInvalidPathError, 
-    DSFilePerms, 
-    DSFilePermsReadError, 
-    DSFilePermsExecError, 
-    DSIDirectoryIllegalFilenameError, 
-    DSFilePermsWriteError, 
-    DSFileSystemReadonlyError, 
-    DSIDirectoryIllegalAddfileError, 
-    DSFilePermsUnsupportedError, 
-    DSIFileAlreadyExistsError, 
+import {
+    DSFileSystem,
+    DSIDirectoryAlreadyExistsError,
+    DSIDirectory,
+    DSIDirectoryInvalidPathError,
+    DSFilePerms,
+    DSFilePermsReadError,
+    DSFilePermsExecError,
+    DSIDirectoryIllegalFilenameError,
+    DSFilePermsWriteError,
+    DSFileSystemReadonlyError,
+    DSIDirectoryIllegalAddfileError,
+    DSFilePermsUnsupportedError,
+    DSIFileAlreadyExistsError,
     DSRAMFileSystem
 } from "../src/dsFileSystem"
-import {DSIStaticWebFile} from "../src/filesystem/dsIStaticWebFile"
+import { DSIStaticWebFile } from "../src/filesystem/dsIStaticWebFile"
 
 
 const webtest = (process.env.RUN_WEB_TESTS === "true") ? test : test.skip;
@@ -160,7 +160,7 @@ function createTestFS(): DSRAMFileSystem {
     const fs = new DSRAMFileSystem();
     fs.root.chmod(DSFilePerms.full());
 
-    const testfile1 = fs.root.addfile("testfile1.txt", new DSIStaticWebFile(fs,""));
+    const testfile1 = fs.root.addfile("testfile1.txt", new DSIStaticWebFile(fs, ""));
 
     const alpha = fs.root.mkdir("alpha");
     const foo = alpha.mkdir("foo");
@@ -171,7 +171,7 @@ function createTestFS(): DSRAMFileSystem {
     const tree = deep.mkdir("tree");
     const branch = tree.mkdir("branch");
 
-    const testfile2 = branch.addfile("testfile2.txt", new DSIStaticWebFile(fs,""));
+    const testfile2 = branch.addfile("testfile2.txt", new DSIStaticWebFile(fs, ""));
 
     return fs;
 }
@@ -477,7 +477,9 @@ test('contentAsText noreadperms', async () => {
     const newfile = fs.root.addfile("staticwebfile", new DSIStaticWebFile(fs, ""))
     newfile.chmod(DSFilePerms.none());
 
-    expect(newfile.contentAsText()).rejects.toThrow(
+    expect(() =>
+        newfile.contentAsText()
+    ).toThrow(
         new DSFilePermsReadError()
     )
 });

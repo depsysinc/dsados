@@ -1,10 +1,11 @@
 # depsysweb
 
 ## TODO
+* kernel
+  * get filecontents to return DSStreams
+  * exec to handle #! scripts
 * general
   * review all Exceptions for prototype correctness
-* nvram
-  * store startup speed and baud
 * term
   * create framerender callback hook
   * pull out effects into depsysweb
@@ -16,9 +17,11 @@
   * Enable images
 * process
   * dssh
+    * complete if statement tests (extra elses and endifs)
     * command history persistence across boots
     * [tab] complete
   * chmod
+  * nvram
   * mv
   * cp
   * docview

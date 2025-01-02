@@ -1,8 +1,11 @@
 // Exceptions
 
+import { DSStream } from "./dsStream";
+
 export class DSFileSystemError extends Error {
     constructor(message: string) {
         super(message);
+        Object.setPrototypeOf(this, DSFileSystemError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -10,6 +13,7 @@ export class DSFileSystemError extends Error {
 export class DSFileSystemReadonlyError extends DSFileSystemError {
     constructor(action: string) {
         super(`cannot '${action}' on readonly filesystem`);
+        Object.setPrototypeOf(this, DSFileSystemReadonlyError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -19,6 +23,7 @@ export class DSFileSystemReadonlyError extends DSFileSystemError {
 export class DSIFileError extends DSFileSystemError {
     constructor(message: string) {
         super(message);
+        Object.setPrototypeOf(this, DSIFileError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -26,6 +31,7 @@ export class DSIFileError extends DSFileSystemError {
 export class DSIFileAlreadyExistsError extends DSIFileError {
     constructor(filename: string) {
         super(`file '${filename}' already exists`);
+        Object.setPrototypeOf(this, DSIFileAlreadyExistsError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -35,6 +41,7 @@ export class DSIFileAlreadyExistsError extends DSIFileError {
 export class DSIDirectoryError extends DSIFileError {
     constructor(message: string) {
         super(message);
+        Object.setPrototypeOf(this, DSIDirectoryError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -42,6 +49,7 @@ export class DSIDirectoryError extends DSIFileError {
 export class DSIDirectoryIllegalFilenameError extends DSIDirectoryError {
     constructor(filename: string) {
         super(`'${filename}' contains illegal characters`);
+        Object.setPrototypeOf(this, DSIDirectoryIllegalFilenameError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -49,6 +57,7 @@ export class DSIDirectoryIllegalFilenameError extends DSIDirectoryError {
 export class DSIDirectoryInvalidPathError extends DSIDirectoryError {
     constructor(dirname: string) {
         super(`'${dirname}' is an invalid path`);
+        Object.setPrototypeOf(this, DSIDirectoryInvalidPathError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -56,6 +65,7 @@ export class DSIDirectoryInvalidPathError extends DSIDirectoryError {
 export class DSIDirectoryAlreadyExistsError extends DSIDirectoryError {
     constructor(dirname: string) {
         super(`directory '${dirname}' already exists`);
+        Object.setPrototypeOf(this, DSIDirectoryAlreadyExistsError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -63,6 +73,7 @@ export class DSIDirectoryAlreadyExistsError extends DSIDirectoryError {
 export class DSIDirectoryIllegalAddfileError extends DSIDirectoryError {
     constructor(reason: string) {
         super(`cannot add file: ${reason}`);
+        Object.setPrototypeOf(this, DSIDirectoryIllegalAddfileError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -72,6 +83,7 @@ export class DSIDirectoryIllegalAddfileError extends DSIDirectoryError {
 export class DSFilePermsError extends DSFileSystemError {
     constructor(message: string) {
         super(message);
+        Object.setPrototypeOf(this, DSFilePermsError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -79,6 +91,7 @@ export class DSFilePermsError extends DSFileSystemError {
 export class DSFilePermsUnsupportedError extends DSFilePermsError {
     constructor(permissions: string) {
         super(`permissions '${permissions}' not supported on this filetype`);
+        Object.setPrototypeOf(this, DSFilePermsUnsupportedError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -86,6 +99,7 @@ export class DSFilePermsUnsupportedError extends DSFilePermsError {
 export class DSFilePermsPermissionDeniedError extends DSFilePermsError {
     constructor(message: string) {
         super(message);
+        Object.setPrototypeOf(this, DSFilePermsPermissionDeniedError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -93,6 +107,7 @@ export class DSFilePermsPermissionDeniedError extends DSFilePermsError {
 export class DSFilePermsReadError extends DSFilePermsPermissionDeniedError {
     constructor() {
         super(`cannot read file: Permission denied`);
+        Object.setPrototypeOf(this, DSFilePermsReadError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -100,6 +115,7 @@ export class DSFilePermsReadError extends DSFilePermsPermissionDeniedError {
 export class DSFilePermsExecError extends DSFilePermsPermissionDeniedError {
     constructor() {
         super(`cannot exec file: Permission denied`);
+        Object.setPrototypeOf(this, DSFilePermsExecError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -107,6 +123,7 @@ export class DSFilePermsExecError extends DSFilePermsPermissionDeniedError {
 export class DSFilePermsWriteError extends DSFilePermsPermissionDeniedError {
     constructor() {
         super(`cannot write file: Permission denied`);
+        Object.setPrototypeOf(this, DSFilePermsWriteError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -271,7 +288,7 @@ export abstract class DSInode {
         throw Error("operation not supported on filetype");
     };
 
-    async contentAsText(): Promise<string> {
+    contentAsText(): DSStream {
         throw new DSIFileError("operation not supported on filetype");
     }
 

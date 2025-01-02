@@ -17,7 +17,7 @@ export class PRCat extends DSProcess {
         let filename = this.argv[nextarg];
         try {
             const inode = this.cwd.getfile(filename);
-            const text = await inode.contentAsText();
+            const text = await inode.contentAsText().read();
             this.stdout.write(text);
         } catch (e) {
             throw new DSProcessError(`'${filename}' not found\n`);

@@ -1,5 +1,5 @@
 import { DSInode, DSFileSystem, DSFilePerms, DSFilePermsUnsupportedError } from "../dsFileSystem";
-
+import { DSStream } from "../dsStream";
 
 export class DSIStaticWebFile extends DSInode {
     private _filetype: string;
@@ -35,20 +35,25 @@ export class DSIStaticWebFile extends DSInode {
         return this._filetype;
     }
 
-    async contentAsText(): Promise<string> {
+    contentAsText(): DSStream {
         this.perms.checkRead();
-        try {
-            const response = await fetch(this.url);
-            if (!response.ok) {
-                throw new Error(`HTTP status ${response.status}`);
-            } else {
-                return response.text();
-            }
-        } catch (e) {
-            if (e.cause)
-                e = e.cause;
-            this._lasterror = `${e.name} : ${e.message}`;
-        }
+        const outstream = new DSStream();
+        fetch(this.url).then(
+            (response) => {
+                if (!response.ok)
+                    throw new Error(`HTTP status ${response.status}`);
+                response.text().then(
+                    (text) => { 
+                        outstream.write(text);
+                        outstream.close();
+                     }
+                );
+
+            }, (reason) => { 
+                // TODO: throw an error instead
+                outstream.close();
+            })
+        return outstream;
     }
 
     chmod(newperms: DSFilePerms) {

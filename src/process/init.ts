@@ -10,7 +10,7 @@ export class PRInit extends DSProcess {
 
         t.reset();
         const logofile = this.cwd.getfile('/data/depsys.txt');
-        const logotxt = await logofile.contentAsText();
+        const logotxt = await logofile.contentAsText().read();
         this.stdout.write(logotxt);
 
         const procpath = "/bin/dssh";

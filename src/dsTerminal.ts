@@ -16,9 +16,15 @@ export class DSTerminal {
     private _terminal: Terminal;
     private _webglAddon: WebglAddon;
     private _fitAddon: FitAddon;
-    baud: number = 1;
+
     readonly outputstream: DSStream = new DSStream(true);
     readonly inputstream: DSStream = new DSStream(true);
+
+    baud: number = 1;
+    private _baudLastWriteTime: number;
+    private _baudPromise: Promise<void> | undefined;
+    private _baudBuffer: string;
+    private _baudResolver: (value: void | PromiseLike<void>) => void;
 
     get cols(): number {
         return this._terminal.cols;
@@ -43,8 +49,8 @@ export class DSTerminal {
         );
 
         // Open the terminal in the specified container
-            this._webglAddon = new WebglAddon();
-            t.loadAddon(this._webglAddon);
+        this._webglAddon = new WebglAddon();
+        t.loadAddon(this._webglAddon);
 
         this._fitAddon = new FitAddon();
         t.loadAddon(this._fitAddon);
@@ -69,6 +75,11 @@ export class DSTerminal {
         t.onData((data): void => { this.outputstream.write(data); });
 
         this._handleInput();
+
+        // Hook up per frame processing
+        this._baudBuffer = "";
+        requestAnimationFrame(() => { this._baudFrame() });
+        
         // TODO: Add listeners for keystrokes, clicks, and touches
 
         t.focus();
@@ -77,37 +88,53 @@ export class DSTerminal {
     private async _handleInput() {
         while (true) {
             const data = await this.inputstream.read();
-            await this.baudWrite(data); 
+            this.baudWrite(data);
         }
     }
 
-    async baudWrite(msg: string, delay: number = undefined): Promise<void> {
-        // Handle default delay case
-        if (delay == undefined)
-            delay = this.baud;
-        // Handle no delay case
-        if (delay <= 0) {
-            await new Promise<void>((resolve) => {
-                this._terminal.write(msg, () => { resolve(); });
+    async baudWrite(msg: string): Promise<void> {
+        // Check if we're done writing and need to store a new frame time
+        if (this._baudBuffer.length <= 0)
+            this._baudLastWriteTime = performance.now();
+        // write output to buffer
+        this._baudBuffer = this._baudBuffer + msg;
+        // return existing promise if it exists
+        if (!this._baudPromise)
+            this._baudPromise = new Promise<void>((resolver) => {
+                this._baudResolver = resolver;
             });
+        return this._baudPromise;
+    }
+
+    private _baudFrame() {
+        // Always set up the next frame first
+        requestAnimationFrame(() => { this._baudFrame() });
+        if (this._baudBuffer.length <= 0)
             return;
+        if (this.baud == 0) {
+            this._terminal.write(this._baudBuffer,
+                () => { this._baudCheckDone() });
+            this._baudBuffer = "";
+        } else {
+            const delta = (performance.now() - this._baudLastWriteTime) / 1000.0;
+            const charsPerSec = this.baud / 10.0;
+            const charsToPrint = Math.floor(charsPerSec * delta);
+
+            if (charsToPrint < 1.0)
+                return;
+
+            const chars = this._baudBuffer.slice(0, charsToPrint);
+            this._baudBuffer = this._baudBuffer.slice(charsToPrint);
+            this._terminal.write(chars,
+                () => { this._baudCheckDone() });
         }
-        for (const char of msg) {
-            await new Promise<void>((resolve) => {
-                const startTime = Date.now();
+        this._baudLastWriteTime = performance.now();
+    }
 
-                // Write the character to the terminal
-                this._terminal.write(char, () => {
-                    const elapsed = Date.now() - startTime;
-
-                    // If the rendering was faster than the delay, wait the remaining time
-                    if (elapsed < delay) {
-                        setTimeout(resolve, delay - elapsed);
-                    } else {
-                        resolve();
-                    }
-                });
-            });
+    private _baudCheckDone() {
+        if (this._baudBuffer.length <= 0) {
+            this._baudPromise = undefined;
+            this._baudResolver();
         }
     }
 

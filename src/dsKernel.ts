@@ -75,32 +75,30 @@ export class DSKernel {
         this.terminal.write(randstr);
         this.terminal.write("\x1b[27m"); // Regular video
 
+        await sleep(800);
+        this.terminal.reset();
+
         // Read NVRAM
         let bootcount = parseInt(nvram_get("bootcount"));
         if (isNaN(bootcount))
             bootcount = 0;
         nvram_set("bootcount", String(bootcount + 1));
 
-        let bootfactor = parseInt(nvram_get("bootfactor"));
-        if (isNaN(bootfactor)) {
-            bootfactor = 1;
-            nvram_set("bootfactor", String(bootfactor));
-        }
+        const fastboot = Boolean(nvram_get("fastboot"));
 
-        await sleep(1000 * bootfactor);
-        this.terminal.reset();
+        let bootfactor = fastboot ? 0 : 1;
 
         await sleep(500 * bootfactor);
         this.terminal.write(`BOOTING DepSysOS ${DSKernel.version}...\n\n`);
         await sleep(1000 * bootfactor);
         const t = this.terminal;
-        t.baud = 15 * bootfactor;
+        t.baud = 1200 * bootfactor;
 
+        try {
         if (bootcount == 0) {
             await t.baudWrite(`New terminal detected, doing first time configuration\n\n`);
         }
 
-        try {
             await t.baudWrite(
                 `term: init\n` +
                 `     grid : ${t.cols} X ${t.rows}\n`);
@@ -147,10 +145,10 @@ export class DSKernel {
             if (bootcount == 0) {
                 await t.baudWrite("nvram: enable fastboot");
                 const oldbaud = t.baud;
-                t.baud = 400;
+                t.baud = 50;
                 await t.baudWrite("...\n");
-                nvram_set("bootfactor", "0");
-                nvram_set("baud", "1");
+                nvram_set("fastboot", String(true));
+                nvram_set("baud", "2400");
                 t.baud = oldbaud;
             }
             // Start init process
