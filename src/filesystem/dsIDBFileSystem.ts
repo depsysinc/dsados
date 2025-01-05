@@ -125,6 +125,16 @@ export class DSIDBFileSystem extends DSFileSystem {
         this._opening = false;
     }
 
+    static async delete(dbName: string) {
+        return new Promise<void>((resolve, reject)=> {
+            const request = indexedDB.deleteDatabase(dbName);
+
+            request.onsuccess = () => { resolve(); }
+            request.onerror = () => { reject(request.error); }
+            request.onblocked = () => { reject("database delete blocked (do you have open tabs?)"); }
+        });
+    }
+
     private _deserialize(
         inodemap: Map<any, object>,
         id: any,

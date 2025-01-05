@@ -6,7 +6,7 @@ import { DSIDBFileSystem } from "./filesystem/dsIDBFileSystem";
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
 import { buildrootfs } from "./dsRootFS";
 import { DSProcess } from "./dsProcess";
-import { nvram_get, nvram_set, sleep } from './lib/dsLib';
+import { nvram_clear, nvram_get, nvram_set, sleep } from './lib/dsLib';
 
 export class DSKernelError extends Error {
     constructor(message: string) {
@@ -65,6 +65,14 @@ export class DSKernel {
     static async boot(terminalContainer: HTMLDivElement) {
         // Init terminal
         console.log("DepSysOS KERNEL START");
+        const url = new URL(window.location.href);
+        const params = new URLSearchParams(url.search);
+        if (params.has("wipeall")) {
+            console.log("Executing full nvram and local storage wipe");
+            nvram_clear();
+            await DSIDBFileSystem.delete("depsys_local_fs");
+        }
+        
         console.log("Initializing Terminal")
         this.terminal = new DSTerminal(terminalContainer);
 
