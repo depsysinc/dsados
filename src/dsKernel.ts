@@ -8,16 +8,10 @@ import { buildrootfs } from "./dsRootFS";
 import { DSProcess } from "./dsProcess";
 import { nvram_get, nvram_set, sleep } from './lib/dsLib';
 
-class DSFSTableEntry {
-    constructor(
-        readonly mount: DSIDirectory,
-        readonly fs: DSFileSystem
-    ) { }
-}
-
 export class DSKernelError extends Error {
     constructor(message: string) {
         super(message);
+        Object.setPrototypeOf(this, DSKernelError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -25,6 +19,7 @@ export class DSKernelError extends Error {
 export class DSKernelExecError extends DSKernelError {
     constructor(message: string) {
         super(message);
+        Object.setPrototypeOf(this, DSKernelExecError.prototype);
         this.name = this.constructor.name;
     }
 }
@@ -32,8 +27,16 @@ export class DSKernelExecError extends DSKernelError {
 export class DSKernelMountError extends DSKernelError {
     constructor(message: string) {
         super(message);
+        Object.setPrototypeOf(this, DSKernelMountError.prototype);
         this.name = this.constructor.name;
     }
+}
+
+class DSFSTableEntry {
+    constructor(
+        readonly mount: DSIDirectory,
+        readonly fs: DSFileSystem
+    ) { }
 }
 
 export class DSKernel {
@@ -53,6 +56,10 @@ export class DSKernel {
 
     static get rootdir(): DSIDirectory {
         return this.fstable[0].mount;
+    }
+
+    static get rootfs(): DSFileSystem {
+        return this.fstable[0].fs;
     }
 
     static async boot(terminalContainer: HTMLDivElement) {
@@ -95,9 +102,9 @@ export class DSKernel {
         t.baud = 1200 * bootfactor;
 
         try {
-        if (bootcount == 0) {
-            await t.baudWrite(`New terminal detected, doing first time configuration\n\n`);
-        }
+            if (bootcount == 0) {
+                await t.baudWrite(`New terminal detected, doing first time configuration\n\n`);
+            }
 
             await t.baudWrite(
                 `term: init\n` +
@@ -153,7 +160,7 @@ export class DSKernel {
             }
             // Start init process
             await t.baudWrite("exec: init\n");
-            
+
             t.baud = +nvram_get("baud");
             await DSKernel.exec("/bin/init", ["init"]);
         } catch (e) {
@@ -194,21 +201,40 @@ export class DSKernel {
         path: string,
         argv: string[],
         envp: Record<string, string> = {}
-    ): Promise<number> {
+    ): Promise<void> {
         // Find the file
         const execfile = this.rootdir.getfile(path);
-        if (!(execfile instanceof DSIProcessFile))
-            throw new DSKernelExecError("Unsupported filetype");
         if (!execfile.perms.x)
             throw new DSKernelExecError(`cannot exec '${path}': Permission Denied`);
-        const processClass = execfile.getProcessClass();
 
         // This is a FILO stack based process table so the parent is always
         // the currently running process.  If this is init, then we make PPID 0
+
         const ppid = this.curproc ? this.curproc.pid : 0;
         const cwd = this.curproc ? this.curproc.cwd : this.fstable[0].mount;
-        const stdin = this.curproc ? this.curproc.stdin : this.terminal.outputstream;
+        let stdin = this.curproc ? this.curproc.stdin : this.terminal.outputstream;
         const stdout = this.curproc ? this.curproc.stdout : this.terminal.inputstream;
+        let processClass;
+
+        if (execfile instanceof DSIProcessFile) {
+            processClass = execfile.getProcessClass();
+        } else {
+            // Check if this is a script
+            const filetext = await execfile.contentAsText().read();
+            const match = filetext.match(/^#!(\/.+)\s/);
+            if (!match)
+                throw new DSKernelExecError("Not an executable or script");
+            const interpreterpath = match[1];
+            const interpreterfile = DSKernel.rootdir.getfile(interpreterpath);
+            interpreterfile.perms.checkExec();
+
+            if (!(interpreterfile instanceof DSIProcessFile))
+                throw new DSKernelExecError("Interpreter is not a binary executable");
+
+            processClass = interpreterfile.getProcessClass();
+            stdin = execfile.contentAsText();
+        }
+
         // TODO: ensure no existing process with the next pid
         const newproc = new processClass(
             this.nextpid++,

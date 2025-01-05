@@ -1,9 +1,9 @@
 # depsysweb
 
 ## TODO
-* kernel
-  * get filecontents to return DSStreams
-  * exec to handle #! scripts
+* fs
+  * writeable files in DSIDBFileSystem
+  * S3 backed filesystem
 * general
   * review all Exceptions for prototype correctness
 * term
@@ -29,8 +29,6 @@
     * images
   * imgview
     * addon-image or custom?
-* fs
-  * S3 backed filesystem
 
 ## Setup
 * [enable docker support in wsl 2 distros](https://docs.docker.com/desktop/features/wsl/#enabling-docker-support-in-wsl-2-distros)

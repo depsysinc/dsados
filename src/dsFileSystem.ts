@@ -437,7 +437,10 @@ export class DSIDirectory extends DSInode {
         } else {
             const filename = path.slice(sepIdx + 1);
             const dirname = path.slice(0, sepIdx);
-            fileinfo = this.getdir(dirname).getfileinfo(filename);
+            if (dirname == "") // Handle "/" root dir case
+                fileinfo = this.getfileinfo(filename);
+            else
+                fileinfo = this.getdir(dirname).getfileinfo(filename);
         }
         if (!fileinfo)
             throw new DSIDirectoryInvalidPathError(path);

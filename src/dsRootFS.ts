@@ -7,7 +7,7 @@
  */
 import { DSFilePerms, DSFileSystem, DSRAMFileSystem, DSIDirectory, DSInode } from "./dsFileSystem";
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
-import { DSIStaticWebFile } from "./filesystem/dsIStaticWebFile";
+import { DSIWebFile } from "./filesystem/dsIWebFile";
 
 // BIN IMPORTS
 import { PRCat } from "./process/cat";
@@ -21,7 +21,7 @@ import { PRMkdir } from "./process/mkdir";
 import { PRPs } from "./process/ps";
 import { PRPwd } from "./process/pwd";
 import { PRSleep } from "./process/sleep";
-// STATIC TRAVERSAL IMPORTS
+// WEBFILE TRAVERSAL IMPORTS
 import root_data_bazisa_txt from "./root/data/bazisa.txt";
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
 import root_data_depsys_txt from "./root/data/depsys.txt";
@@ -74,31 +74,31 @@ export function buildrootfs(): DSFileSystem {
     // BIN FOOTER
     bindir.chmod(DSFilePerms.rx());
 
-    // STATIC TRAVERSAL HEADER
+    // WEBFILE TRAVERSAL HEADER
     let dirstack: DSIDirectory[] = [];
     let curdir = fs.root;
-    let curfile: DSIStaticWebFile;
+    let curfile: DSIWebFile;
 
-    // STATIC TRAVERSAL BODY
+    // WEBFILE TRAVERSAL BODY
 
     // Traversing root/data
     dirstack.push(curdir);
     curdir = curdir.mkdir('data');
     
     // Creating root/data/bazisa.txt
-    curfile = new DSIStaticWebFile(fs, root_data_bazisa_txt);
+    curfile = new DSIWebFile(fs, root_data_bazisa_txt);
     curdir.addfile("bazisa.txt", curfile);
         
     // Creating root/data/deprecated_systems_incorporated.txt
-    curfile = new DSIStaticWebFile(fs, root_data_deprecated_systems_incorporated_txt);
+    curfile = new DSIWebFile(fs, root_data_deprecated_systems_incorporated_txt);
     curdir.addfile("deprecated_systems_incorporated.txt", curfile);
         
     // Creating root/data/depsys.txt
-    curfile = new DSIStaticWebFile(fs, root_data_depsys_txt);
+    curfile = new DSIWebFile(fs, root_data_depsys_txt);
     curdir.addfile("depsys.txt", curfile);
         
     // Creating root/data/gorzocrop.png
-    curfile = new DSIStaticWebFile(fs, root_data_gorzocrop_png);
+    curfile = new DSIWebFile(fs, root_data_gorzocrop_png);
     curdir.addfile("gorzocrop.png", curfile);
         
     curdir.chmod(DSFilePerms.rx());
@@ -110,7 +110,7 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('etc');
     
     // Creating root/etc/dsos.conf
-    curfile = new DSIStaticWebFile(fs, root_etc_dsos_conf);
+    curfile = new DSIWebFile(fs, root_etc_dsos_conf);
     curdir.addfile("dsos.conf", curfile);
         
     curdir.chmod(DSFilePerms.rx());

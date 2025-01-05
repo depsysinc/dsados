@@ -1,5 +1,5 @@
 import { DSRAMFileSystem } from "../src/dsFileSystem";
-import { DSIStaticWebFile } from "../src/filesystem/dsIStaticWebFile";
+import { DSIWebFile } from "../src/filesystem/dsIWebFile";
 
 
 test('webfile ', () => {

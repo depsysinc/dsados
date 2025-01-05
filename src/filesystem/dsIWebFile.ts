@@ -1,7 +1,7 @@
 import { DSInode, DSFileSystem, DSFilePerms, DSFilePermsUnsupportedError } from "../dsFileSystem";
 import { DSStream } from "../dsStream";
 
-export class DSIStaticWebFile extends DSInode {
+export class DSIWebFile extends DSInode {
     private _filetype: string;
     private _lasterror: string;
 

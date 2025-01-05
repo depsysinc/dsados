@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 const outputFile = './src/dsRootFS.ts';
-const staticFileDir = './src/root';
+const webFileDir = './src/root';
 const binFileDir = './src/process';
 
 let header = `/*
@@ -13,7 +13,7 @@ let header = `/*
  */
 import { DSFilePerms, DSFileSystem, DSRAMFileSystem, DSIDirectory, DSInode } from "./dsFileSystem";
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
-import { DSIStaticWebFile } from "./filesystem/dsIStaticWebFile";
+import { DSIWebFile } from "./filesystem/dsIWebFile";
 
 `;
 
@@ -41,18 +41,18 @@ function sanitize(input: string): string {
     return sanitized.replace(/^[0-9]/, '_');
 }
 
-let static_traversal_imports = '// STATIC TRAVERSAL IMPORTS\n';
-const static_traversal_header = `
-    // STATIC TRAVERSAL HEADER
+let webfile_traversal_imports = '// WEBFILE TRAVERSAL IMPORTS\n';
+const webfile_traversal_header = `
+    // WEBFILE TRAVERSAL HEADER
     let dirstack: DSIDirectory[] = [];
     let curdir = fs.root;
-    let curfile: DSIStaticWebFile;
+    let curfile: DSIWebFile;
 
 `;
 
-let static_traversal_body = '    // STATIC TRAVERSAL BODY\n';
+let webfile_traversal_body = '    // WEBFILE TRAVERSAL BODY\n';
 
-function staticTraverseAndGenerate(dir: string) {
+function webfileTraverseAndGenerate(dir: string) {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
         const srcPath = path.join(dir, entry.name);
@@ -61,13 +61,13 @@ function staticTraverseAndGenerate(dir: string) {
         // Create directory
         if (entry.isDirectory()) {
             console.log(`Create Directory ${srcPath}`);
-            static_traversal_body += `
+            webfile_traversal_body += `
     // Traversing ${relPath}
     dirstack.push(curdir);
     curdir = curdir.mkdir('${entry.name}');
     `;
-            staticTraverseAndGenerate(srcPath);
-            static_traversal_body += `
+            webfileTraverseAndGenerate(srcPath);
+            webfile_traversal_body += `
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
     // Exited ${relPath}
@@ -78,10 +78,10 @@ function staticTraverseAndGenerate(dir: string) {
         else if (entry.isFile()) {
             console.log(`Create file from ${srcPath}`);
             let varname = sanitize(relPath);
-            static_traversal_imports += `import ${varname} from "./${relPath}";\n`
-            static_traversal_body += `
+            webfile_traversal_imports += `import ${varname} from "./${relPath}";\n`
+            webfile_traversal_body += `
     // Creating ${relPath}
-    curfile = new DSIStaticWebFile(fs, ${varname});
+    curfile = new DSIWebFile(fs, ${varname});
     curdir.addfile("${entry.name}", curfile);
         `;
         } else {
@@ -111,7 +111,7 @@ for (const entry of entries) {
 
     console.log(`Create ${binFileName} from ${srcPath}`);
     const file = fs.readFileSync(srcPath, 'utf-8');
-    match = file.match(/export class (\w+) extends DSProcess/);
+    match = file.match(/export class (\w+) extends DSProcess {/);
     if (!match)
         throw Error("could not find DSProcess class");
     const className = match[1];
@@ -127,19 +127,19 @@ const bin_footer = `
     bindir.chmod(DSFilePerms.rx());
 `;
 
-console.log(`Doing static file traversal in ${staticFileDir}`);
-staticTraverseAndGenerate(staticFileDir);
+console.log(`Doing web file traversal in ${webFileDir}`);
+webfileTraverseAndGenerate(webFileDir);
 
 console.log(`Writing ${outputFile}`);
 fs.writeFileSync(outputFile, 
     header
     + bin_imports
-    + static_traversal_imports 
+    + webfile_traversal_imports 
     + buildrootfs_header 
     + bin_header
     + bin_body
     + bin_footer
-    + static_traversal_header
-    + static_traversal_body 
+    + webfile_traversal_header
+    + webfile_traversal_body 
     + main_footer
 );

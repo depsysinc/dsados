@@ -2,7 +2,6 @@ import { DSProcess } from "../src/dsProcess";
 import { DSFilePerms, DSFileSystem, DSIDirectory, DSRAMFileSystem } from "../src/dsFileSystem";
 import { DSStream } from "../src/dsStream";
 
-// Tests to make sure pushing and popping of procstack works
 class TestProcess extends DSProcess {
     constructor(pwd: DSIDirectory) {
 
