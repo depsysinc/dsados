@@ -8,17 +8,12 @@ export class PRInit extends DSProcess {
         let t = DSKernel.terminal;
         if (this.pid != 1)
             throw new DSProcessError("error: init must be first process");
-
-        t.reset();
-        const logofile = this.cwd.getfile('/data/depsys.txt');
-        const logotxt = await logofile.contentAsText().read();
-        this.stdout.write(logotxt);
-
+        
         const procpath = "/bin/dssh";
         this.stdout.write(`init: exec ${procpath}\n`);
         while (true) {
             try {
-                await DSKernel.exec(procpath, ["dssh"], { PATH: "/bin" });
+                await DSKernel.exec(procpath, ["dssh", "-l"]);
                 this.stdout.write('init: unexpected child process exit\n')
             } catch (e) {
                 this.stdout.write(`init: root shell exception: ${e.message}\n`);

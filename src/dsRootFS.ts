@@ -20,6 +20,7 @@ import { PRLs } from "./process/ls";
 import { PRMkdir } from "./process/mkdir";
 import { PRPs } from "./process/ps";
 import { PRPwd } from "./process/pwd";
+import { PRReset } from "./process/reset";
 import { PRSleep } from "./process/sleep";
 // WEBFILE TRAVERSAL IMPORTS
 import root_data_bazisa_txt from "./root/data/bazisa.txt";
@@ -68,6 +69,9 @@ export function buildrootfs(): DSFileSystem {
     
     binfile = new DSIProcessFile(fs, PRPwd);
     bindir.addfile("pwd", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRReset);
+    bindir.addfile("reset", binfile);
     
     binfile = new DSIProcessFile(fs, PRSleep);
     bindir.addfile("sleep", binfile);

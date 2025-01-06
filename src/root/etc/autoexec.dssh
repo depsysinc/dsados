@@ -1,5 +1,7 @@
-#!/bin/dssh
-echo "AUTOEXEC"
+#
+# DSADOS AUTOEXEC FILE
+#
+
 PATH=/bin
-/bin/dssh
-echo "DONE"
+reset
+cat /data/depsys.txt
