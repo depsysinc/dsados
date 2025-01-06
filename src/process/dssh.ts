@@ -1,6 +1,7 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSKernel } from "../dsKernel";
-import { DSStreamClosedError } from "../dsStream";
+import { DSStream, DSStreamClosedError } from "../dsStream";
+import { DSOptionParser } from "../lib/dsOptionParser";
 
 export class DSShellError extends DSProcessError {
     constructor(message: string) {
@@ -21,29 +22,63 @@ class IFBlock {
 export class DSShell extends DSProcess {
     private _prompt: CommandLinePrompt;
     private _ifstack: IFBlock[] = [];
+    private _loginshell: boolean = false;
 
     history: string[] = [];
 
     protected async main(): Promise<void> {
+        const optparser = new DSOptionParser(
+            this.procname,
+            true,
+            "   Deprecated Systems SHell",
+        );
+        optparser.addoption({
+            long: "login",
+            short: "l",
+            required: false,
+            takesArgument: false,
+            argName: "",
+            description: "Start shell reading autoexec.dssh then prompt"
+        });
+        let nextarg = optparser.parseWithUsageAndHelp(this.argv);
+        this._loginshell = optparser.getLongOption("login").seen;
+
         this._prompt = new CommandLinePrompt(this);
         return this._commandLoop();
     }
 
     private async _commandLoop() {
         let linebuffer: string[] = [];
+        // autoexecfile: DSInode | undefined = undefined;
+        let instream: DSStream;
+        if (this._loginshell) {
+            // try opening autoexec
+            const autoexecfile = this.cwd.getfile("/etc/autoexec.dssh");
+            instream = autoexecfile.contentAsText();
+        } else {
+            instream = this.stdin;
+        }
+
         while (true) {
             try {
                 let originput = "";
-                if (this.stdin.isatty) {
+                if (instream.isatty) {
+                    // FIXME: prompt assumes stdin
                     originput = await this._prompt.promptForInput();
                 } else {
                     if (linebuffer.length == 0) {
                         let buffer: string;
                         try {
-                            buffer = await this.stdin.read();
+                            buffer = await instream.read();
                         } catch (e) {
-                            if (e instanceof DSStreamClosedError)
-                                return;
+                            if (e instanceof DSStreamClosedError) {
+                                // if not a loginshell then we're done
+                                if (!this._loginshell)
+                                    return;
+                                // need to swap in stdin
+                                instream = this.stdin;
+                                continue;
+                            }
                             throw e;
                         }
                         linebuffer = linebuffer.concat(buffer.split(/\r?\n|\r/));
