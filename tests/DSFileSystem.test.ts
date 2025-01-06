@@ -233,6 +233,26 @@ test('getfile /testfile1.txt', () => {
     expect(fs.root.getfile("/testfile1.txt")).toEqual(testfile1info?.inode);
 });
 
+test('getfile ./testfile1.txt', () => {
+    const fs = createTestFS();
+    const testfile1info = fs.root.getfileinfo("testfile1.txt");
+    expect(fs.root.getfile("./testfile1.txt")).toEqual(testfile1info?.inode);
+});
+
+test('getfile ../testfile1.txt from /alpha', () => {
+    const fs = createTestFS();
+    const testfile1info = fs.root.getfileinfo("testfile1.txt");
+    const fromdir = fs.root.getdir("/alpha");
+    expect(fromdir.getfile("../testfile1.txt")).toEqual(testfile1info?.inode);
+});
+
+test('getfile ./testfile2.txt from /gamma/deep/tree/branch', () => {
+    const fs = createTestFS();
+    const testfile1info = fs.root.getdir("/gamma/deep/tree/branch").getfileinfo("testfile2.txt");
+    const fromdir = fs.root.getdir("/gamma/deep/tree/branch");
+    expect(fromdir.getfile("./testfile2.txt")).toEqual(testfile1info?.inode);
+});
+
 test('getfile /gamma/deep/tree/branch/testfile2.txt', () => {
     const fs = createTestFS();
     const path = "/gamma/deep/tree/branch/testfile2.txt";

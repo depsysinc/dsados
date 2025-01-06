@@ -2,23 +2,31 @@
 
 ## TODO
 * fs
-  * writeable files in DSIDBFileSystem
+  * writeable files in DSIDBFileSystem <--->
   * S3 backed filesystem
 * general
-  * review all Exceptions for prototype correctness
+  * Exceptions
+    * make all prototypes explicit
+    * Switch all tests to test type rather than err string
 * term
   * create framerender callback hook
   * pull out effects into depsysweb
-  * Different fonts for different vintages of computer
+  * different fonts for different vintages of computer
   * Implement custom gl effects calls
     * slow fuzzy warmup
       * Make faster after recent boots (requires cookies)
   * Enable click and touch
   * Enable images
 * process
+  * init
+    * switch to executing autoexec.dssh
+  * autoexec.dssh
+    * set PATH
+    * set up /local structure if needed
+    * load shell
   * dssh
-    * complete if statement tests (extra elses and endifs)
-    * command history persistence across boots
+    * -l login shell, read autoexec.dssh and drop to prompt
+    * command history persistence across boots <--->
     * [tab] complete
   * chmod
   * nvram

@@ -56,7 +56,7 @@ function webfileTraverseAndGenerate(dir: string) {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
         const srcPath = path.join(dir, entry.name);
-        const relPath = srcPath.replace(/^src\//,'');
+        const relPath = srcPath.replace(/^src\//, '');
 
         // Create directory
         if (entry.isDirectory()) {
@@ -77,20 +77,24 @@ function webfileTraverseAndGenerate(dir: string) {
         // Create File
         else if (entry.isFile()) {
             console.log(`Create file from ${srcPath}`);
+            const stats = fs.lstatSync(srcPath);
+            const execperms = stats.mode & 0o111;
+            const permstring = execperms ? `curfile.chmod(DSFilePerms.rx());` : "";
             let varname = sanitize(relPath);
             webfile_traversal_imports += `import ${varname} from "./${relPath}";\n`
             webfile_traversal_body += `
     // Creating ${relPath}
     curfile = new DSIWebFile(fs, ${varname});
     curdir.addfile("${entry.name}", curfile);
-        `;
+    ${permstring}
+    `;
         } else {
             console.log(`skipping ${srcPath}`);
         }
     }
 }
 
-console.log (`Doing bin file generation from ${binFileDir}`);
+console.log(`Doing bin file generation from ${binFileDir}`);
 
 let bin_imports = '// BIN IMPORTS\n';
 const bin_header = `
@@ -103,7 +107,7 @@ let bin_body = '    // BIN BODY\n';
 const entries = fs.readdirSync(binFileDir, { withFileTypes: true });
 for (const entry of entries) {
     const srcPath = path.join(entry.parentPath, entry.name);
-    const importPath = srcPath.replace(/^src\//,'').replace(/.ts$/,'');
+    const importPath = srcPath.replace(/^src\//, '').replace(/.ts$/, '');
     let match = importPath.match(/([^\/]+)$/);
     if (!match)
         throw Error("could not extract bin filename");
@@ -120,7 +124,7 @@ for (const entry of entries) {
     binfile = new DSIProcessFile(fs, ${className});
     bindir.addfile("${binFileName}", binfile);
     `;
-    
+
 }
 const bin_footer = `
     // BIN FOOTER
@@ -131,15 +135,15 @@ console.log(`Doing web file traversal in ${webFileDir}`);
 webfileTraverseAndGenerate(webFileDir);
 
 console.log(`Writing ${outputFile}`);
-fs.writeFileSync(outputFile, 
+fs.writeFileSync(outputFile,
     header
     + bin_imports
-    + webfile_traversal_imports 
-    + buildrootfs_header 
+    + webfile_traversal_imports
+    + buildrootfs_header
     + bin_header
     + bin_body
     + bin_footer
     + webfile_traversal_header
-    + webfile_traversal_body 
+    + webfile_traversal_body
     + main_footer
 );

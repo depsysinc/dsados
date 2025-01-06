@@ -1,5 +1,6 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSKernel } from "../dsKernel";
+import { sleep } from "../lib/dsLib";
 
 export class PRInit extends DSProcess {
 
@@ -18,9 +19,11 @@ export class PRInit extends DSProcess {
         while (true) {
             try {
                 await DSKernel.exec(procpath, ["dssh"], { PATH: "/bin" });
+                this.stdout.write('init: unexpected child process exit\n')
             } catch (e) {
                 this.stdout.write(`init: root shell exception: ${e.message}\n`);
             }
+            await sleep(1000);
         }
     }
 }

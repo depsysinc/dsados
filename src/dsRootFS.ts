@@ -26,6 +26,7 @@ import root_data_bazisa_txt from "./root/data/bazisa.txt";
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
 import root_data_depsys_txt from "./root/data/depsys.txt";
 import root_data_gorzocrop_png from "./root/data/gorzocrop.png";
+import root_etc_autoexec_dssh from "./root/etc/autoexec.dssh";
 import root_etc_dsos_conf from "./root/etc/dsos.conf";
 
 // BUILDROOTFS HEADER
@@ -88,19 +89,23 @@ export function buildrootfs(): DSFileSystem {
     // Creating root/data/bazisa.txt
     curfile = new DSIWebFile(fs, root_data_bazisa_txt);
     curdir.addfile("bazisa.txt", curfile);
-        
+    
+    
     // Creating root/data/deprecated_systems_incorporated.txt
     curfile = new DSIWebFile(fs, root_data_deprecated_systems_incorporated_txt);
     curdir.addfile("deprecated_systems_incorporated.txt", curfile);
-        
+    
+    
     // Creating root/data/depsys.txt
     curfile = new DSIWebFile(fs, root_data_depsys_txt);
     curdir.addfile("depsys.txt", curfile);
-        
+    
+    
     // Creating root/data/gorzocrop.png
     curfile = new DSIWebFile(fs, root_data_gorzocrop_png);
     curdir.addfile("gorzocrop.png", curfile);
-        
+    
+    
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
     // Exited root/data
@@ -109,10 +114,16 @@ export function buildrootfs(): DSFileSystem {
     dirstack.push(curdir);
     curdir = curdir.mkdir('etc');
     
+    // Creating root/etc/autoexec.dssh
+    curfile = new DSIWebFile(fs, root_etc_autoexec_dssh);
+    curdir.addfile("autoexec.dssh", curfile);
+    curfile.chmod(DSFilePerms.rx());
+    
     // Creating root/etc/dsos.conf
     curfile = new DSIWebFile(fs, root_etc_dsos_conf);
     curdir.addfile("dsos.conf", curfile);
-        
+    
+    
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
     // Exited root/etc

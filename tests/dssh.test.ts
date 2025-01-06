@@ -1,12 +1,58 @@
-import { DSRAMFileSystem } from "../src/dsFileSystem";
-import { buildrootfs } from "../src/dsRootFS";
+import { DSFilePerms, DSIDirectory, DSInode, DSRAMFileSystem } from "../src/dsFileSystem";
+import { DSKernel } from "../src/dsKernel";
+import { DSProcess } from "../src/dsProcess";
 import { DSStream } from "../src/dsStream";
+import { DSIProcessFile } from "../src/filesystem/dsIProcessFile";
+import { DSIStaticTextFile } from "../src/filesystem/dsIStaticFile";
 import { DSShell, DSShellError } from "../src/process/dssh";
+import { PREcho } from "../src/process/echo";
+
+class TestProcess extends DSProcess {
+    constructor(pwd: DSIDirectory) {
+        super(0, 0, pwd, [], {}, new DSStream(), new DSStream());
+    }
+    get procname(): string {
+        return "TestProcess";
+    }
+    protected async main(): Promise<void> {
+        return;
+    }
+
+}
+
+function resetKernel() {
+    DSKernel.fstable = [];
+    DSKernel.procstack = [];
+    DSKernel.nextpid = 1;
+
+    const fs = new DSRAMFileSystem();
+    DSKernel.mount('/', fs);
+
+    const init = new TestProcess(fs.root);
+    DSKernel.procstack.push(init);
+
+    const bindir = fs.root.mkdir("bin", DSFilePerms.rx());
+    let binfile: DSInode = new DSIProcessFile(DSKernel.rootfs, DSShell);
+    bindir.addfile("dssh", binfile);
+
+    binfile = new DSIProcessFile(DSKernel.rootfs, PREcho);
+    bindir.addfile("echo", binfile);
+
+    return init;
+}
+
 
 function makedssh() {
     const stdin = new DSStream();
     const stdout = new DSStream();
+
     const fs = new DSRAMFileSystem();
+    const bindir = fs.root.mkdir('bin');
+    let binfile: DSInode;
+
+    binfile = new DSIProcessFile(fs, PREcho);
+    bindir.addfile("echo", binfile);
+
     const dssh = new DSShell(
         2,
         1,
@@ -320,7 +366,7 @@ test('dssh nested if else false true true', async () => {
 
     expect(dssh.envp).not.toHaveProperty("IFBVAR");
     expect(dssh.envp).not.toHaveProperty("ELSEBVAR");
-    
+
     expect(dssh.envp["IFCVAR"]).toEqual("true");
     expect(dssh.envp).not.toHaveProperty("ELSECVAR");
 });
@@ -357,6 +403,62 @@ test('dssh nested if else true false true', async () => {
     expect(dssh.envp).not.toHaveProperty("ELSECVAR");
 
 });
+
+test('dssh if without endif', async () => {
+    const dssh = makedssh();
+    const dsshpromise = dssh.start();
+    const stmt =
+        `if [-true]\n`
+        + `    IFVAR=true\n`
+    dssh.stdin.write(stmt);
+    dssh.stdin.close();
+    await expect(dsshpromise).resolves.toBeUndefined();
+    expect(dssh.envp["IFVAR"]).toEqual("true");
+
+});
+
+// dssh unmatched endif
+// dssh unmatched else
+
+test('dssh /fullpathexe.dssh', async () => {
+    resetKernel();
+    const init = resetKernel();
+
+    const scriptfile = new DSIStaticTextFile(DSKernel.rootfs,
+        `#!/bin/dssh\n
+        /bin/echo "success"\n
+        \n`
+    )
+    scriptfile.chmod(DSFilePerms.rx());
+    DSKernel.rootdir.addfile("fullpathexe.dssh", scriptfile)
+
+    await DSKernel.exec("/fullpathexe.dssh", [], { PATH: "/"});
+
+    await expect(
+        init.stdout.read()
+    ).resolves.toEqual("success\n");
+});
+
+test('dssh /localpathexe.dssh', async () => {
+    resetKernel();
+    const init = resetKernel();
+
+    const scriptfile = new DSIStaticTextFile(DSKernel.rootfs,
+        `#!/bin/dssh\n
+        cd bin\n
+        ./echo "success"\n
+        \n`
+    )
+    scriptfile.chmod(DSFilePerms.rx());
+    DSKernel.rootdir.addfile("localpathexe.dssh", scriptfile)
+
+    await DSKernel.exec("/localpathexe.dssh", [], { PATH: "/"});
+
+    await expect(
+        init.stdout.read()
+    ).resolves.toEqual("success\n");
+});
+
 /*
 test('', () => {
 
