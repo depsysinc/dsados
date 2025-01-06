@@ -1,0 +1,5 @@
+#!/bin/dssh
+echo "AUTOEXEC"
+PATH=/bin
+/bin/dssh
+echo "DONE"

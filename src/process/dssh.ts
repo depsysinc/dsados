@@ -187,6 +187,15 @@ export class DSShell extends DSProcess {
 
     private async _findAndExec(tokens: string[]) {
         const command = tokens[0];
+        if (command.startsWith("/") || command.startsWith(".")) {
+            try {
+                const filepath = this.cwd.path + '/' + command;
+                this.cwd.getfile(filepath);
+                return DSKernel.exec(filepath, tokens, this.envp);
+            } catch (e) {
+                return this.stdout.write(`${command}: command not found\n`);
+            }
+        }
         const path = this.envp['PATH'];
         if (path) {
             const paths = path.split(";");
