@@ -57,7 +57,7 @@ function makedssh() {
         2,
         1,
         fs.root,
-        [],
+        ['dssh'],
         {},
         stdin,
         stdout
@@ -432,7 +432,7 @@ test('dssh /fullpathexe.dssh', async () => {
     scriptfile.chmod(DSFilePerms.rx());
     DSKernel.rootdir.addfile("fullpathexe.dssh", scriptfile)
 
-    await DSKernel.exec("/fullpathexe.dssh", [], { PATH: "/"});
+    await DSKernel.exec("/fullpathexe.dssh", ['dssh'], { PATH: "/"});
 
     await expect(
         init.stdout.read()
@@ -452,7 +452,7 @@ test('dssh /localpathexe.dssh', async () => {
     scriptfile.chmod(DSFilePerms.rx());
     DSKernel.rootdir.addfile("localpathexe.dssh", scriptfile)
 
-    await DSKernel.exec("/localpathexe.dssh", [], { PATH: "/"});
+    await DSKernel.exec("/localpathexe.dssh", ['dssh'], { PATH: "/"});
 
     await expect(
         init.stdout.read()

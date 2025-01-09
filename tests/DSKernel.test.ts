@@ -157,7 +157,7 @@ test('exec /simpleechoscript.dssh', async () => {
     scriptfile.chmod(DSFilePerms.rx());
     DSKernel.rootdir.addfile("simpleechoscript.dssh", scriptfile)
 
-    await DSKernel.exec("/simpleechoscript.dssh", [], { PATH: "/"});
+    await DSKernel.exec("/simpleechoscript.dssh", ['dssh'], { PATH: "/"});
 
     await expect(
         init.stdout.read()
