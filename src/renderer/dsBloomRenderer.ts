@@ -4,7 +4,7 @@ const enum VertexAttribLocations {
     POSITION = 0
 }
 
-export class DSScanlineRenderer {
+export class DSBloomRenderer {
     private _program: WebGLProgram;
     private _vertexArrayObject: WebGLVertexArrayObject;
     private _quadBuffer: WebGLBuffer | null;
@@ -27,35 +27,38 @@ export class DSScanlineRenderer {
     precision mediump float;
     
     uniform sampler2D u_texture; // Texture sampler
-    uniform float u_pixelHeight; // The simulated pixel height
+    uniform float u_bloomIntensity; // Bloom filter intensity
     
     in vec2 v_texCoord;          // Interpolated texture coordinates from vertex shader
     out vec4 outColor;           // Output color for the fragment
     
     void main() {
-        outColor = texture(u_texture, v_texCoord);
-        if (u_pixelHeight < 2.0) {
-            return;
+        // vec3 result = texture(u_texture, v_texCoord);
+
+        float u_blurRadius = 0.002;
+        vec4 color = vec4(0.0);  // Accumulate sampled colors
+        float totalWeight = 0.0; // Accumulate weights for normalization
+
+        // Loop through offsets to sample the surrounding area
+        for (int x = -4; x <= 4; x++) {
+            for (int y = -4; y <= 4; y++) {
+                vec2 offset = vec2(float(x), float(y)) * u_blurRadius;
+                vec2 sampleCoord = clamp(v_texCoord + offset, vec2(0.0), vec2(1.0)); 
+                // FIXME: Filter wraps even with the clamp
+                // Gaussian weight based on distance from center
+                float weight = exp(-dot(offset, offset) / (2.0 * u_blurRadius * u_blurRadius));
+                color += texture(u_texture, sampleCoord) * weight;
+                totalWeight += weight;
+            }
         }
-        
-        float lastPixelPos = mod(float(gl_FragCoord.y - 1.0), u_pixelHeight);
-        float lastCenterDistance = (lastPixelPos - u_pixelHeight * 0.5) / (u_pixelHeight * 0.5);
+        // Normalize the accumulated color
+        outColor = max(texture(u_texture, v_texCoord), color * u_bloomIntensity);
 
-        float pixelPos = mod(float(gl_FragCoord.y), u_pixelHeight);
-        float centerDistance = (pixelPos - u_pixelHeight * 0.5) / (u_pixelHeight * 0.5);
-
-        // This reliably detects when we have passed over the center line of a pixel
-        // Guaranteeing at least one line rendered at full intensity
-        if ((lastCenterDistance < 0.0) && (centerDistance >= 0.0)) {
-            return;
-        }
-
-        float falloff = pow(abs(centerDistance), 1.5);
-        outColor.rgb -= vec3(falloff);
+        // outColor.r += u_bloomIntensity * 0.0;
     }`;
 
-    private _pixelheightLocation: WebGLUniformLocation;
-    private _pixelheight: number;
+    private _bloomIntensityLocation: WebGLUniformLocation;
+    private _bloomIntensity: number = 0.15;
 
     constructor(private gl: WebGL2RenderingContext) {
 
@@ -85,7 +88,7 @@ export class DSScanlineRenderer {
             createProgram(gl, this.vertexShaderSource, this.fragmentShaderSource));
 
         this._textureLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_texture'));
-        this._pixelheightLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_pixelHeight'));
+        this._bloomIntensityLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_bloomIntensity'));
 
         // Define the vertex attribute pointer for position within the VAO
         gl.enableVertexAttribArray(VertexAttribLocations.POSITION);
@@ -96,8 +99,7 @@ export class DSScanlineRenderer {
         return this._texture;
     }
 
-    public resize(cellheight: number): void {
-        this._pixelheight = cellheight / 16.0;
+    public resize(): void {
 
         const gl = this.gl;
 
@@ -142,7 +144,7 @@ export class DSScanlineRenderer {
 
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.uniform1i(this._textureLocation, 0); // Set the texture uniform to use texture unit 0
-        gl.uniform1f(this._pixelheightLocation, this._pixelheight);
+        gl.uniform1f(this._bloomIntensityLocation, this._bloomIntensity);
 
         // Draw the fullscreen quad
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

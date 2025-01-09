@@ -4,8 +4,10 @@ import { FitAddon } from '@xterm/addon-fit';
 
 import { DSKernel } from './dsKernel';
 import { DSStream } from './dsStream';
+
 import { DSScreenRenderer } from "./renderer/dsScreenRenderer";
 import { DSScanlineRenderer } from "./renderer/dsScanlineRenderer";
+import { DSBloomRenderer } from "./renderer/dsBloomRenderer";
 
 function isMobileDevice(): boolean {
     const userAgent = navigator.userAgent;
@@ -27,8 +29,10 @@ export class DSTerminal {
     private _baudPromise: Promise<void> | undefined;
     private _baudBuffer: string;
     private _baudResolver: (value: void | PromiseLike<void>) => void;
+
     private _screenrender: DSScreenRenderer;
     private _scanlinerenderer: DSScanlineRenderer;
+    private _bloomrenderer: DSBloomRenderer;
 
     get cols(): number {
         return this._terminal.cols;
@@ -55,18 +59,21 @@ export class DSTerminal {
         // Open the terminal in the specified container
         this._webglAddon = new WebglAddon();
         WebglAddon.onInit = (gl: WebGL2RenderingContext) => {
+            this._bloomrenderer = new DSBloomRenderer(gl);
             this._scanlinerenderer = new DSScanlineRenderer(gl);
             this._screenrender = new DSScreenRenderer(gl);
         };
 
         WebglAddon.onResize = (cellwidth: number, cellheight: number) => {
+            this._bloomrenderer.resize();
             this._scanlinerenderer.resize(cellheight);
             this._screenrender.resize();
         }
 
         WebglAddon.onRender = (texture: WebGLTexture) => {
             this._scanlinerenderer.render(texture);
-            this._screenrender.render(this._scanlinerenderer.texture);
+            this._bloomrenderer.render(this._scanlinerenderer.texture)
+            this._screenrender.render(this._bloomrenderer.texture);
         }
 
         t.loadAddon(this._webglAddon);
