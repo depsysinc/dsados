@@ -8,6 +8,7 @@ import { DSStream } from './dsStream';
 import { DSScreenRenderer } from "./renderer/dsScreenRenderer";
 import { DSScanlineRenderer } from "./renderer/dsScanlineRenderer";
 import { DSBloomRenderer } from "./renderer/dsBloomRenderer";
+import { DSVertHorizRenderer } from "./renderer/dsVertHorizRenderer";
 
 function isMobileDevice(): boolean {
     const userAgent = navigator.userAgent;
@@ -33,6 +34,10 @@ export class DSTerminal {
     private _screenrender: DSScreenRenderer;
     private _scanlinerenderer: DSScanlineRenderer;
     private _bloomrenderer: DSBloomRenderer;
+    private _verthorizrenderer: DSVertHorizRenderer;
+    
+    private _warmupStart: number;
+    private _warmupDuration: number;
 
     get cols(): number {
         return this._terminal.cols;
@@ -61,19 +66,38 @@ export class DSTerminal {
         WebglAddon.onInit = (gl: WebGL2RenderingContext) => {
             this._bloomrenderer = new DSBloomRenderer(gl);
             this._scanlinerenderer = new DSScanlineRenderer(gl);
+            this._verthorizrenderer = new DSVertHorizRenderer(gl);
             this._screenrender = new DSScreenRenderer(gl);
         };
 
         WebglAddon.onResize = (cellwidth: number, cellheight: number) => {
             this._bloomrenderer.resize();
             this._scanlinerenderer.resize(cellheight);
+            this._verthorizrenderer.resize();
             this._screenrender.resize();
         }
 
         WebglAddon.onRender = (texture: WebGLTexture) => {
+            if (this._warmupStart > 0) {
+                const curTime = Date.now() - this._warmupStart;
+                if (curTime < this._warmupDuration) {
+                  const t = curTime / this._warmupDuration; // Normalize to [0, 1]
+                  const vc = oscillatingStep(t / 1000);
+                  this._verthorizrenderer.vert = vc;
+                  this._verthorizrenderer.horiz = vc;
+                } else {
+                  this._warmupStart = 0;
+                  this._verthorizrenderer.vert = 1.0;
+                  this._verthorizrenderer.horiz = 1.0;
+                }
+                this._terminal.refresh(0, this._terminal.rows - 1);
+              }
+              
+
             this._scanlinerenderer.render(texture);
-            this._bloomrenderer.render(this._scanlinerenderer.texture)
-            this._screenrender.render(this._bloomrenderer.texture);
+            this._bloomrenderer.render(this._scanlinerenderer.texture);
+            this._verthorizrenderer.render(this._bloomrenderer.texture);
+            this._screenrender.render(this._verthorizrenderer.texture);
         }
 
         t.loadAddon(this._webglAddon);
@@ -176,7 +200,6 @@ export class DSTerminal {
         DSKernel.handleResize();
     }
 
-
     private _resize(): void {
         const t = this._terminal;
         const portrait = window.matchMedia("(orientation: portrait)").matches;
@@ -197,6 +220,12 @@ export class DSTerminal {
         t.resize(newdim.cols, newdim.rows);
     }
 
+    public startWarmup(duration: number) {
+        this._warmupStart = Date.now();
+        this._warmupDuration = duration;
+        this._terminal.refresh(0, this._terminal.rows - 1);
+    }
+
     /*
 for (let i = 0; i < t.cols; i++) {
     t.write(String(i % 10));
@@ -208,3 +237,35 @@ for (let i = 0; i < t.cols; i++) {
 */
 
 }
+
+function oscillatingStep(t: number): number {
+    // const R = 70; // ohms
+    // const L = 0.005; // henries
+    // const C = 1e-6; // farads
+  
+    // Natural angular frequency
+  
+    // const omega0 = 1 / Math.sqrt(L * C);
+    const omega0 = 14142.13;
+  
+    // Damping factor
+    // const zeta = R / (2 * Math.sqrt(L / C));
+    const zeta = 0.49497;
+  
+    // Damped angular frequency
+    // const omegaD = omega0 * Math.sqrt(1 - zeta ** 2);
+    const omegaD = 12288.20;
+  
+    // Exponential decay factor
+    const exponentialDecay = Math.exp(-zeta * omega0 * t);
+  
+    // Oscillatory terms
+    const cosineTerm = Math.cos(omegaD * t);
+    const sineTerm = (zeta / Math.sqrt(1 - zeta ** 2)) * Math.sin(omegaD * t);
+  
+    // Voltage across the capacitor
+    const vc = (1 - exponentialDecay * (cosineTerm + sineTerm));
+  
+    return vc;
+  }
+  

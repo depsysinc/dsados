@@ -46,9 +46,9 @@ export class DSScanlineRenderer {
 
         // This reliably detects when we have passed over the center line of a pixel
         // Guaranteeing at least one line rendered at full intensity
-        if ((lastCenterDistance < 0.0) && (centerDistance >= 0.0)) {
-            return;
-        }
+        //if ((lastCenterDistance < 0.0) && (centerDistance >= 0.0)) {
+        //    return;
+        //}
 
         float falloff = pow(abs(centerDistance), 1.5);
         outColor.rgb -= vec3(falloff);

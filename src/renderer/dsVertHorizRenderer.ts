@@ -4,11 +4,16 @@ const enum VertexAttribLocations {
     POSITION = 0
 }
 
-export class DSBloomRenderer {
+export class DSVertHorizRenderer {
     private _program: WebGLProgram;
     private _vertexArrayObject: WebGLVertexArrayObject;
     private _quadBuffer: WebGLBuffer | null;
     private _textureLocation: WebGLUniformLocation;
+    private _vertLocation: WebGLUniformLocation;
+    public vert: number = 1.0;
+    private _horizLocation: WebGLUniformLocation;
+    public horiz: number = 1.0;
+
 
     private _framebuffer: WebGLFramebuffer | null;
     private _texture: WebGLTexture | null;
@@ -27,38 +32,38 @@ export class DSBloomRenderer {
     precision mediump float;
     
     uniform sampler2D u_texture; // Texture sampler
-    uniform float u_bloomIntensity; // Bloom filter intensity
+    uniform float u_vert;  // Vertical transform
+    uniform float u_horiz; // Horizontal transform 
     
     in vec2 v_texCoord;          // Interpolated texture coordinates from vertex shader
     out vec4 outColor;           // Output color for the fragment
     
     void main() {
-        // vec3 result = texture(u_texture, v_texCoord);
 
-        float u_blurRadius = 0.0015;
-        vec4 color = vec4(0.0);  // Accumulate sampled colors
-        float totalWeight = 0.0; // Accumulate weights for normalization
+        // Set up source coords
+        vec2 vsize = vec2(gl_FragCoord.x / v_texCoord[0], gl_FragCoord.y / v_texCoord[1]);
+        vec2 tsize = vec2(vsize.x * u_horiz, vsize.y * u_vert);
+        vec2 tstart = vec2(vsize.x * 0.5 - tsize.x * 0.5, vsize.y * 0.5 - tsize.y * 0.5);
+        vec2 tend = vec2(vsize.x * 0.5 + tsize.x * 0.5, vsize.y * 0.5 + tsize.y * 0.5);
 
-        // Loop through offsets to sample the surrounding area
-        for (int x = -4; x <= 4; x++) {
-            for (int y = -4; y <= 4; y++) {
-                vec2 offset = vec2(float(x), float(y)) * u_blurRadius;
-                vec2 sampleCoord = clamp(v_texCoord + offset, vec2(0.0), vec2(1.0)); 
-                // FIXME: Filter wraps even with the clamp
-                // Gaussian weight based on distance from center
-                float weight = exp(-dot(offset, offset) / (2.0 * u_blurRadius * u_blurRadius));
-                color += texture(u_texture, sampleCoord) * weight;
-                totalWeight += weight;
-            }
+        // Render nothing outside current fade zone
+        if ((gl_FragCoord.x < tstart.x)
+            || (gl_FragCoord.y < tstart.y)
+            || (gl_FragCoord.x > tend.x)
+            || (gl_FragCoord.y > tend.y))
+        {
+            outColor = vec4 (0.0,0.0,0.0,1.0);
+            return;
         }
-        // Normalize the accumulated color
-        outColor = max(texture(u_texture, v_texCoord), color * u_bloomIntensity);
 
-        // outColor.r += u_bloomIntensity * 0.0;
+        vec2 adjTexCoord;
+        adjTexCoord.x = (gl_FragCoord.x - tstart.x) / tsize.x;
+        adjTexCoord.y = (gl_FragCoord.y - tstart.y) / tsize.y;
+
+        outColor = texture(u_texture, adjTexCoord);
+        // outColor.r = u_vert;
+        // outColor.b = u_horiz;
     }`;
-
-    private _bloomIntensityLocation: WebGLUniformLocation;
-    private _bloomIntensity: number = 0.15;
 
     constructor(private gl: WebGL2RenderingContext) {
 
@@ -88,7 +93,8 @@ export class DSBloomRenderer {
             createProgram(gl, this.vertexShaderSource, this.fragmentShaderSource));
 
         this._textureLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_texture'));
-        this._bloomIntensityLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_bloomIntensity'));
+        this._vertLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_vert'));
+        this._horizLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_horiz'));
 
         // Define the vertex attribute pointer for position within the VAO
         gl.enableVertexAttribArray(VertexAttribLocations.POSITION);
@@ -100,7 +106,6 @@ export class DSBloomRenderer {
     }
 
     public resize(): void {
-
         const gl = this.gl;
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, this._framebuffer);
@@ -144,7 +149,8 @@ export class DSBloomRenderer {
 
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.uniform1i(this._textureLocation, 0); // Set the texture uniform to use texture unit 0
-        gl.uniform1f(this._bloomIntensityLocation, this._bloomIntensity);
+        gl.uniform1f(this._vertLocation, this.vert);
+        gl.uniform1f(this._horizLocation, this.horiz);
 
         // Draw the fullscreen quad
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

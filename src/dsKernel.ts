@@ -89,8 +89,9 @@ export class DSKernel {
         this.terminal.write("\x1b[7m");  // Invert video
         this.terminal.write(randstr);
         this.terminal.write("\x1b[27m"); // Regular video
+        this.terminal.startWarmup(1000);
 
-        await sleep(800);
+        await sleep(1000);
         this.terminal.reset();
 
         // Read NVRAM
