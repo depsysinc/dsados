@@ -4,6 +4,8 @@ import { FitAddon } from '@xterm/addon-fit';
 
 import { DSKernel } from './dsKernel';
 import { DSStream } from './dsStream';
+import { DSScreenRenderer } from "./renderer/dsScreenRenderer";
+import { DSScanlineRenderer } from "./renderer/dsScanlineRenderer";
 
 function isMobileDevice(): boolean {
     const userAgent = navigator.userAgent;
@@ -25,6 +27,8 @@ export class DSTerminal {
     private _baudPromise: Promise<void> | undefined;
     private _baudBuffer: string;
     private _baudResolver: (value: void | PromiseLike<void>) => void;
+    private _screenrender: DSScreenRenderer;
+    private _scanlinerenderer: DSScanlineRenderer;
 
     get cols(): number {
         return this._terminal.cols;
@@ -50,6 +54,21 @@ export class DSTerminal {
 
         // Open the terminal in the specified container
         this._webglAddon = new WebglAddon();
+        WebglAddon.onInit = (gl: WebGL2RenderingContext) => {
+            this._scanlinerenderer = new DSScanlineRenderer(gl);
+            this._screenrender = new DSScreenRenderer(gl);
+        };
+
+        WebglAddon.onResize = (cellwidth: number, cellheight: number) => {
+            this._scanlinerenderer.resize(cellheight);
+            this._screenrender.resize();
+        }
+
+        WebglAddon.onRender = (texture: WebGLTexture) => {
+            this._scanlinerenderer.render(texture);
+            this._screenrender.render(this._scanlinerenderer.texture);
+        }
+
         t.loadAddon(this._webglAddon);
 
         this._fitAddon = new FitAddon();
@@ -67,7 +86,6 @@ export class DSTerminal {
 
         // Call resize directly (no propagation because we're booting)
         this._resize();
-        this._webglAddon?.startFadeIn(1500);
 
         window.addEventListener('resize', () => { this.handleResize() });
 
@@ -79,7 +97,7 @@ export class DSTerminal {
         // Hook up per frame processing
         this._baudBuffer = "";
         requestAnimationFrame(() => { this._baudFrame() });
-        
+
         // TODO: Add listeners for keystrokes, clicks, and touches
 
         t.focus();
@@ -169,8 +187,7 @@ export class DSTerminal {
             t.options.fontSize--;
             newdim = this._fitAddon.proposeDimensions();
         }
-
-        t.resize(newdim.cols - 1, newdim.rows);
+        t.resize(newdim.cols, newdim.rows);
     }
 
     /*

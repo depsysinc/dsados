@@ -8,9 +8,17 @@
   * Exceptions
     * make all prototypes explicit
     * Switch all tests to test type rather than err string
-* term
-  * create framerender callback hook
-  * pull out effects into depsysweb
+* terminal
+  * fix resize to not do linear search of font sizes to get proper size
+  * custom framebuffer pipeline
+    * create framerender callback hook
+    * pull out effects into depsysweb
+
+Render text to text texture
+Pass text texture to processing chain
+render(sourceTexture)
+final link in the chain renders to the default framebuffer.0
+
   * different fonts for different vintages of computer
   * Implement custom gl effects calls
     * slow fuzzy warmup
@@ -18,16 +26,11 @@
   * Enable click and touch
   * Enable images
 * process
-  * init
-    * switch to executing autoexec.dssh
   * autoexec.dssh
-    * set PATH
-    * set up /local structure if needed
-    * load shell
+    * look for profile in /local/
   * dssh
-    * -l login shell, read autoexec.dssh and drop to prompt
-    * command history persistence across boots <--->
     * [tab] complete
+    * command history persistence across boots <--->
   * chmod
   * nvram
   * mv

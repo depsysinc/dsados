@@ -390,6 +390,11 @@ class CommandLinePrompt {
             }
             return false;
         }
+        // Check for [tab]
+        if (data == "\t") {
+            this._shell.stdout.write("\x07");
+            return false;
+        }
         // If LF we're done
         if (data == "\r") {
             this._shell.stdout.write("\n");
