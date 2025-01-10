@@ -43,8 +43,8 @@ export class DSBloomRenderer {
         for (int x = -4; x <= 4; x++) {
             for (int y = -4; y <= 4; y++) {
                 vec2 offset = vec2(float(x), float(y)) * u_blurRadius;
-                vec2 sampleCoord = clamp(v_texCoord + offset, vec2(0.0), vec2(1.0)); 
-                // FIXME: Filter wraps even with the clamp
+                vec2 sampleCoord = v_texCoord + offset; 
+
                 // Gaussian weight based on distance from center
                 float weight = exp(-dot(offset, offset) / (2.0 * u_blurRadius * u_blurRadius));
                 color += texture(u_texture, sampleCoord) * weight;
@@ -113,6 +113,8 @@ export class DSBloomRenderer {
         gl.bindTexture(gl.TEXTURE_2D, this._texture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
