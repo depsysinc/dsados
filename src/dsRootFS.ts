@@ -23,6 +23,7 @@ import { PRPwd } from "./process/pwd";
 import { PRReset } from "./process/reset";
 import { PRSleep } from "./process/sleep";
 // WEBFILE TRAVERSAL IMPORTS
+import root_data_32x32_test_png from "./root/data/32x32_test.png";
 import root_data_bazisa_txt from "./root/data/bazisa.txt";
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
 import root_data_depsys_txt from "./root/data/depsys.txt";
@@ -89,6 +90,11 @@ export function buildrootfs(): DSFileSystem {
     // Traversing root/data
     dirstack.push(curdir);
     curdir = curdir.mkdir('data');
+    
+    // Creating root/data/32x32_test.png
+    curfile = new DSIWebFile(fs, root_data_32x32_test_png);
+    curdir.addfile("32x32_test.png", curfile);
+    
     
     // Creating root/data/bazisa.txt
     curfile = new DSIWebFile(fs, root_data_bazisa_txt);

@@ -8,62 +8,52 @@ export class DSSpriteRenderer {
     private _program: WebGLProgram;
     private _vertexArrayObject: WebGLVertexArrayObject;
     private _quadBuffer: WebGLBuffer | null;
-    private _textureLocation: WebGLUniformLocation;
-
-    private _framebuffer: WebGLFramebuffer | null;
-    private _texture: WebGLTexture | null;
 
     readonly vertexShaderSource = `#version 300 es
     layout (location = ${VertexAttribLocations.POSITION}) in vec2 a_position;
     
-    out vec2 v_texCoord; // Pass texture coordinates to fragment shader
-    
     void main() {
-        v_texCoord = a_position * 0.5 + 0.5; // Map from [-1,1] to [0,1]
         gl_Position = vec4(a_position, 0.0, 1.0);
     }`;
 
     readonly fragmentShaderSource = `#version 300 es
     precision mediump float;
     
-    uniform sampler2D u_texture; // Texture sampler
-    uniform float u_pixelHeight; // The simulated pixel height
+    uniform vec2 u_fbDimensions;
+    uniform vec2 u_pixelDimensions;
+    uniform vec2 u_spriteCoord;
+    uniform sampler2D u_texture;
     
-    in vec2 v_texCoord;          // Interpolated texture coordinates from vertex shader
     out vec4 outColor;           // Output color for the fragment
     
     void main() {
-        outColor = texture(u_texture, v_texCoord);
-        if (u_pixelHeight < 2.0) {
-            return;
+        vec2 trueCoord = u_spriteCoord * u_pixelDimensions;
+        vec2 fragCoord = vec2(
+            gl_FragCoord.x,
+            u_fbDimensions.y - gl_FragCoord.y);
+        ivec2 textureDimensions = textureSize(u_texture, 0);
+        if (
+                (fragCoord.x >= trueCoord.x) &&
+                (fragCoord.y >= trueCoord.y) &&
+                (fragCoord.x <= (trueCoord.x + u_pixelDimensions.x * float(textureDimensions.x))) &&
+                (fragCoord.y <= (trueCoord.y + u_pixelDimensions.y * float(textureDimensions.y)))
+            ) {
+            
+            float tx = (fragCoord.x - trueCoord.x)/float(textureDimensions.x)/u_pixelDimensions.x;
+            float ty = (fragCoord.y - trueCoord.y)/float(textureDimensions.y)/u_pixelDimensions.y;
+            outColor = texture(u_texture, vec2(tx,ty));
+            // outColor.r += 0.5;
         }
-        
-        float lastPixelPos = mod(float(gl_FragCoord.y - 1.0), u_pixelHeight);
-        float lastCenterDistance = (lastPixelPos - u_pixelHeight * 0.5) / (u_pixelHeight * 0.5);
-
-        float pixelPos = mod(float(gl_FragCoord.y), u_pixelHeight);
-        float centerDistance = (pixelPos - u_pixelHeight * 0.5) / (u_pixelHeight * 0.5);
-
-        // This reliably detects when we have passed over the center line of a pixel
-        // Guaranteeing at least one line rendered at full intensity
-        //if ((lastCenterDistance < 0.0) && (centerDistance >= 0.0)) {
-        //    return;
-        //}
-
-        float falloff = pow(abs(centerDistance), 1.5);
-        outColor.rgb -= vec3(falloff);
     }`;
 
-    private _pixelheightLocation: WebGLUniformLocation;
+    private _fbDimensionsLocation: WebGLUniformLocation;
+    private _pixelDimensionsLocation: WebGLUniformLocation;
     private _pixelheight: number;
+    private _spritecoordLocation: WebGLUniformLocation;
+    private _pixelwidth: number;
+    private _textureLocation: WebGLUniformLocation;
 
     constructor(private gl: WebGL2RenderingContext) {
-
-        // FRAMEBUFFER
-
-        // Create the framebuffer
-        this._framebuffer = gl.createFramebuffer();
-        this._texture = gl.createTexture();
 
         // VAO
         this._vertexArrayObject = gl.createVertexArray();
@@ -84,52 +74,23 @@ export class DSSpriteRenderer {
         this._program = throwIfFalsy(
             createProgram(gl, this.vertexShaderSource, this.fragmentShaderSource));
 
+        this._fbDimensionsLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_fbDimensions'));
+        this._pixelDimensionsLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_pixelDimensions'));
+        this._spritecoordLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_spriteCoord'));
         this._textureLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_texture'));
-        this._pixelheightLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_pixelHeight'));
 
         // Define the vertex attribute pointer for position within the VAO
         gl.enableVertexAttribArray(VertexAttribLocations.POSITION);
         gl.vertexAttribPointer(VertexAttribLocations.POSITION, 2, gl.FLOAT, false, 0, 0);
     }
 
-    public get texture() {
-        return this._texture;
+    public resize(pixelwidth: number, pixelheight: number): void {
+        this._pixelwidth = pixelwidth;
+        this._pixelheight = pixelheight;
     }
 
-    public resize(cellheight: number): void {
-        this._pixelheight = cellheight / 16.0;
-
+    public render(spritetexture: WebGLTexture, x: number, y: number): void {
         const gl = this.gl;
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this._framebuffer);
-
-        // Create a texture to use as the color attachment
-        const width = gl.canvas.width;
-        const height = gl.canvas.height;
-
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, this._texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-        // Attach the texture to the framebuffer as the color attachment
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this._texture, 0);
-
-        // Unbind the framebuffer for now
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.bindTexture(gl.TEXTURE_2D, null);
-    }
-
-    public render(texture: WebGLTexture): void {
-        const gl = this.gl;
-        
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this._framebuffer);
-
-        // Clear the screen if needed
-        gl.clearColor(0.0, 0.0, 0.0, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT);
 
         // Use the fullscreen shader program
         gl.useProgram(this._program);
@@ -137,12 +98,14 @@ export class DSSpriteRenderer {
         // Bind the VAO for the fullscreen quad
         gl.bindVertexArray(this._vertexArrayObject);
 
-        // Bind the texture as the active texture
         gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, spritetexture);
 
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.uniform1i(this._textureLocation, 0); // Set the texture uniform to use texture unit 0
-        gl.uniform1f(this._pixelheightLocation, this._pixelheight);
+        gl.uniform2f(this._fbDimensionsLocation, gl.canvas.width, gl.canvas.height);
+        gl.uniform1i(this._textureLocation, 0);
+        gl.uniform2f(this._pixelDimensionsLocation, this._pixelwidth, this._pixelheight);
+        gl.uniform2f(this._spritecoordLocation, x, y);
+
 
         // Draw the fullscreen quad
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
