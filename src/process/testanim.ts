@@ -37,20 +37,30 @@ export class PRTestAnim extends DSProcess {
         const sprite = DSKernel.terminal.newSprite(images);
         sprite.enabled = true;
         let done = false;
-        this.stdin.read().then(() => { done = true; });
+
         this.stdout.write("\n[PRESS ANY KEY TO EXIT]\n");
 
-        while (!done) {
-            await sleep(100);
-            sprite.i = (sprite.i + 1) % sprite.texture.length;
+        const update = () => {
+            if (done) {
+                DSKernel.terminal.resetSprites();
+                return;
+            }
+            requestAnimationFrame(update);
+            const now = performance.now();
+
+            sprite.i = (now/100) % sprite.texture.length;
+            sprite.x = (now/5) % DSKernel.terminal.width;
+            sprite.y = (now/10) % DSKernel.terminal.height;
             // Userland responsible for requesting refresh
             // when sprite changes happen
             DSKernel.terminal.refresh();
         }
+        requestAnimationFrame(update);
+        await this.stdin.read();
+        done = true;
 
         // Userland responsible for resetting sprite subsystem
         // when done (Sprites will stay in last state otherwise!)
-        DSKernel.terminal.resetSprites();
         return;
     }
 }
