@@ -92,7 +92,7 @@ export class DSSpriteRenderer {
         this._pixelheight = pixelheight;
     }
 
-    public render(spritetexture: WebGLTexture, x: number, y: number): void {
+    public render(spritetexture: WebGLTexture, spriteindex: number, x: number, y: number): void {
         const gl = this.gl;
 
         // Use the fullscreen shader program
@@ -106,7 +106,7 @@ export class DSSpriteRenderer {
 
         gl.uniform2f(this._fbDimensionsLocation, gl.canvas.width, gl.canvas.height);
         gl.uniform1i(this._textureLocation, 0);
-        gl.uniform1i(this._textureIndexLocation, 0);
+        gl.uniform1i(this._textureIndexLocation, spriteindex);
         gl.uniform2f(this._pixelDimensionsLocation, this._pixelwidth, this._pixelheight);
         gl.uniform2f(this._spritecoordLocation, x, y);
 

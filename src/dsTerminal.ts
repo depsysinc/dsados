@@ -11,13 +11,21 @@ import { DSBloomRenderer } from "./renderer/dsBloomRenderer";
 import { DSVertHorizRenderer } from "./renderer/dsVertHorizRenderer";
 import { DSSpriteRenderer } from "./renderer/dsSpriteRenderer";
 
-import testpng from "./root/data/gorzocrop.png";// "./root/data/32x32_test.png";
+import { TextureArray, createTexture, deleteTexture } from './renderer/renderUtils';
 
 function isMobileDevice(): boolean {
     const userAgent = navigator.userAgent;
 
     // Check for Android or iOS
     return /android/i.test(userAgent) || /iPad|iPhone|iPod/.test(userAgent);
+}
+
+export type DSSprite = {
+    texture: TextureArray,
+    x: number,
+    y: number,
+    i: number,
+    enabled: boolean
 }
 
 export class DSTerminal {
@@ -52,8 +60,7 @@ export class DSTerminal {
     private _warmupStart: number;
     private _warmupDuration: number;
     private _spriterenderer: DSSpriteRenderer;
-    private _spritetexture: WebGLTexture;
-    private _spriteimage: HTMLImageElement;
+    private _sprites: DSSprite[] = [];
 
     get cols(): number { return this._terminal.cols; }
     get rows(): number { return this._terminal.rows; }
@@ -84,33 +91,6 @@ export class DSTerminal {
             this._verthorizrenderer = new DSVertHorizRenderer(gl);
             this._screenrender = new DSScreenRenderer(gl);
             this._glInitSuccess = true;
-
-            this._spriteimage = new Image();
-            this._spriteimage.src = testpng;
-            this._spriteimage.onload = () => {
-                const img = this._spriteimage;
-                this._spritetexture = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._spritetexture);
-                gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, img.width, img.height, 1);
-                gl.texSubImage3D(
-                    gl.TEXTURE_2D_ARRAY,  // TARGET
-                    0,                    // LEVEL 
-                    0,                    // xoffset 
-                    0,                    // yoffset
-                    0,                    // zoffset
-                    img.width,
-                    img.height,
-                    1,                    // depth
-                    gl.RGBA,
-                    gl.UNSIGNED_BYTE,
-                    img
-                );
-
-                gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-            }
         };
 
         WebglAddon.onResize = (cellwidth: number, cellheight: number) => {
@@ -143,8 +123,11 @@ export class DSTerminal {
                 this._terminal.refresh(0, this._terminal.rows - 1);
             }
             // Sprites rendered to shim framebuffer
-            const off = { x: 0, y: 0 };
-            this._spriterenderer.render(this._spritetexture, off.x, off.y);
+            for(let i = 0; i < this._sprites.length; i++) {
+                const sprite = this._sprites[i];
+                if (sprite.enabled)
+                    this._spriterenderer.render(sprite.texture.glid, sprite.i, sprite.x, sprite.y);
+            }
             this._scanlinerenderer.render(texture);
             this._bloomrenderer.render(this._scanlinerenderer.texture);
             // OPT: Skip verthoriz if params are 1.0
@@ -248,6 +231,10 @@ export class DSTerminal {
         this._terminal.write(msg);
     }
 
+    refresh() {
+        this._terminal.refresh(0, this._terminal.rows - 1);
+    }
+
     reset() {
         this._terminal.reset();
     }
@@ -282,16 +269,24 @@ export class DSTerminal {
         this._terminal.refresh(0, this._terminal.rows - 1);
     }
 
-    /*
-for (let i = 0; i < t.cols; i++) {
-    t.write(String(i % 10));
-}
-t.writeln("");
-for (let i = 0; i < t.cols; i++) {
-    t.write(String(i / 10).charAt(0));
-}
-*/
+    public newSprite(images: HTMLImageElement[]): DSSprite {
+        const sprite: DSSprite = {
+            texture: createTexture(this._gl, images),
+            x: 0,
+            y: 0,
+            i: 0,
+            enabled: false
+        };
+        this._sprites.push(sprite);
+        return sprite;
+    }
 
+    public clearSprites() {
+        this._sprites.forEach( (sprite) => {
+             deleteTexture(this._gl, sprite.texture);
+        });
+        this._sprites = [];
+    }
 }
 
 function oscillatingStep(t: number): number {
