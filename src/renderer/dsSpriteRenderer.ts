@@ -22,7 +22,8 @@ export class DSSpriteRenderer {
     uniform vec2 u_fbDimensions;
     uniform vec2 u_pixelDimensions;
     uniform vec2 u_spriteCoord;
-    uniform sampler2D u_texture;
+    uniform mediump sampler2DArray u_texture;
+    uniform int u_textureIndex;
     
     out vec4 outColor;           // Output color for the fragment
     
@@ -31,7 +32,7 @@ export class DSSpriteRenderer {
         vec2 fragCoord = vec2(
             gl_FragCoord.x,
             u_fbDimensions.y - gl_FragCoord.y);
-        ivec2 textureDimensions = textureSize(u_texture, 0);
+        ivec3 textureDimensions = textureSize(u_texture, 0);
         if (
                 (fragCoord.x >= trueCoord.x) &&
                 (fragCoord.y >= trueCoord.y) &&
@@ -41,7 +42,7 @@ export class DSSpriteRenderer {
             
             float tx = (fragCoord.x - trueCoord.x)/float(textureDimensions.x)/u_pixelDimensions.x;
             float ty = (fragCoord.y - trueCoord.y)/float(textureDimensions.y)/u_pixelDimensions.y;
-            outColor = texture(u_texture, vec2(tx,ty));
+            outColor = texture(u_texture, vec3(tx,ty,float(u_textureIndex)));
             // outColor.r += 0.5;
         }
     }`;
@@ -52,6 +53,7 @@ export class DSSpriteRenderer {
     private _spritecoordLocation: WebGLUniformLocation;
     private _pixelwidth: number;
     private _textureLocation: WebGLUniformLocation;
+    private _textureIndexLocation: WebGLUniformLocation;
 
     constructor(private gl: WebGL2RenderingContext) {
 
@@ -78,6 +80,7 @@ export class DSSpriteRenderer {
         this._pixelDimensionsLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_pixelDimensions'));
         this._spritecoordLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_spriteCoord'));
         this._textureLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_texture'));
+        this._textureIndexLocation = throwIfFalsy(gl.getUniformLocation(this._program, 'u_textureIndex'));
 
         // Define the vertex attribute pointer for position within the VAO
         gl.enableVertexAttribArray(VertexAttribLocations.POSITION);
@@ -99,10 +102,11 @@ export class DSSpriteRenderer {
         gl.bindVertexArray(this._vertexArrayObject);
 
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, spritetexture);
+        gl.bindTexture(gl.TEXTURE_2D_ARRAY, spritetexture);
 
         gl.uniform2f(this._fbDimensionsLocation, gl.canvas.width, gl.canvas.height);
         gl.uniform1i(this._textureLocation, 0);
+        gl.uniform1i(this._textureIndexLocation, 0);
         gl.uniform2f(this._pixelDimensionsLocation, this._pixelwidth, this._pixelheight);
         gl.uniform2f(this._spritecoordLocation, x, y);
 

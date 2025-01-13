@@ -11,7 +11,7 @@ import { DSBloomRenderer } from "./renderer/dsBloomRenderer";
 import { DSVertHorizRenderer } from "./renderer/dsVertHorizRenderer";
 import { DSSpriteRenderer } from "./renderer/dsSpriteRenderer";
 
-import testpng from "./root/data/32x32_test.png";
+import testpng from "./root/data/gorzocrop.png";// "./root/data/32x32_test.png";
 
 function isMobileDevice(): boolean {
     const userAgent = navigator.userAgent;
@@ -90,22 +90,26 @@ export class DSTerminal {
             this._spriteimage.onload = () => {
                 const img = this._spriteimage;
                 this._spritetexture = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_2D, this._spritetexture);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-                gl.texImage2D(
-                    gl.TEXTURE_2D,
-                    0,
-                    gl.RGBA,
+                gl.bindTexture(gl.TEXTURE_2D_ARRAY, this._spritetexture);
+                gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, img.width, img.height, 1);
+                gl.texSubImage3D(
+                    gl.TEXTURE_2D_ARRAY,  // TARGET
+                    0,                    // LEVEL 
+                    0,                    // xoffset 
+                    0,                    // yoffset
+                    0,                    // zoffset
                     img.width,
                     img.height,
-                    0,
+                    1,                    // depth
                     gl.RGBA,
                     gl.UNSIGNED_BYTE,
                     img
                 );
+
+                gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+                gl.texParameteri(gl.TEXTURE_2D_ARRAY, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             }
         };
 
