@@ -10,12 +10,14 @@ export class PRTestAnim extends DSProcess {
         const optparser = new DSOptionParser(
             this.procname,
             true,
-            "   test image animation subsystem"
+            "   test sprite subsystem"
         );
         let nextarg = optparser.parseWithUsageAndHelp(this.argv);
         if (nextarg != -1)
             throw new DSProcessError(optparser.usage());
         this.stdout.write("\x1bc");
+
+        // User binary responsible for image loading
         this.stdout.write("Loading test images...\n");
         const animdir = this.cwd.getdir("/data/test/animation");
         const images: HTMLImageElement[] = [];
@@ -30,17 +32,25 @@ export class PRTestAnim extends DSProcess {
                 images.push(img);
             }
         };
+
+        // Create the sprite
         const sprite = DSKernel.terminal.newSprite(images);
         sprite.enabled = true;
         let done = false;
         this.stdin.read().then(() => { done = true; });
         this.stdout.write("\n[PRESS ANY KEY TO EXIT]\n");
+
         while (!done) {
             await sleep(100);
             sprite.i = (sprite.i + 1) % sprite.texture.length;
+            // Userland responsible for requesting refresh
+            // when sprite changes happen
             DSKernel.terminal.refresh();
         }
-        DSKernel.terminal.clearSprites();
+
+        // Userland responsible for resetting sprite subsystem
+        // when done (Sprites will stay in last state otherwise!)
+        DSKernel.terminal.resetSprites();
         return;
     }
 }

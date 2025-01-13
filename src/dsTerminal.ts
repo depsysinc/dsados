@@ -281,7 +281,7 @@ export class DSTerminal {
         return sprite;
     }
 
-    public clearSprites() {
+    public resetSprites() {
         this._sprites.forEach( (sprite) => {
              deleteTexture(this._gl, sprite.texture);
         });
