@@ -62,6 +62,8 @@ export class DSTerminal {
     private _spriterenderer: DSSpriteRenderer;
     private _sprites: DSSprite[] = [];
 
+    get xterm() { return this._terminal; }
+
     get cols(): number { return this._terminal.cols; }
     get rows(): number { return this._terminal.rows; }
     get width(): number { return this._width; }
@@ -78,6 +80,7 @@ export class DSTerminal {
                 fontWeight: 'normal',  // Optional: font weight
                 cursorBlink: true,
                 scrollback: 0,
+                drawBoldTextInBrightColors: true,
             }
         );
 
@@ -123,7 +126,7 @@ export class DSTerminal {
                 this._terminal.refresh(0, this._terminal.rows - 1);
             }
             // Sprites rendered to shim framebuffer
-            for(let i = 0; i < this._sprites.length; i++) {
+            for (let i = 0; i < this._sprites.length; i++) {
                 const sprite = this._sprites[i];
                 if (sprite.enabled)
                     this._spriterenderer.render(sprite.texture.glid, sprite.i, sprite.x, sprite.y);
@@ -141,12 +144,14 @@ export class DSTerminal {
 
         t.open(terminalContainer);
 
-        this._terminal.options.convertEol = true;
+        t.options.convertEol = true;
 
         // Set the font color using the theme property
         t.options.theme = {
             foreground: '#00ff00', // Green font color
             background: '#000000', // Black background
+            brightGreen: '#a0ffa0',
+            green: '#00ff00'
         };
 
         // Call resize directly (no propagation because we're booting)
@@ -282,8 +287,8 @@ export class DSTerminal {
     }
 
     public resetSprites() {
-        this._sprites.forEach( (sprite) => {
-             deleteTexture(this._gl, sprite.texture);
+        this._sprites.forEach((sprite) => {
+            deleteTexture(this._gl, sprite.texture);
         });
         this._sprites = [];
     }

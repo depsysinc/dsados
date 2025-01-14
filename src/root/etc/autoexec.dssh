@@ -4,5 +4,6 @@
 
 PATH=/bin
 reset
-cat /data/depsys.txt
-/bin/testanim
+# cat /data/depsys.txt
+# /bin/mdbrowser /data/test/mdbrowser.test.md
+/bin/testcurses

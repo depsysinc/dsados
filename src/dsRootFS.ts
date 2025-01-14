@@ -17,21 +17,24 @@ import { PREnv } from "./process/env";
 import { PRFile } from "./process/file";
 import { PRInit } from "./process/init";
 import { PRLs } from "./process/ls";
+import { PRMDBrowser } from "./process/mdbrowser";
 import { PRMkdir } from "./process/mkdir";
 import { PRPs } from "./process/ps";
 import { PRPwd } from "./process/pwd";
 import { PRReset } from "./process/reset";
 import { PRSleep } from "./process/sleep";
 import { PRTestAnim } from "./process/testanim";
+import { PRTestCurses } from "./process/testcurses";
 // WEBFILE TRAVERSAL IMPORTS
-import root_data_bazisa_txt from "./root/data/bazisa.txt";
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
 import root_data_depsys_txt from "./root/data/depsys.txt";
-import root_data_test_32x32_test_png from "./root/data/test/32x32_test.png";
 import root_data_test_animation_32x32_A_png from "./root/data/test/animation/32x32_A.png";
 import root_data_test_animation_32x32_B_png from "./root/data/test/animation/32x32_B.png";
 import root_data_test_animation_32x32_C_png from "./root/data/test/animation/32x32_C.png";
-import root_data_test_gorzocrop_png from "./root/data/test/gorzocrop.png";
+import root_data_test_bazisa_txt from "./root/data/test/bazisa.txt";
+import root_data_test_image_32x32_test_png from "./root/data/test/image/32x32_test.png";
+import root_data_test_image_gorzocrop_png from "./root/data/test/image/gorzocrop.png";
+import root_data_test_mdbrowser_test_md from "./root/data/test/mdbrowser.test.md";
 import root_etc_autoexec_dssh from "./root/etc/autoexec.dssh";
 import root_etc_dsos_conf from "./root/etc/dsos.conf";
 
@@ -66,6 +69,9 @@ export function buildrootfs(): DSFileSystem {
     binfile = new DSIProcessFile(fs, PRLs);
     bindir.addfile("ls", binfile);
     
+    binfile = new DSIProcessFile(fs, PRMDBrowser);
+    bindir.addfile("mdbrowser", binfile);
+    
     binfile = new DSIProcessFile(fs, PRMkdir);
     bindir.addfile("mkdir", binfile);
     
@@ -84,6 +90,9 @@ export function buildrootfs(): DSFileSystem {
     binfile = new DSIProcessFile(fs, PRTestAnim);
     bindir.addfile("testanim", binfile);
     
+    binfile = new DSIProcessFile(fs, PRTestCurses);
+    bindir.addfile("testcurses", binfile);
+    
     // BIN FOOTER
     bindir.chmod(DSFilePerms.rx());
 
@@ -98,11 +107,6 @@ export function buildrootfs(): DSFileSystem {
     dirstack.push(curdir);
     curdir = curdir.mkdir('data');
     
-    // Creating root/data/bazisa.txt
-    curfile = new DSIWebFile(fs, root_data_bazisa_txt);
-    curdir.addfile("bazisa.txt", curfile);
-    
-    
     // Creating root/data/deprecated_systems_incorporated.txt
     curfile = new DSIWebFile(fs, root_data_deprecated_systems_incorporated_txt);
     curdir.addfile("deprecated_systems_incorporated.txt", curfile);
@@ -116,11 +120,6 @@ export function buildrootfs(): DSFileSystem {
     // Traversing root/data/test
     dirstack.push(curdir);
     curdir = curdir.mkdir('test');
-    
-    // Creating root/data/test/32x32_test.png
-    curfile = new DSIWebFile(fs, root_data_test_32x32_test_png);
-    curdir.addfile("32x32_test.png", curfile);
-    
     
     // Traversing root/data/test/animation
     dirstack.push(curdir);
@@ -145,9 +144,32 @@ export function buildrootfs(): DSFileSystem {
     curdir = dirstack.pop();
     // Exited root/data/test/animation
         
-    // Creating root/data/test/gorzocrop.png
-    curfile = new DSIWebFile(fs, root_data_test_gorzocrop_png);
+    // Creating root/data/test/bazisa.txt
+    curfile = new DSIWebFile(fs, root_data_test_bazisa_txt);
+    curdir.addfile("bazisa.txt", curfile);
+    
+    
+    // Traversing root/data/test/image
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('image');
+    
+    // Creating root/data/test/image/32x32_test.png
+    curfile = new DSIWebFile(fs, root_data_test_image_32x32_test_png);
+    curdir.addfile("32x32_test.png", curfile);
+    
+    
+    // Creating root/data/test/image/gorzocrop.png
+    curfile = new DSIWebFile(fs, root_data_test_image_gorzocrop_png);
     curdir.addfile("gorzocrop.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/test/image
+        
+    // Creating root/data/test/mdbrowser.test.md
+    curfile = new DSIWebFile(fs, root_data_test_mdbrowser_test_md);
+    curdir.addfile("mdbrowser.test.md", curfile);
     
     
     curdir.chmod(DSFilePerms.rx());
