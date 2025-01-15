@@ -2,7 +2,15 @@ import { DSKernel } from "../dsKernel";
 import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
-export class PRMDBrowser extends DSProcess {
+abstract class MDBlock {
+    parseline(line: string): void {
+    }
+}
+
+class RootBlock extends MDBlock {
+}
+
+export class PRDSMDBrowser extends DSProcess {
 
     protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
@@ -19,7 +27,7 @@ export class PRMDBrowser extends DSProcess {
         try {
             const inode = this.cwd.getfile(filename);
             const text = await inode.contentAsText().read();
-            // this.stdout.write(text);
+            const page = this.parse(text);
         } catch (e) {
             throw new DSProcessError(`'${filename}' not found\n`);
         }
@@ -27,5 +35,16 @@ export class PRMDBrowser extends DSProcess {
             await this.stdin.read();
             DSKernel.terminal.xterm.scrollToTop();
         }
+    }
+
+    parse(text: string) {
+        // Break text up into blocks
+        const lines = text.split('\n');
+        let rootblock: RootBlock;
+
+        lines.forEach((line, index) => {
+            console.log(`${index}: ${line}`);
+            // Check if this is the beginning of a new block
+        });
     }
 }

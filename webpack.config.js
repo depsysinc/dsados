@@ -49,7 +49,7 @@ const config = {
                 use: [stylesHandler, 'css-loader'],
             },
             {
-                test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif|txt|conf|dssh|md)$/i,
+                test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif|txt|conf|dssh|dsmd)$/i,
                 type: 'asset/resource',
                 generator: {
                     filename: '[hash].[name][ext][query]' // Custom output path

@@ -11,13 +11,13 @@ import { DSIWebFile } from "./filesystem/dsIWebFile";
 
 // BIN IMPORTS
 import { PRCat } from "./process/cat";
+import { PRDSMDBrowser } from "./process/dsmdbrowser";
 import { DSShell } from "./process/dssh";
 import { PREcho } from "./process/echo";
 import { PREnv } from "./process/env";
 import { PRFile } from "./process/file";
 import { PRInit } from "./process/init";
 import { PRLs } from "./process/ls";
-import { PRMDBrowser } from "./process/mdbrowser";
 import { PRMkdir } from "./process/mkdir";
 import { PRPs } from "./process/ps";
 import { PRPwd } from "./process/pwd";
@@ -32,9 +32,9 @@ import root_data_test_animation_32x32_A_png from "./root/data/test/animation/32x
 import root_data_test_animation_32x32_B_png from "./root/data/test/animation/32x32_B.png";
 import root_data_test_animation_32x32_C_png from "./root/data/test/animation/32x32_C.png";
 import root_data_test_bazisa_txt from "./root/data/test/bazisa.txt";
+import root_data_test_dsmdbrowser_test_dsmd from "./root/data/test/dsmdbrowser.test.dsmd";
 import root_data_test_image_32x32_test_png from "./root/data/test/image/32x32_test.png";
 import root_data_test_image_gorzocrop_png from "./root/data/test/image/gorzocrop.png";
-import root_data_test_mdbrowser_test_md from "./root/data/test/mdbrowser.test.md";
 import root_etc_autoexec_dssh from "./root/etc/autoexec.dssh";
 import root_etc_dsos_conf from "./root/etc/dsos.conf";
 
@@ -50,6 +50,9 @@ export function buildrootfs(): DSFileSystem {
 
     binfile = new DSIProcessFile(fs, PRCat);
     bindir.addfile("cat", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRDSMDBrowser);
+    bindir.addfile("dsmdbrowser", binfile);
     
     binfile = new DSIProcessFile(fs, DSShell);
     bindir.addfile("dssh", binfile);
@@ -68,9 +71,6 @@ export function buildrootfs(): DSFileSystem {
     
     binfile = new DSIProcessFile(fs, PRLs);
     bindir.addfile("ls", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRMDBrowser);
-    bindir.addfile("mdbrowser", binfile);
     
     binfile = new DSIProcessFile(fs, PRMkdir);
     bindir.addfile("mkdir", binfile);
@@ -149,6 +149,11 @@ export function buildrootfs(): DSFileSystem {
     curdir.addfile("bazisa.txt", curfile);
     
     
+    // Creating root/data/test/dsmdbrowser.test.dsmd
+    curfile = new DSIWebFile(fs, root_data_test_dsmdbrowser_test_dsmd);
+    curdir.addfile("dsmdbrowser.test.dsmd", curfile);
+    
+    
     // Traversing root/data/test/image
     dirstack.push(curdir);
     curdir = curdir.mkdir('image');
@@ -167,11 +172,6 @@ export function buildrootfs(): DSFileSystem {
     curdir = dirstack.pop();
     // Exited root/data/test/image
         
-    // Creating root/data/test/mdbrowser.test.md
-    curfile = new DSIWebFile(fs, root_data_test_mdbrowser_test_md);
-    curdir.addfile("mdbrowser.test.md", curfile);
-    
-    
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
     // Exited root/data/test

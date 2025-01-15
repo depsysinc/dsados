@@ -18,7 +18,7 @@ declare module '*.dssh' {
     export default value;
 }
 
-declare module '*.md' {
+declare module '*.dsmd' {
     const value: string;
     export default value;
 }

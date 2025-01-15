@@ -5,5 +5,5 @@
 PATH=/bin
 reset
 # cat /data/depsys.txt
-# /bin/mdbrowser /data/test/mdbrowser.test.md
-/bin/testcurses
+/bin/dsmdbrowser /data/test/dsmdbrowser.test.dsmd
+# /bin/testcurses

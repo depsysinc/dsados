@@ -9,7 +9,7 @@ module.exports = {
     }],
   },
   moduleNameMapper: {
-    "\\.(css|less|scss|sass|txt|png|conf|dssh|md)$": "identity-obj-proxy",
+    "\\.(css|less|scss|sass|txt|png|conf|dssh|dsmd)$": "identity-obj-proxy",
     "^@xterm/addon-webgl$": "<rootDir>/__mocks__/@xterm/addon-webgl.js",
     "^@xterm/addon-fit$": "<rootDir>/__mocks__/@xterm/addon-fit.js",
   },
