@@ -1,20 +1,23 @@
 Some regular text
 
-Some *italics* text
+Some *italic* text
 
 Some **bold** text
 
-Some ***bold and italics*** text
+Some ***bold and italic*** text
 
-Some ital*ics in the middle of wo*rds
-<!ENDDOC!>
-An example of an unmatched *italics
+Some italics in the mid*dle of wo*rds
 
-An example of an unmatched bold at EOL**
+Some bold in the mid**dle of wor**ds
+
+An example of an unmatched *italics delimiter
+
+An example of an unmatched bold delimiter at the EOL**
 
 Some overlapping **bold *and** italics*
 
    A sentence with leading and trailing whitespace     
+
 # This is a First level title
 
 This is a short paragraph after the title.

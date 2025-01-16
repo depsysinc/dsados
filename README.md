@@ -1,6 +1,6 @@
 # TODO
 * fs
-  * writeable files in DSIDBFileSystem <--->
+  * writeable files in DSIDBFileSystem
   * S3 backed filesystem
 * general
   * Exceptions
@@ -8,9 +8,11 @@
     * Switch all tests to test type rather than err string
 * terminal
   * FIXME resize to not do linear search of font sizes to get proper size
-  * update scanline filter to kick in at 3 lines per pixel or bigger
+  * update scanline filter to choose a definite line as center (avoid weird moire patterns or dim renders)
   * Enable click and touch
   * Enable images
+* tests
+  * move test binaries into test folder
 * process
   * autoexec.dssh
     * look for profile in /local/
@@ -21,11 +23,9 @@
   * nvram
   * mv
   * cp
-  * docview
-    * Paragraphs, sections
-    * images
+  * dsmdbrowser
+    * get words/rows to remember attributes
   * imgview
-    * addon-image or custom?
 
 # Setup
 * [enable docker support in wsl 2 distros](https://docs.docker.com/desktop/features/wsl/#enabling-docker-support-in-wsl-2-distros)
