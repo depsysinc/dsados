@@ -11,6 +11,9 @@ import { DSIWebFile } from "./filesystem/dsIWebFile";
 
 // BIN IMPORTS
 import { PRCat } from "./process/cat";
+import { PRTestAnim } from "./process/demoanim";
+import { PRDemoCurses } from "./process/democurses";
+import { PRDemoMarkdown } from "./process/demomarkdown";
 import { PRDSMDBrowser } from "./process/dsmdbrowser";
 import { DSShell } from "./process/dssh";
 import { PREcho } from "./process/echo";
@@ -23,8 +26,6 @@ import { PRPs } from "./process/ps";
 import { PRPwd } from "./process/pwd";
 import { PRReset } from "./process/reset";
 import { PRSleep } from "./process/sleep";
-import { PRTestAnim } from "./process/testanim";
-import { PRTestCurses } from "./process/testcurses";
 // WEBFILE TRAVERSAL IMPORTS
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
 import root_data_depsys_txt from "./root/data/depsys.txt";
@@ -32,7 +33,7 @@ import root_data_test_animation_32x32_A_png from "./root/data/test/animation/32x
 import root_data_test_animation_32x32_B_png from "./root/data/test/animation/32x32_B.png";
 import root_data_test_animation_32x32_C_png from "./root/data/test/animation/32x32_C.png";
 import root_data_test_bazisa_txt from "./root/data/test/bazisa.txt";
-import root_data_test_dsmdbrowser_test_dsmd from "./root/data/test/dsmdbrowser.test.dsmd";
+import root_data_test_demomarkdown_dsmd from "./root/data/test/demomarkdown.dsmd";
 import root_data_test_image_32x32_test_png from "./root/data/test/image/32x32_test.png";
 import root_data_test_image_gorzocrop_png from "./root/data/test/image/gorzocrop.png";
 import root_etc_autoexec_dssh from "./root/etc/autoexec.dssh";
@@ -50,6 +51,15 @@ export function buildrootfs(): DSFileSystem {
 
     binfile = new DSIProcessFile(fs, PRCat);
     bindir.addfile("cat", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRTestAnim);
+    bindir.addfile("demoanim", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRDemoCurses);
+    bindir.addfile("democurses", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRDemoMarkdown);
+    bindir.addfile("demomarkdown", binfile);
     
     binfile = new DSIProcessFile(fs, PRDSMDBrowser);
     bindir.addfile("dsmdbrowser", binfile);
@@ -86,12 +96,6 @@ export function buildrootfs(): DSFileSystem {
     
     binfile = new DSIProcessFile(fs, PRSleep);
     bindir.addfile("sleep", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRTestAnim);
-    bindir.addfile("testanim", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRTestCurses);
-    bindir.addfile("testcurses", binfile);
     
     // BIN FOOTER
     bindir.chmod(DSFilePerms.rx());
@@ -149,9 +153,17 @@ export function buildrootfs(): DSFileSystem {
     curdir.addfile("bazisa.txt", curfile);
     
     
-    // Creating root/data/test/dsmdbrowser.test.dsmd
-    curfile = new DSIWebFile(fs, root_data_test_dsmdbrowser_test_dsmd);
-    curdir.addfile("dsmdbrowser.test.dsmd", curfile);
+    // Traversing root/data/test/bin
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('bin');
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/test/bin
+        
+    // Creating root/data/test/demomarkdown.dsmd
+    curfile = new DSIWebFile(fs, root_data_test_demomarkdown_dsmd);
+    curdir.addfile("demomarkdown.dsmd", curfile);
     
     
     // Traversing root/data/test/image

@@ -5,5 +5,4 @@
 PATH=/bin
 reset
 # cat /data/depsys.txt
-/bin/dsmdbrowser /data/test/dsmdbrowser.test.dsmd
-# /bin/testcurses
+/bin/demomarkdown

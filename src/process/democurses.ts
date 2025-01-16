@@ -3,7 +3,7 @@ import { DSOptionParser } from "../lib/dsOptionParser";
 import { gotoxy, reset, scrolldown, scrollup, set_cursor, setattr, textattrs } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
 
-export class PRTestCurses extends DSProcess {
+export class PRDemoCurses extends DSProcess {
 
     protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
