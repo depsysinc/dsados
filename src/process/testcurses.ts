@@ -15,82 +15,83 @@ export class PRTestCurses extends DSProcess {
         if (nextarg != -1)
             throw new DSProcessError(optparser.usage());
         const stdout = this.stdout;
+        const w = (str: string) => { stdout.write(str); };
 
-        reset(stdout);
-        set_cursor(stdout, false);
-        
+        w(reset());
+        w(set_cursor(false));
+
         const cols = DSKernel.terminal.cols;
         const rows = DSKernel.terminal.rows;
 
         // TEST character attributes
-        setattr(stdout, textattrs.reset);
+        w(setattr(textattrs.reset));
         stdout.write("DEFAULT text\n");
-        setattr(stdout, textattrs.fg_green);
+        w(setattr(textattrs.fg_green));
         stdout.write("GREEN text\n");
-        setattr(stdout, textattrs.bold);
+        w(setattr(textattrs.bold));
         stdout.write("BOLD text\n");
-        setattr(stdout, textattrs.dim);
+        w(setattr(textattrs.dim));
         stdout.write("DIM text\n");
-        setattr(stdout, textattrs.normal);
+        w(setattr(textattrs.normal));
 
-        setattr(stdout, textattrs.italic);
+        w(setattr(textattrs.italic));
         stdout.write("ITALIC text\n");
-        setattr(stdout, textattrs.noitalic);
+        w(setattr(textattrs.noitalic));
 
-        setattr(stdout, textattrs.underline);
+        w(setattr(textattrs.underline));
         stdout.write("UNDERLINED text\n");
-        setattr(stdout, textattrs.doubleunderline);
+        w(setattr(textattrs.doubleunderline));
         stdout.write("DOUBLE UNDERLINED text\n");
-        setattr(stdout, textattrs.curlyunderline);
+        w(setattr(textattrs.curlyunderline));
         stdout.write("CURLY UNDERLINED text\n");
-        setattr(stdout, textattrs.dottedunderline);
+        w(setattr(textattrs.dottedunderline));
         stdout.write("DOTTED UNDERLINED text\n");
-        setattr(stdout, textattrs.dashedunderline);
+        w(setattr(textattrs.dashedunderline));
         stdout.write("DASHED UNDERLINED text\n");
-        setattr(stdout, textattrs.nounderline);
+        w(setattr(textattrs.nounderline));
 
-        setattr(stdout, textattrs.inverted);
+        w(setattr(textattrs.inverted));
         stdout.write("INVERTED text\n");
-        setattr(stdout, textattrs.noninverted);
+        w(setattr(textattrs.noninverted));
 
-        setattr(stdout, textattrs.reset);
+        w(setattr(textattrs.reset));
         await this._wait("[PRESS TO CONTINUE]", rows);
 
         // TEST writing to corners
-        reset(stdout);
-        gotoxy(stdout, 1, 1);
+        w(reset());
+        w(gotoxy(1, 1));
         stdout.write("T");
-        gotoxy(stdout, cols, 1);
+        w(gotoxy(cols, 1));
         stdout.write("T");
-        gotoxy(stdout, 1, rows);
+        w(gotoxy(1, rows));
         stdout.write("T");
-        gotoxy(stdout, cols, rows);
+        w(gotoxy(cols, rows));
         stdout.write("T");
         await this._wait("[PRESS TO CONTINUE]");
 
         // TEST SCROLLUP
-        reset(stdout);
+        w(reset());
         this.fillViewport();
 
         for (let i = 1; i < 4; i++) {
             await this._wait(`[PRESS TO SCROLLUP ${i}]`, 1);
-            scrollup(stdout, i);
+            w(scrollup(i));
         }
         await this._wait("[PRESS TO CONTINUE]");
 
         // TEST SCROLLDOWN
-        reset(stdout);
+        w(reset());
         this.fillViewport();
 
         for (let i = 1; i < 4; i++) {
             await this._wait(`[PRESS TO SCROLLDOWN ${i}]`, rows);
-            scrolldown(stdout, i);
+            w(scrolldown( i));
         }
         await this._wait("[PRESS TO EXIT]");
 
         // All done, clean up
-        set_cursor(stdout, true);
-        reset(stdout);
+        w(set_cursor(true));
+        w(reset());
     }
 
     private fillViewport() {
@@ -99,23 +100,23 @@ export class PRTestCurses extends DSProcess {
         const rows = DSKernel.terminal.rows;
 
         for (let y = 1; y <= rows; y++) {
-            gotoxy(stdout, 1, y);
+            stdout.write(gotoxy(1, y));
             let linestr = "";
             for (let i = 0; i < cols; i++)
                 linestr += String.fromCharCode(64 + y);
             stdout.write(linestr);
         }
     }
-    
+
     private _wait(msg: string, y = -1) {
         const x = Math.floor((DSKernel.terminal.cols - msg.length) / 2);
         if (y < 0)
             y = Math.floor(DSKernel.terminal.rows / 2);
-        
-        gotoxy(this.stdout, x, y);
-        setattr(this.stdout, textattrs.inverted);
+
+        this.stdout.write(gotoxy(x, y));
+        this.stdout.write(setattr(textattrs.inverted));
         this.stdout.write(msg);
-        setattr(this.stdout, textattrs.noninverted);
+        this.stdout.write(setattr( textattrs.noninverted));
         return this.stdin.read();
     }
 }

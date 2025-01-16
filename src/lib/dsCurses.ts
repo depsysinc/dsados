@@ -34,44 +34,38 @@ export const textattrs = {
     fg_cyan: '36',
     fg_white: '37',
 
-    bg_black: '40', 
-    bg_red: '41', 
-    bg_green: '42', 
-    bg_yellow: '43', 
-    bg_blue: '44', 
-    bg_magenta: '45', 
-    bg_cyan: '46', 
-    bg_white: '47', 
+    bg_black: '40',
+    bg_red: '41',
+    bg_green: '42',
+    bg_yellow: '43',
+    bg_blue: '44',
+    bg_magenta: '45',
+    bg_cyan: '46',
+    bg_white: '47',
 }
 
-export function set_cursor(stdout: DSStream, visible: boolean) {
-    const w = (str: string) => { stdout.write(str); };
+export function set_cursor(visible: boolean): string {
     if (visible)
-        w("\x1b[?25h");
+        return ("\x1b[?25h");
     else
-        w("\x1b[?25l");
+        return ("\x1b[?25l");
 }
 
-export function reset(stdout: DSStream) {
-    const w = (str: string) => { stdout.write(str); };
-    w("\x1bc");     // RESET
+export function reset(): string {
+    return ("\x1bc");     // RESET
 }
-export function gotoxy(stdout: DSStream, x: number, y: number) {
-    const w = (str: string) => { stdout.write(str); };
-    w(`\x1b[${y};${x}H`);
+export function gotoxy(x: number, y: number): string {
+    return (`\x1b[${y};${x}H`);
 }
 
-export function scrolldown(stdout: DSStream, rows: number) {
-    const w = (str: string) => { stdout.write(str); };
-    w(`\x1b[${rows}T`);
+export function scrolldown(rows: number): string {
+    return (`\x1b[${rows}T`);
 }
 
-export function scrollup(stdout: DSStream, rows: number) {
-    const w = (str: string) => { stdout.write(str); };
-    w(`\x1b[${rows}S`);
+export function scrollup(rows: number): string {
+    return (`\x1b[${rows}S`);
 }
 
-export function setattr(stdout: DSStream, attr: string) {
-    const w = (str: string) => { stdout.write(str); };
-        w(`\x1b[${attr}m`);
+export function setattr(attr: string): string {
+    return (`\x1b[${attr}m`);
 }

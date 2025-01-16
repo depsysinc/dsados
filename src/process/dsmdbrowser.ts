@@ -41,6 +41,10 @@ class ItalicToken extends MatchToken {
         if (!this.matched) {
             word.length += 1;
             word.text += "*";
+            return;
+        }
+        if (this.opening) {
+            word.text += "";
         }
     }
 
@@ -391,8 +395,8 @@ export class PRDSMDBrowser extends DSProcess {
             let fillstr: string = `${width}`;
             fillstr = fillstr.padEnd(width,"#");
     
-            reset(this.stdout);
-            setattr(this.stdout, textattrs.fg_green);
+            this.stdout.write(reset());
+            this.stdout.write(setattr(textattrs.fg_green));
             this.stdout.write(fillstr+"\n");
             doc.rows.forEach((row, idx) => {
                 this.stdout.write(`${row.text}\n`);
