@@ -1,10 +1,10 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
-import { reset, setattr, textattrs } from "../lib/dsCurses";
+import { gotoxy, reset, setattr, textattrs } from "../lib/dsCurses";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
 // TOKENS
 abstract class DSMDToken {
-    render(word: DSMDWord) { 
+    render(word: DSMDWord) {
         throw new Error(`${this.constructor.name} render unsupported`);
     }
 }
@@ -44,7 +44,12 @@ class ItalicToken extends MatchToken {
             return;
         }
         if (this.opening) {
-            word.text += "";
+            word.text += setattr(textattrs.italic);
+            word.italics_open = true;
+        }
+        if (this.closing) {
+            word.text += setattr(textattrs.noitalic);
+            word.italics_close = true;
         }
     }
 
@@ -58,6 +63,14 @@ class BoldToken extends MatchToken {
         if (!this.matched) {
             word.length += 2;
             word.text += "**";
+        }
+        if (this.opening) {
+            word.text += setattr(textattrs.bold);
+            word.italics_open = true;
+        }
+        if (this.closing) {
+            word.text += setattr(textattrs.normal);
+            word.italics_close = true;
         }
     }
 
@@ -281,7 +294,7 @@ class DSMDRow {
     length: number = 0;
     word: DSMDWord = new DSMDWord();
 
-    constructor(readonly width: number) {}
+    constructor(readonly width: number) { }
 
     addword() {
         this.text += this.word.text;
@@ -387,28 +400,58 @@ export class PRDSMDBrowser extends DSProcess {
         const doc = new DSMDDoc();
         doc.parse(text);
 
-        let width = 25;
+        let index = 8;
+        let width = 16;
+        let height = 15;
+        const w = (str: string) => { this.stdout.write(str); };
+
         while (true) {
 
             doc.render(width);
-    
-            let fillstr: string = `${width}`;
-            fillstr = fillstr.padEnd(width,"#");
-    
-            this.stdout.write(reset());
-            this.stdout.write(setattr(textattrs.fg_green));
-            this.stdout.write(fillstr+"\n");
-            doc.rows.forEach((row, idx) => {
-                this.stdout.write(`${row.text}\n`);
-            });
-            this.stdout.write(fillstr+"\n");
+
+            let fillstr: string = "+";
+            fillstr = fillstr.padEnd(width + 1, "-");
+            fillstr += "+";
+
+            w(reset());
+            w(setattr(textattrs.fg_green));
+
+            // Draw border
+            w(setattr(textattrs.inverted) + gotoxy(1, 1) + fillstr);
+            for (let j = 1; j <= height; j++) {
+                w(gotoxy(1, j + 1) + "|");
+                w(gotoxy(width + 2, j + 1) + "|");
+            }
+            w(gotoxy(1, height + 2) + fillstr + setattr(textattrs.noninverted) + "\n");
+            w(
+                `index: ${index}\n` +
+                `width: ${width}\n` +
+                `height: ${height}\n`
+            )
+
+            for (let j = 0; j < height && j + index < doc.rows.length; j++) {
+                const row = doc.rows[j + index];
+                w(gotoxy(2, j + 2) + `${row.text}`);
+            }
             // this.stdout.write(doc.debugstr(""));
-    
+
             const char = await this.stdin.read();
             if (char == "\x1b[D") {
                 width -= 1;
             } else if (char == "\x1b[C") {
                 width += 1;
+            } else if (char == "\x1b[A") {
+                height -= 1;
+            } else if (char == "\x1b[B") {
+                height += 1;
+            } else if (char == "w") {
+                index -= 1;
+                if (index < 0)
+                    index = 0;
+            } else if (char == "s") {
+                if (index < doc.rows.length)
+                    index += 1;
+
             }
         }
     }
