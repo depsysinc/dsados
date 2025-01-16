@@ -1,10 +1,12 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
-import { reset } from "../lib/dsCurses";
+import { reset, setattr, textattrs } from "../lib/dsCurses";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
 // TOKENS
 abstract class DSMDToken {
-    render(word: DSMDWord) { }
+    render(word: DSMDWord) { 
+        throw new Error(`${this.constructor.name} render unsupported`);
+    }
 }
 
 class TextToken extends DSMDToken {
@@ -30,13 +32,16 @@ class WhiteSpaceToken extends DSMDToken {
 
 abstract class MatchToken extends DSMDToken {
     public matched = false;
-
-    abstract asTextToken(): TextToken;
+    public opening = false;
+    public closing = false;
 }
 
 class ItalicToken extends MatchToken {
-    asTextToken(): TextToken {
-        return new TextToken("*");
+    render(word: DSMDWord): void {
+        if (!this.matched) {
+            word.length += 1;
+            word.text += "*";
+        }
     }
 
     toString(): string {
@@ -45,8 +50,11 @@ class ItalicToken extends MatchToken {
 }
 
 class BoldToken extends MatchToken {
-    asTextToken(): TextToken {
-        return new TextToken("**");
+    render(word: DSMDWord): void {
+        if (!this.matched) {
+            word.length += 2;
+            word.text += "**";
+        }
     }
 
     toString(): string {
@@ -61,11 +69,10 @@ abstract class DSMDBlock {
 
     constructor(readonly doc: DSMDDoc) { }
 
-    protected tokenize(str: string): void {
-        let unprocessed = str;
+    protected tokenize(line: string): void {
+        let unprocessed = line.trim();
         while (unprocessed.length > 0) {
             let match: RegExpMatchArray;
-
             // Italics/bold/both
             match = unprocessed.match(/^(\*{1,3})/);
             if (match) {
@@ -102,6 +109,8 @@ abstract class DSMDBlock {
             console.log(unprocessed);
             break;
         }
+        // Append a whitespace token to signal EOL
+        this.tokens.push(new WhiteSpaceToken());
     }
 
     finalize() {
@@ -118,21 +127,15 @@ abstract class DSMDBlock {
                     if (((token instanceof BoldToken) && (matchtoken instanceof BoldToken)) ||
                         ((token instanceof ItalicToken) && (matchtoken instanceof ItalicToken))) {
                         token.matched = true;
+                        token.opening = true;
                         matchtoken.matched = true;
+                        matchtoken.closing = true;
+                        break;
                     }
                 }
             }
         }
-        // Convert unmatched emphasis tokens to text tokens
-        for (let i = 0; i < this.tokens.length; i++) {
-            const token = this.tokens[i];
-            if ((token instanceof MatchToken) && !token.matched)
-                this.tokens[i] = token.asTextToken();
-        }
-
-        // Collapse adjascent text tokens (Or just handle that case?)
-        // Append a terminal token
-        this.tokens.push(new WhiteSpaceToken());
+        // Compress whitespace
     }
 
     protected handle_emptyline() { }
@@ -230,7 +233,7 @@ class ParagraphBlock extends DSMDBlock {
         this.tokenize(line);
     }
     render(width: number, rows: DSMDRow[]): DSMDRow[] {
-        // Paragraph starts with a break and a new row
+        // Paragraph starts with a new row
         let currow = new DSMDRow(width);
         rows.push(currow);
         this.tokens.forEach((token) => {
@@ -262,6 +265,11 @@ class TitleBlock extends DSMDBlock {
 class DSMDWord {
     text: string = "";
     length: number = 0;
+
+    italics_open: boolean = false;
+    italics_close: boolean = false;
+    bold_open: boolean = false;
+    bold_close: boolean = false;
 }
 
 class DSMDRow {
@@ -278,7 +286,7 @@ class DSMDRow {
     }
 
     addtoken(token: DSMDToken): DSMDRow {
-        console.log(`${token.constructor.name} : ${this.word.length} : ${this.word.text}`);
+        // console.log(`${token.constructor.name} : ${this.word.length} : ${this.word.text}`);
         if (token instanceof WhiteSpaceToken) {
             // If empty row, then just add it
             if (this.length == 0) {
@@ -296,8 +304,8 @@ class DSMDRow {
                 this.finalize();
                 return newrow;
             }
-            this.word = new DSMDWord();
-        } else if (token instanceof TextToken) {
+            // this.word = new DSMDWord(); // Maybe don't need this.
+        } else {
             token.render(this.word);
         }
         return undefined;
@@ -320,7 +328,7 @@ class DSMDDoc {
         const lines = text.split('\n');
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
-            if (line.match(/^<!TERM!>/))
+            if (line.match(/^<!ENDDOC!>/))
                 break;
             const curblock = this.blocks[this.blocks.length - 1];
             curblock.parse_line(line);
@@ -340,10 +348,11 @@ class DSMDDoc {
 
     render(width: number) {
         this.rows = [];
-        this.blocks.forEach((block) => {
+        this.blocks.forEach((block, idx) => {
             block.render(width, this.rows);
+            if (idx != this.blocks.length - 1)
+                this.rows.push(new DSMDRow(width));
         });
-        // TODO: Trim empty rows at beginning and end
     }
 
     debugstr(indent: string): string {
@@ -374,7 +383,7 @@ export class PRDSMDBrowser extends DSProcess {
         const doc = new DSMDDoc();
         doc.parse(text);
 
-        let width = 20;
+        let width = 25;
         while (true) {
 
             doc.render(width);
@@ -382,13 +391,14 @@ export class PRDSMDBrowser extends DSProcess {
             let fillstr: string = `${width}`;
             fillstr = fillstr.padEnd(width,"#");
     
-            // this.stdout.write(doc.debugstr(""));
             reset(this.stdout);
+            setattr(this.stdout, textattrs.fg_green);
             this.stdout.write(fillstr+"\n");
             doc.rows.forEach((row, idx) => {
                 this.stdout.write(`${row.text}\n`);
             });
             this.stdout.write(fillstr+"\n");
+            // this.stdout.write(doc.debugstr(""));
     
             const char = await this.stdin.read();
             if (char == "\x1b[D") {
