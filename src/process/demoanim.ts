@@ -19,7 +19,7 @@ export class PRTestAnim extends DSProcess {
 
         // User binary responsible for image loading
         this.stdout.write("Loading test images...\n");
-        const animdir = this.cwd.getdir("/data/test/animation");
+        const animdir = this.cwd.getdir("/data/demo/animation");
         const images: HTMLImageElement[] = [];
         for (let i = 0; i < animdir.filelist.length; i++) {
             const file = animdir.filelist[i];

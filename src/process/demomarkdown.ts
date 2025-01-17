@@ -15,7 +15,7 @@ export class PRDemoMarkdown extends DSProcess {
         if (nextarg != -1)
             throw new DSProcessError(optparser.usage());
 
-        let filename = "/data/test/demomarkdown.dsmd";
+        let filename = "/data/demo/demomarkdown.dsmd";
         const inode = this.cwd.getfile(filename);
         const text = await inode.contentAsText().read();
         const doc = new DSMDDoc();
