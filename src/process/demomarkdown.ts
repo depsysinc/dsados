@@ -22,7 +22,7 @@ export class PRDemoMarkdown extends DSProcess {
         doc.parse(text);
 
         let index = 7;
-        let width = 19;
+        let width = 35;
         let height = 15;
         const w = (str: string) => { this.stdout.write(str); };
 

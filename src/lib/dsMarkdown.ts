@@ -64,11 +64,11 @@ class BoldToken extends MatchToken {
         }
         if (this.opening) {
             word.text += setattr(textattrs.bold);
-            word.italics_open = true;
+            word.bold_open = true;
         }
         if (this.closing) {
             word.text += setattr(textattrs.normal);
-            word.italics_close = true;
+            word.bold_close = true;
         }
     }
 
@@ -291,13 +291,24 @@ class DSMDRow {
     text: string = "";
     length: number = 0;
     word: DSMDWord = new DSMDWord();
+    bold_at_close: boolean = false;
+    italics_at_close: boolean = false;
 
     constructor(readonly width: number) { }
 
     addword() {
         this.text += this.word.text;
         this.length += this.word.length;
+        if (this.word.bold_open)
+            this.bold_at_close = true;
+        if (this.word.bold_close)
+            this.bold_at_close = false;
+        if (this.word.italics_open)
+            this.italics_at_close = true;
+        if (this.word.italics_close)
+            this.italics_at_close = false;
         this.word = new DSMDWord();
+
     }
 
     addtoken(token: DSMDToken): DSMDRow {
@@ -313,10 +324,40 @@ class DSMDRow {
             } else {
                 // Finalize this row
                 const newrow = new DSMDRow(this.width);
-                newrow.word = this.word;
+                const carryword = this.word;
+
+                // Carry over attributes
+                this.word = new DSMDWord();    // The closing word
+                newrow.word = new DSMDWord();  // The opening word
+                if (this.bold_at_close) {
+                    const boldtoken = new BoldToken();
+                    boldtoken.matched = true;
+                    boldtoken.closing = true;
+                    boldtoken.render(this.word);
+
+                    boldtoken.closing = false;
+                    boldtoken.opening = true;
+                    boldtoken.render(newrow.word);
+                }
+                if (this.italics_at_close) {
+                    const italicstoken = new ItalicToken();
+                    italicstoken.matched = true;
+                    italicstoken.closing = true;
+                    italicstoken.render(this.word);
+
+                    italicstoken.closing = false;
+                    italicstoken.opening = true;
+                    italicstoken.render(newrow.word);
+                }
+                this.addword();
                 newrow.addword();
+                
+                // Start the new row with the new word
+                newrow.word = carryword;
+                newrow.addword();
+
                 this.word = undefined;
-                this.finalize();
+
                 return newrow;
             }
             // this.word = new DSMDWord(); // Maybe don't need this.
@@ -324,10 +365,6 @@ class DSMDRow {
             token.render(this.word);
         }
         return undefined;
-    }
-    finalize() {
-        // 
-        // Close out all the active attributes
     }
 }
 

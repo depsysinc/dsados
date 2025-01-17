@@ -1,10 +1,12 @@
+# Text Attributes
+
 Some regular text
 
 Some *italic* text
 
 Some **bold** text
 
-Some ***bold and italic*** text
+Some ***bold and italic text that is long enough to test double*** wrapping
 
 Some italics in the mid*dle of wo*rds
 
@@ -16,9 +18,7 @@ An example of an unmatched bold delimiter at the EOL**
 
 Some overlapping **bold *and** italics*
 
-   A sentence with leading and trailing whitespace     
-
-# This is a First level title
+# Titles
 
 This is a short paragraph after the title.
 
@@ -32,6 +32,10 @@ This is a simple one line paragraph followed immediately by a title after a sing
 This is the above mentioned text that should form it's own paragraph
 
 # This title has extra     whitespace
+
+# $$$$ Paragraphs
+
+   A sentence with leading and trailing whitespace     
 
 This is a long paragraph with no linebreaks to demonstrate text wrapping.  Many words and such need to be added to this paragraph in order to guarantee that the wrapping gets tested properly.  We want at least a couple of linebreaks to have to be inserted to make this whole thing work.  That should be enough.
 
