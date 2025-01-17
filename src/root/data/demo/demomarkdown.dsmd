@@ -1,4 +1,45 @@
-# Text Attributes
+# $$$$ Lists
+
+- First list item
+   - First sublist item
+   - Second sublist item
+- Second list item
+with extra text on a new line
+- Third list item 
+
+A paragraph to break up the list
+
+   - A new second level list
+
+# $$$$ Code
+
+```
+This is a codeblock.
+   The whitespace  should   be            respected
+
+
+Line that is longer than the window will be cut off.  We shall demonstrate that with this very long line.
+```
+
+# $$$$ Titles
+
+This is a short paragraph after the title.
+
+# This is a first level title
+## This is a Second level title
+### This is a Third level title
+
+# This is a very long title to make it easy to test title wrapping
+
+This is a simple one line paragraph followed immediately by a title after a single linebreak.
+# This is the above mentioned title
+
+# This is a title followed immediately by text
+This is the above mentioned text that should form it's own paragraph
+
+# This title has extra     whitespace
+
+# $$$$ Text Attributes
 
 Some regular text
 
@@ -18,24 +59,8 @@ An example of an unmatched bold delimiter at the EOL**
 
 Some overlapping **bold *and** italics*
 
-# Titles
-
-This is a short paragraph after the title.
-
-## This is a Second level title
-### This is a Third level title
-
-This is a simple one line paragraph followed immediately by a title after a single linebreak.
-# This is the above mentioned title
-
-# This is a title followed immediately by text
-This is the above mentioned text that should form it's own paragraph
-
-# This title has extra     whitespace
-
 # $$$$ Paragraphs
 
-   A sentence with leading and trailing whitespace     
 
 This is a long paragraph with no linebreaks to demonstrate text wrapping.  Many words and such need to be added to this paragraph in order to guarantee that the wrapping gets tested properly.  We want at least a couple of linebreaks to have to be inserted to make this whole thing work.  That should be enough.
 
@@ -47,37 +72,11 @@ This last line should also be in the same paragraph as the previous two.
 
 There were multiple spaces between this paragraph and the last.  This should demonstrate that the extra spaces are ignored.
 
+   This paragraph has leading and trailing whitespace     
+
 This is a paragraph    with a bunch of strange     whitespace.
          All this     whitespace should    be ignored.
-```
-This is a codeblock.
-   The whitespace  should   be            respected
 
-
-Line that is longer than the window will be cut off.  We shall demonstrate that with this very long line.
-```
-
-* First list item
-   * First sublist item
-   * Second sublist item
-* Second list item
-with extra text on a new line
-* Third list item 
-
-A paragraph to break up the list
-
-   * A new second level list
-
-Some *italicized text*
-
-Some par*tially itali*cized text
-
-Some **bolded text**
-
-Some ***underlined and bolded text***
-
-An image 
+# $$$$ Images
 that is inline with text, does it wrap, sure does hmmm![an image](https://mcpnet.ca/~gentili/32x32_test.png "Title") intersting
 with text after
-
-A codeblock \``'*insid  e*'`` a para`gr`aph

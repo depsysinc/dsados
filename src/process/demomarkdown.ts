@@ -21,9 +21,9 @@ export class PRDemoMarkdown extends DSProcess {
         const doc = new DSMDDoc();
         doc.parse(text);
 
-        let index = 7;
-        let width = 35;
-        let height = 15;
+        let index = 0;
+        let width = 70;
+        let height = 23;
         const w = (str: string) => { this.stdout.write(str); };
 
         while (true) {
@@ -73,7 +73,10 @@ export class PRDemoMarkdown extends DSProcess {
                 if (index < doc.rows.length)
                     index += 1;
 
+            } else if (char == "q") {
+                break;
             }
         }
+        w(reset());
     }
 }
