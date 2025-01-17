@@ -33,6 +33,7 @@ export const textattrs = {
     fg_magenta: '35',
     fg_cyan: '36',
     fg_white: '37',
+    fg_default: '39',
 
     bg_black: '40',
     bg_red: '41',
@@ -42,6 +43,7 @@ export const textattrs = {
     bg_magenta: '45',
     bg_cyan: '46',
     bg_white: '47',
+    bg_default: '49'
 }
 
 export function set_cursor(visible: boolean): string {

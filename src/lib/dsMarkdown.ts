@@ -191,7 +191,12 @@ abstract class DSMDBlock {
         this.handle_text(line);
     }
 
-    render(width: number, rows: DSMDRow[]): void { };
+    render(width: number, rows: DSMDRow[]): void {
+        const row = new DSMDRow(width);
+        row.text = `[${this.constructor.name}]`;
+        row.length = row.text.length;
+        rows.push(row);
+    };
 
     abstract debugstr(indent: string): string;
 }
@@ -208,6 +213,7 @@ class CodeBlock extends DSMDBlock {
         return str;
     }
 
+    // Fully custom line parser
     public parse_line(line: string): void {
         if (line.match(CodeBlock.coderegex)) {
             this.doc.blocks.push(new NullBlock(this.doc));
@@ -215,6 +221,19 @@ class CodeBlock extends DSMDBlock {
         }
         this.rawlines.push(line);
     }
+
+    // Fully custom renderer
+    render(width: number, rows: DSMDRow[]): void {
+        this.rawlines.forEach((line) => {
+            const row = new DSMDRow(width);
+            row.length = width;
+            row.text = line.slice(0, width);
+            row.text = row.text.padEnd(width);
+            row.text = setattr(`${textattrs.bg_black};${textattrs.dim}`)
+                + row.text + setattr(`${textattrs.bg_default};${textattrs.normal}`);
+            rows.push(row);
+        });
+    };
 }
 
 class NullBlock extends DSMDBlock {
@@ -267,6 +286,38 @@ class TitleBlock extends DSMDBlock {
     constructor(doc: DSMDDoc, readonly level: number, titlestring: string) {
         super(doc);
         this.tokenize(titlestring);
+    }
+
+    render(width: number, rows: DSMDRow[]): DSMDRow[] {
+        // Title starts with new row
+        let maxlength = 0;
+        let currow = new DSMDRow(width);
+        rows.push(currow);
+        this.tokens.forEach((token) => {
+            let newrow = currow.addtoken(token);
+            if (newrow) {
+                rows.push(newrow);
+                maxlength = currow.length > maxlength ? currow.length : maxlength;
+                currow = newrow;
+            }
+        });
+        // Pad out the last row to the max length
+        for (let i = currow.length; i < maxlength; i++) {
+            currow.text += " ";
+            currow.length += 1;
+        }
+        // Now add attrs to last row
+        let openattr = "";
+        let closeattr = setattr(textattrs.nounderline);
+        if (this.level == 1) {
+            openattr = setattr(textattrs.doubleunderline);
+        } else if (this.level == 2) {
+            openattr = setattr(textattrs.underline);
+        } else if (this.level == 3) {
+            openattr = setattr(textattrs.dottedunderline);
+        }
+        currow.text = openattr + currow.text + closeattr;
+        return rows;
     }
 
     debugstr(indent: string): string {
@@ -351,7 +402,7 @@ class DSMDRow {
                 }
                 this.addword();
                 newrow.addword();
-                
+
                 // Start the new row with the new word
                 newrow.word = carryword;
                 newrow.addword();
