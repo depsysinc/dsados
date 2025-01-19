@@ -33,19 +33,14 @@
   * NB: If dev in both depsysweb and xterm.js, up wsl mem to 16gb in `%UserProfile%\\.wslconfig`
     * `[wsl2]`
     * `memory=16gb`
-* In wsl bash terminal
+* NB: If silent failure for the following: in wsl bash terminal
   * `git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/bin/git-credential-manager.exe"`
 * Clone depsysinc/xterm.js 
   * Dev Containers: Clone Repository in Named Container Volume (depsysweb)
   * `yarn run esbuild-watch`
 * Clone depsysinc/depsysweb
   * Dev Containers: Clone Repository in Named Container Volume (depsysweb)
-```
-cd /workspaces/xterm.js/addons/addon-webgl
-yarn link
-cd /workspaces/depsysweb
-yarn link @xterm/addon-webgl
-```
+  * NB: Repo links set up automatically by `init.sh`
 
 # Development
 ## Live Update
