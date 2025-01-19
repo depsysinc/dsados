@@ -29,6 +29,7 @@ export class PRDemoMarkdown extends DSProcess {
         while (true) {
 
             doc.render(width);
+            console.log(doc);
 
             let fillstr: string = "+";
             fillstr = fillstr.padEnd(width + 1, "-");
@@ -54,7 +55,6 @@ export class PRDemoMarkdown extends DSProcess {
                 const row = doc.rows[j + index];
                 w(gotoxy(2, j + 2) + `${row.text}`);
             }
-            // this.stdout.write(doc.debugstr(""));
 
             const char = await this.stdin.read();
             if (char == "\x1b[D") {

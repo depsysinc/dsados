@@ -1,24 +1,34 @@
 # $$$$ Lists
 
 - First list item
+- Second list item
    - First sublist item
    - Second sublist item
-- Second list item
-with extra text on a new line
+with extra text on a new line 
 - Third list item 
 
 A paragraph to break up the list
 
    - A new second level list
 
+<!ENDDOC!>
 # $$$$ Code
-
 ```
 This is a codeblock.
    The whitespace  should   be            respected
 
 
 Line that is longer than the window will be cut off.  We shall demonstrate that with this very long line.
+
+Some ascii art to demonstrate whitespace conservation:
+======================================
+     ____            _____           
+    / __ \___  ____ / ___/__  _______
+   / / / / _ \/ __ \\__ \/ / / / ___/
+  / /_/ /  __/ /_/ /__/ / /_/ (__  ) 
+ /_____/\___/ .___/____/\__, /____/  
+           /_/         /____/        
+======================================
 ```
 
 # $$$$ Titles

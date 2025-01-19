@@ -186,6 +186,12 @@ abstract class DSMDBlock {
         }
 
         // List
+        const listregex = ListBlock.listregex;
+        match = line.match(listregex);
+        if (match) {
+            this.doc.blocks.push(new ListBlock(this.doc, line));
+            return;
+        }
 
         // Regular text
         this.handle_text(line);
@@ -199,6 +205,39 @@ abstract class DSMDBlock {
     };
 
     abstract debugstr(indent: string): string;
+}
+
+class ListItem {
+    
+}
+
+class ListBlock extends DSMDBlock {
+    static readonly listregex = /^(\s*)\-\s(.+)/;
+
+    lastlineempty: boolean = false;
+
+    spacedlist: boolean = false;
+
+    constructor (doc: DSMDDoc, firstitem: string) {
+        super(doc);
+    }
+
+    protected handle_emptyline(): void {
+        this.lastlineempty = true;
+    }
+
+    public parse_line(line: string): void {
+        // First we check if this is another list line
+        // If it is
+        
+        super.parse_line(line);
+    }
+
+    debugstr(indent: string): string {
+        let str = `${indent}[ListBlock]\n`;
+        return str;
+    }
+
 }
 
 class CodeBlock extends DSMDBlock {
