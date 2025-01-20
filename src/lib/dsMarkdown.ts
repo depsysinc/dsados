@@ -77,6 +77,19 @@ class BoldToken extends MatchToken {
     }
 }
 
+class ListItemToken extends DSMDToken {
+    constructor(readonly level: number, readonly spaced: boolean) {
+        super();
+    }
+    render(word: DSMDWord): void {
+        // NB: no whitespace token in here because ' ' after dash 
+        //  is considered part of same word as the dash
+        let prefix = `${" ".repeat((this.level - 1) * 2)}- `;
+        word.text += prefix;
+        word.length += prefix.length;
+    }
+}
+
 // BLOCKS
 
 abstract class DSMDBlock {
@@ -189,7 +202,10 @@ abstract class DSMDBlock {
         const listregex = ListBlock.listregex;
         match = line.match(listregex);
         if (match) {
-            this.doc.blocks.push(new ListBlock(this.doc, line));
+            const listblock = new ListBlock(this.doc);
+            this.doc.blocks.push(listblock);
+            listblock.parse_line(line);
+
             return;
         }
 
@@ -197,6 +213,7 @@ abstract class DSMDBlock {
         this.handle_text(line);
     }
 
+    // Default block renderer
     render(width: number, rows: DSMDRow[]): void {
         const row = new DSMDRow(width);
         row.text = `[${this.constructor.name}]`;
@@ -207,18 +224,13 @@ abstract class DSMDBlock {
     abstract debugstr(indent: string): string;
 }
 
-class ListItem {
-    
-}
-
 class ListBlock extends DSMDBlock {
-    static readonly listregex = /^(\s*)\-\s(.+)/;
+    static readonly listregex = /^(| {2}| {4})\-\s(.+)/;
 
     lastlineempty: boolean = false;
-
     spacedlist: boolean = false;
 
-    constructor (doc: DSMDDoc, firstitem: string) {
+    constructor(doc: DSMDDoc) {
         super(doc);
     }
 
@@ -226,11 +238,46 @@ class ListBlock extends DSMDBlock {
         this.lastlineempty = true;
     }
 
+    protected handle_text(line: string): void {
+        if (this.lastlineempty) {
+            const paragraph = new ParagraphBlock(this.doc);
+            this.doc.blocks.push(paragraph);
+            paragraph.parse_line(line);
+        } else
+        {
+            this.lastlineempty = false;
+            this.tokenize(line);
+        }
+    }
+
     public parse_line(line: string): void {
-        // First we check if this is another list line
-        // If it is
-        
-        super.parse_line(line);
+        // Look for list item
+        const match = line.match(ListBlock.listregex);
+        if (match) {
+            // Create a new list item token
+            const level = (match[1].length / 2 + 1);
+            const itemtoken = new ListItemToken(level, this.lastlineempty);
+            this.lastlineempty = false;
+            this.tokens.push(itemtoken);
+            this.tokenize(match[2]);
+        } else {
+            super.parse_line(line);
+        }
+    }
+
+    render(width: number, rows: DSMDRow[]): DSMDRow[] {
+        // start with sacrificial row
+        let currow = new DSMDRow(width);
+        this.tokens.forEach((token) => {
+            let newrow = currow.addtoken(token);
+            if (newrow) {
+                if ((token instanceof ListItemToken) && (token.spaced))
+                    rows.push(new DSMDRow(width));
+                rows.push(newrow);
+                currow = newrow;
+            }
+        });
+        return rows;
     }
 
     debugstr(indent: string): string {
@@ -305,6 +352,7 @@ class ParagraphBlock extends DSMDBlock {
     protected handle_text(line: string): void {
         this.tokenize(line);
     }
+
     render(width: number, rows: DSMDRow[]): DSMDRow[] {
         // Paragraph starts with a new row
         let currow = new DSMDRow(width);
@@ -380,6 +428,7 @@ class DSMDWord {
 class DSMDRow {
     text: string = "";
     length: number = 0;
+    indent: number = 0;
     word: DSMDWord = new DSMDWord();
     bold_at_close: boolean = false;
     italics_at_close: boolean = false;
@@ -403,7 +452,14 @@ class DSMDRow {
 
     addtoken(token: DSMDToken): DSMDRow {
         // console.log(`${token.constructor.name} : ${this.word.length} : ${this.word.text}`);
-        if (token instanceof WhiteSpaceToken) {
+        if (token instanceof ListItemToken) {
+            // Reset indent
+            this.indent = 0;
+            const newrow = this.finalize();
+            newrow.indent = token.level;
+            token.render(newrow.word);
+            return newrow;
+        } else if (token instanceof WhiteSpaceToken) {
             // If empty row, then just add it
             if (this.length == 0) {
                 this.addword();
@@ -412,49 +468,59 @@ class DSMDRow {
                 this.length += 1;
                 this.addword();
             } else {
-                // Finalize this row
-                const newrow = new DSMDRow(this.width);
-                const carryword = this.word;
-
-                // Carry over attributes
-                this.word = new DSMDWord();    // The closing word
-                newrow.word = new DSMDWord();  // The opening word
-                if (this.bold_at_close) {
-                    const boldtoken = new BoldToken();
-                    boldtoken.matched = true;
-                    boldtoken.closing = true;
-                    boldtoken.render(this.word);
-
-                    boldtoken.closing = false;
-                    boldtoken.opening = true;
-                    boldtoken.render(newrow.word);
-                }
-                if (this.italics_at_close) {
-                    const italicstoken = new ItalicToken();
-                    italicstoken.matched = true;
-                    italicstoken.closing = true;
-                    italicstoken.render(this.word);
-
-                    italicstoken.closing = false;
-                    italicstoken.opening = true;
-                    italicstoken.render(newrow.word);
-                }
-                this.addword();
-                newrow.addword();
-
-                // Start the new row with the new word
-                newrow.word = carryword;
-                newrow.addword();
-
-                this.word = undefined;
-
-                return newrow;
+                return this.finalize();
             }
-            // this.word = new DSMDWord(); // Maybe don't need this.
         } else {
             token.render(this.word);
         }
         return undefined;
+    }
+
+    finalize(): DSMDRow {
+        // Finalize this row
+        const carryword = this.word;
+        const newrow = new DSMDRow(this.width);
+
+        // Carry over attributes
+        this.word = new DSMDWord();    // The closing word
+        newrow.word = new DSMDWord();  // The opening word
+        if (this.bold_at_close) {
+            const boldtoken = new BoldToken();
+            boldtoken.matched = true;
+            boldtoken.closing = true;
+            boldtoken.render(this.word);
+
+            boldtoken.closing = false;
+            boldtoken.opening = true;
+            boldtoken.render(newrow.word);
+        }
+        if (this.italics_at_close) {
+            const italicstoken = new ItalicToken();
+            italicstoken.matched = true;
+            italicstoken.closing = true;
+            italicstoken.render(this.word);
+
+            italicstoken.closing = false;
+            italicstoken.opening = true;
+            italicstoken.render(newrow.word);
+        }
+        this.addword();
+        newrow.addword();
+        if (this.indent > 0) {
+            newrow.indent = this.indent;
+            const indentword = new DSMDWord();
+            indentword.text = "  ".repeat(newrow.indent);
+            indentword.length = indentword.text.length;
+            newrow.word = indentword;
+            newrow.addword();
+        }
+
+        // Start the new row with the new word
+        newrow.word = carryword;
+        newrow.addword();
+
+        return newrow;
+
     }
 }
 

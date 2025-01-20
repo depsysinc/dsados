@@ -2,6 +2,7 @@ import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSOptionParser } from "../lib/dsOptionParser";
 import { DSMDDoc } from "../lib/dsMarkdown";
 import { gotoxy, reset, setattr, textattrs } from "../lib/dsCurses";
+import { DSKernel } from "../dsKernel";
 
 export class PRDemoMarkdown extends DSProcess {
 
@@ -21,13 +22,22 @@ export class PRDemoMarkdown extends DSProcess {
         const doc = new DSMDDoc();
         doc.parse(text);
 
-        let index = 0;
+        let index = 16;
         let width = 70;
         let height = 23;
         const w = (str: string) => { this.stdout.write(str); };
 
         while (true) {
 
+            if (width < 4)
+                width = 4;
+            if (width > DSKernel.terminal.cols - 2)
+                width = DSKernel.terminal.cols - 2;
+            if (height > DSKernel.terminal.rows - 5)
+                height =DSKernel.terminal.rows - 5;
+            if (height < 4)
+                height = 4;
+            
             doc.render(width);
             console.log(doc);
 
@@ -48,7 +58,7 @@ export class PRDemoMarkdown extends DSProcess {
             w(
                 `index: ${index}\n` +
                 `width: ${width}\n` +
-                `height: ${height}\n`
+                `height: ${height}`
             )
 
             for (let j = 0; j < height && j + index < doc.rows.length; j++) {
@@ -58,13 +68,13 @@ export class PRDemoMarkdown extends DSProcess {
 
             const char = await this.stdin.read();
             if (char == "\x1b[D") {
-                width -= 1;
+                    width -= 1;
             } else if (char == "\x1b[C") {
-                width += 1;
+                    width += 1;
             } else if (char == "\x1b[A") {
-                height -= 1;
+                    height -= 1;
             } else if (char == "\x1b[B") {
-                height += 1;
+                    height += 1;
             } else if (char == "w") {
                 index -= 1;
                 if (index < 0)

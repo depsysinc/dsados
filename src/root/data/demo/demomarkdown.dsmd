@@ -2,16 +2,38 @@
 
 - First list item
 - Second list item
-   - First sublist item
-   - Second sublist item
+with extra text on a new line
+- Third list item followed by sublist
+  - First sublist item
+  - Second sublist item
 with extra text on a new line 
-- Third list item 
+- Fourth list item
+  - New 2nd level sublist
+    - New 3rd level sublist
+with extra text on a new line
 
-A paragraph to break up the list
+- List to test bold **wrapping
+- to other** list items
+- Even across list **depth
+  - Changes,** from one line to another
 
-   - A new second level list
+A paragraph separator
 
-<!ENDDOC!>
+  - A stand alone second level list
+
+A paragraph separator
+- A list with spaces
+
+- Between the list items
+
+
+
+- A final item after many spaces compressed to one
+  - A sublist
+
+  - With a space
+  - Then no space
+
 # $$$$ Code
 ```
 This is a codeblock.
