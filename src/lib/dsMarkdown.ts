@@ -142,15 +142,15 @@ abstract class DSMDBlock {
             }
             // Link tag
             if (unprocessed.startsWith("[")) {
-                match = unprocessed.match(/^\[([^\]]*)\]\(([^\)]*)\)/);
+                match = unprocessed.match(/^\[([^\]]*)\]\(([^\)]+)\)/);
                 if (match) {
                     const linktext = match[1];
                     const url = match[2];
                     this.tokens.push(new LinkToken(linktext, url));
                     const linkwords = linktext.trim().split(" ");
-                    linkwords.forEach((word, idx)=>{
+                    linkwords.forEach((word, idx) => {
                         this.tokens.push(new TextToken(word));
-                        if (idx != linkwords.length-1)
+                        if (idx != linkwords.length - 1)
                             this.tokens.push(new WhiteSpaceToken());
                     });
                     this.tokens.push(new LinkToken(linktext, url));
@@ -237,7 +237,7 @@ abstract class DSMDBlock {
             return;
         }
 
-        // Codeblock
+        // Code
         match = line.match(CodeBlock.coderegex);
         if (match) {
             this.doc.blocks.push(new CodeBlock(this.doc));
@@ -245,8 +245,7 @@ abstract class DSMDBlock {
         }
 
         // List
-        const listregex = ListBlock.listregex;
-        match = line.match(listregex);
+        match = line.match(ListBlock.listregex);
         if (match) {
             const listblock = new ListBlock(this.doc);
             this.doc.blocks.push(listblock);
@@ -254,6 +253,14 @@ abstract class DSMDBlock {
 
             return;
         }
+        // Image
+        match = line.match(ImageBlock.imageregex);
+        if (match) {
+            const imageblock = new ImageBlock(this.doc, line);
+            this.doc.blocks.push(imageblock);
+            return;
+        }
+
 
         // Regular text
         this.handle_text(line);
@@ -262,12 +269,66 @@ abstract class DSMDBlock {
     // Default block renderer
     render(width: number, rows: DSMDRow[]): void {
         const row = new DSMDRow(width);
-        row.text = `[${this.constructor.name}]`;
+        row.text = `[!${this.constructor.name}!]`;
         row.length = row.text.length;
         rows.push(row);
     };
 
     abstract debugstr(indent: string): string;
+}
+
+class ImageBlock extends DSMDBlock {
+    static readonly imageregex = /^!\[([^\]]*)\]\(([^\)]+)\)(?:\(([^\)]+)\))?/;
+
+    alttext: string = undefined;
+    imgurl: string = undefined;
+    linkurl: string = undefined;
+
+    constructor(doc: DSMDDoc, line: string) {
+        super(doc);
+        const match = line.match(ImageBlock.imageregex);
+        if (!match)
+            throw new Error("ImageBlock parse error");
+        this.alttext = match[1];
+        this.imgurl = match[2];
+        this.linkurl = match[3];
+
+        this.tokenize(line.slice(match[0].length));
+    }
+
+    protected handle_emptyline(): void {
+        this.doc.blocks.push(new NullBlock(this.doc));
+    }
+
+    protected handle_text(line: string): void {
+        this.tokenize(line);
+    }
+
+    render(width: number, rows: DSMDRow[]): void {
+        const altrow = new DSMDRow(width);
+        altrow.text = `[${this.alttext}]`;
+        altrow.length = altrow.text.length;
+        rows.push(altrow);
+        if ((this.tokens.length == 1) && (this.tokens[0] instanceof WhiteSpaceToken))
+            return;
+        let currow = new DSMDRow(width);
+        currow.indent = 2;
+        currow.text = " ";
+        currow.length = 1;
+        rows.push(currow);
+        this.tokens.forEach((token) => {
+            let newrow = currow.addtoken(token);
+            if (newrow) {
+                rows.push(newrow);
+                currow = newrow;
+            }
+        });
+    }
+
+    debugstr(indent: string): string {
+        let str = `${indent}[ImageBlock] [${this.alttext}](${this.imgurl})(${this.linkurl})\n`;
+        return str;
+    }
 }
 
 class ListBlock extends DSMDBlock {
@@ -289,8 +350,7 @@ class ListBlock extends DSMDBlock {
             const paragraph = new ParagraphBlock(this.doc);
             this.doc.blocks.push(paragraph);
             paragraph.parse_line(line);
-        } else
-        {
+        } else {
             this.lastlineempty = false;
             this.tokenize(line);
         }
@@ -512,7 +572,7 @@ class DSMDRow {
             // Reset indent
             this.indent = 0;
             const newrow = this.finalize();
-            newrow.indent = token.level;
+            newrow.indent = token.level * 2;
             token.render(newrow.word);
             return newrow;
         } else if (token instanceof WhiteSpaceToken) {
@@ -540,7 +600,7 @@ class DSMDRow {
         // Carry over attributes
         this.word = new DSMDWord();    // The closing word
         newrow.word = new DSMDWord();  // The opening word
-        let termtokens:MatchToken[] = [];
+        let termtokens: MatchToken[] = [];
         if (this.bold_at_close)
             termtokens.push(new BoldToken());
 
@@ -551,7 +611,7 @@ class DSMDRow {
             matchtoken.matched = true;
             matchtoken.closing = true;
             matchtoken.render(this.word);
-            
+
             matchtoken.closing = false;
             matchtoken.opening = true;
             matchtoken.render(newrow.word);
@@ -562,7 +622,7 @@ class DSMDRow {
         if (this.indent > 0) {
             newrow.indent = this.indent;
             const indentword = new DSMDWord();
-            indentword.text = "  ".repeat(newrow.indent);
+            indentword.text = " ".repeat(newrow.indent);
             indentword.length = indentword.text.length;
             newrow.word = indentword;
             newrow.addword();
