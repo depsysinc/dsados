@@ -77,6 +77,27 @@ class BoldToken extends MatchToken {
     }
 }
 
+class LinkToken extends MatchToken {
+    constructor(readonly linktext: string, private url: string) {
+        super();
+    }
+
+    render(word: DSMDWord): void {
+        if (!this.matched) {
+            word.length += 2;
+            word.text += "[!LINK!]";
+        }
+        if (this.opening) {
+            word.text += setattr(textattrs.curlyunderline);
+            word.link_close = true;
+        }
+        if (this.closing) {
+            word.text += setattr(textattrs.nounderline);
+            word.link_close = true;
+        }
+    }
+}
+
 class ListItemToken extends DSMDToken {
     constructor(readonly level: number, readonly spaced: boolean) {
         super();
@@ -119,8 +140,30 @@ abstract class DSMDBlock {
                 }
                 continue;
             }
+            // Link tag
+            if (unprocessed.startsWith("[")) {
+                match = unprocessed.match(/^\[([^\]]*)\]\(([^\)]*)\)/);
+                if (match) {
+                    const linktext = match[1];
+                    const url = match[2];
+                    this.tokens.push(new LinkToken(linktext, url));
+                    const linkwords = linktext.trim().split(" ");
+                    linkwords.forEach((word, idx)=>{
+                        this.tokens.push(new TextToken(word));
+                        if (idx != linkwords.length-1)
+                            this.tokens.push(new WhiteSpaceToken());
+                    });
+                    this.tokens.push(new LinkToken(linktext, url));
+                    unprocessed = unprocessed.slice(match[0].length);
+                } else {
+                    this.tokens.push(new TextToken("["));
+                    unprocessed = unprocessed.slice(1);
+                }
+                continue;
+            }
+
             // Regular text
-            match = unprocessed.match(/^([^\*\[\s]+)/);
+            match = unprocessed.match(/^([^\*\[\s]+)/); // /^([^\*\[\s]+)/);
             if (match) {
                 unprocessed = unprocessed.slice(match[1].length);
                 this.tokens.push(new TextToken(match[1]));
@@ -153,7 +196,8 @@ abstract class DSMDBlock {
                     if (!(matchtoken instanceof MatchToken))
                         continue;
                     if (((token instanceof BoldToken) && (matchtoken instanceof BoldToken)) ||
-                        ((token instanceof ItalicToken) && (matchtoken instanceof ItalicToken))) {
+                        ((token instanceof ItalicToken) && (matchtoken instanceof ItalicToken)) ||
+                        ((token instanceof LinkToken) && (matchtoken instanceof LinkToken))) {
                         token.matched = true;
                         token.opening = true;
                         matchtoken.matched = true;
@@ -164,6 +208,8 @@ abstract class DSMDBlock {
             }
         }
         // Compress whitespace
+
+
     }
 
     protected handle_emptyline() { }
@@ -423,6 +469,8 @@ class DSMDWord {
     italics_close: boolean = false;
     bold_open: boolean = false;
     bold_close: boolean = false;
+    link_open: boolean = false;
+    link_close: boolean = false;
 }
 
 class DSMDRow {
@@ -432,20 +480,28 @@ class DSMDRow {
     word: DSMDWord = new DSMDWord();
     bold_at_close: boolean = false;
     italics_at_close: boolean = false;
+    link_at_close: boolean = false;
 
     constructor(readonly width: number) { }
 
     addword() {
         this.text += this.word.text;
         this.length += this.word.length;
+
         if (this.word.bold_open)
             this.bold_at_close = true;
         if (this.word.bold_close)
             this.bold_at_close = false;
+
         if (this.word.italics_open)
             this.italics_at_close = true;
         if (this.word.italics_close)
             this.italics_at_close = false;
+
+        if (this.word.link_open)
+            this.link_at_close = true;
+        if (this.word.link_close)
+            this.link_at_close = false;
         this.word = new DSMDWord();
 
     }
@@ -484,26 +540,23 @@ class DSMDRow {
         // Carry over attributes
         this.word = new DSMDWord();    // The closing word
         newrow.word = new DSMDWord();  // The opening word
-        if (this.bold_at_close) {
-            const boldtoken = new BoldToken();
-            boldtoken.matched = true;
-            boldtoken.closing = true;
-            boldtoken.render(this.word);
+        let termtokens:MatchToken[] = [];
+        if (this.bold_at_close)
+            termtokens.push(new BoldToken());
 
-            boldtoken.closing = false;
-            boldtoken.opening = true;
-            boldtoken.render(newrow.word);
-        }
-        if (this.italics_at_close) {
-            const italicstoken = new ItalicToken();
-            italicstoken.matched = true;
-            italicstoken.closing = true;
-            italicstoken.render(this.word);
+        if (this.italics_at_close)
+            termtokens.push(new ItalicToken());
 
-            italicstoken.closing = false;
-            italicstoken.opening = true;
-            italicstoken.render(newrow.word);
-        }
+        termtokens.forEach((matchtoken) => {
+            matchtoken.matched = true;
+            matchtoken.closing = true;
+            matchtoken.render(this.word);
+            
+            matchtoken.closing = false;
+            matchtoken.opening = true;
+            matchtoken.render(newrow.word);
+        });
+
         this.addword();
         newrow.addword();
         if (this.indent > 0) {
