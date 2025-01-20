@@ -1,3 +1,16 @@
+# $$$$ Links
+
+[Demonstrate a standalone link long enough to be easily wrapped](/an/invalid/url)
+
+Demonstrate a [link](/an/invalid/url) that is embedded in a paragraph.
+
+Demonstrate [multiple](/an/invalid/url) different [links](/an/invalid/url) in the same paragraph.
+
+
+[an invalid link
+tag because must all fit on single line](/badfile)
+
+<!ENDDOC!>
 # $$$$ Lists
 
 - First list item
@@ -109,6 +122,3 @@ There were multiple spaces between this paragraph and the last.  This should dem
 This is a paragraph    with a bunch of strange     whitespace.
          All this     whitespace should    be ignored.
 
-# $$$$ Images
-that is inline with text, does it wrap, sure does hmmm![an image](https://mcpnet.ca/~gentili/32x32_test.png "Title") intersting
-with text after

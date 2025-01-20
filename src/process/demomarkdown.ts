@@ -16,15 +16,15 @@ export class PRDemoMarkdown extends DSProcess {
         if (nextarg != -1)
             throw new DSProcessError(optparser.usage());
 
-        let filename = "/data/demo/demomarkdown.dsmd";
+        let filename = "/data/demo/markdown/demomarkdown.dsmd";
         const inode = this.cwd.getfile(filename);
         const text = await inode.contentAsText().read();
         const doc = new DSMDDoc();
         doc.parse(text);
 
-        let index = 16;
-        let width = 70;
-        let height = 23;
+        let index = 0;
+        let width = 81;
+        let height = 31;
         const w = (str: string) => { this.stdout.write(str); };
 
         while (true) {

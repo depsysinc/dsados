@@ -30,11 +30,11 @@ import { PRSleep } from "./process/sleep";
 import root_data_demo_animation_32x32_A_png from "./root/data/demo/animation/32x32_A.png";
 import root_data_demo_animation_32x32_B_png from "./root/data/demo/animation/32x32_B.png";
 import root_data_demo_animation_32x32_C_png from "./root/data/demo/animation/32x32_C.png";
-import root_data_demo_demomarkdown_dsmd from "./root/data/demo/demomarkdown.dsmd";
+import root_data_demo_markdown_32x32_testpattern_png from "./root/data/demo/markdown/32x32_testpattern.png";
+import root_data_demo_markdown_demomarkdown_dsmd from "./root/data/demo/markdown/demomarkdown.dsmd";
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
 import root_data_depsys_txt from "./root/data/depsys.txt";
 import root_data_test_bazisa_txt from "./root/data/test/bazisa.txt";
-import root_data_test_image_32x32_test_png from "./root/data/test/image/32x32_test.png";
 import root_data_test_image_gorzocrop_png from "./root/data/test/image/gorzocrop.png";
 import root_etc_autoexec_dssh from "./root/etc/autoexec.dssh";
 import root_etc_dsos_conf from "./root/etc/dsos.conf";
@@ -138,11 +138,24 @@ export function buildrootfs(): DSFileSystem {
     curdir = dirstack.pop();
     // Exited root/data/demo/animation
         
-    // Creating root/data/demo/demomarkdown.dsmd
-    curfile = new DSIWebFile(fs, root_data_demo_demomarkdown_dsmd);
+    // Traversing root/data/demo/markdown
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('markdown');
+    
+    // Creating root/data/demo/markdown/32x32_testpattern.png
+    curfile = new DSIWebFile(fs, root_data_demo_markdown_32x32_testpattern_png);
+    curdir.addfile("32x32_testpattern.png", curfile);
+    
+    
+    // Creating root/data/demo/markdown/demomarkdown.dsmd
+    curfile = new DSIWebFile(fs, root_data_demo_markdown_demomarkdown_dsmd);
     curdir.addfile("demomarkdown.dsmd", curfile);
     
     
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/demo/markdown
+        
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
     // Exited root/data/demo
@@ -169,11 +182,6 @@ export function buildrootfs(): DSFileSystem {
     // Traversing root/data/test/image
     dirstack.push(curdir);
     curdir = curdir.mkdir('image');
-    
-    // Creating root/data/test/image/32x32_test.png
-    curfile = new DSIWebFile(fs, root_data_test_image_32x32_test_png);
-    curdir.addfile("32x32_test.png", curfile);
-    
     
     // Creating root/data/test/image/gorzocrop.png
     curfile = new DSIWebFile(fs, root_data_test_image_gorzocrop_png);
