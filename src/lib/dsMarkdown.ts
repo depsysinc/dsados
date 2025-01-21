@@ -1,4 +1,7 @@
+import { DSIDirectory } from "../dsFileSystem";
+import { DSIWebFile } from "../filesystem/dsIWebFile";
 import { setattr, textattrs } from "./dsCurses";
+import { load_image } from "./dsLib";
 
 // TOKENS
 abstract class DSMDToken {
@@ -284,6 +287,10 @@ class ImageBlock extends DSMDBlock {
     imgurl: string = undefined;
     linkurl: string = undefined;
 
+    img: HTMLImageElement = undefined;
+    imgcellwidth: number = undefined;
+    imgcellheight: number = undefined;
+
     constructor(doc: DSMDDoc, line: string) {
         super(doc);
         const match = line.match(ImageBlock.imageregex);
@@ -304,13 +311,51 @@ class ImageBlock extends DSMDBlock {
         this.tokenize(line);
     }
 
+    finalize(): void {
+        // Trim leading whitespace tokens
+        while ((this.tokens.length > 0) && (this.tokens[0] instanceof WhiteSpaceToken))
+            this.tokens = this.tokens.slice(1);
+        super.finalize();
+    }
+
     render(width: number, rows: DSMDRow[]): void {
+        if (this.img) {
+            const imgrows: DSMDRow[] = [];
+            this.imgcellheight = Math.ceil(this.img.height/this.doc.cellheight);
+            this.imgcellwidth = Math.ceil(this.img.width/this.doc.cellwidth);
+            let currow = new DSMDRow(width);
+            currow.indent = this.imgcellwidth + 1;
+            currow.text = " ".repeat(currow.indent-1);
+            currow.length = currow.text.length;
+            imgrows.push(currow);
+            // Parse paragraph tokens
+            this.tokens.forEach((token)=>{
+                let newrow = currow.addtoken(token);
+                if (newrow) {
+                    imgrows.push(newrow);
+                    currow = newrow;
+                }
+            });
+            // Fill out any missing rows
+            for (let i = imgrows.length; i < this.imgcellheight; i++) {
+                const imgrow = new DSMDRow(width);
+                imgrow.text = " ".repeat(this.imgcellwidth);
+                imgrow.length = imgrow.text.length;
+                imgrows.push(imgrow);
+            }
+            rows.push(...imgrows);
+            return;
+        }
+        // Handle the alttext case
         const altrow = new DSMDRow(width);
         altrow.text = `[${this.alttext}]`;
         altrow.length = altrow.text.length;
         rows.push(altrow);
-        if ((this.tokens.length == 1) && (this.tokens[0] instanceof WhiteSpaceToken))
+
+        if (this.tokens.length == 0)
             return;
+
+        // Handle trailing text
         let currow = new DSMDRow(width);
         currow.indent = 2;
         currow.text = " ";
@@ -640,12 +685,12 @@ class DSMDRow {
 export class DSMDDoc {
     public blocks: DSMDBlock[] = [];
     public rows: DSMDRow[] = [];
-
-    constructor() {
-        this.blocks.push(new NullBlock(this));
-    }
+    public cellwidth: number;
+    public cellheight: number;
 
     parse(text: string): void {
+        this.blocks = [new NullBlock(this)];
+
         const lines = text.split('\n');
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
@@ -667,7 +712,27 @@ export class DSMDDoc {
         });
     }
 
-    render(width: number) {
+    async loadContent(dir: DSIDirectory) {
+        for(let i = 0; i < this.blocks.length; i++) {
+            const block = this.blocks[i];
+            if (block instanceof ImageBlock) {
+                try{
+                    // Look up the file
+                    const inode = dir.getfile(block.imgurl);
+                    if (!(inode instanceof DSIWebFile))
+                        continue;
+                    // do the img load
+                    block.img = await load_image(inode.url);
+                } catch (e) {
+                    
+                }
+            }
+        };
+    }
+
+    render(width: number, cellwidth: number, cellheight: number) {
+        this.cellwidth = cellwidth;
+        this.cellheight = cellheight;
         this.rows = [];
         this.blocks.forEach((block, idx) => {
             block.render(width, this.rows);

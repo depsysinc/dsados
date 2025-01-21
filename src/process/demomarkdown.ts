@@ -21,8 +21,9 @@ export class PRDemoMarkdown extends DSProcess {
         const text = await inode.contentAsText().read();
         const doc = new DSMDDoc();
         doc.parse(text);
+        await doc.loadContent(this.cwd);
 
-        let index = 7;
+        let index = 0;
         let width = 81;
         let height = 31;
         const w = (str: string) => { this.stdout.write(str); };
@@ -34,11 +35,11 @@ export class PRDemoMarkdown extends DSProcess {
             if (width > DSKernel.terminal.cols - 2)
                 width = DSKernel.terminal.cols - 2;
             if (height > DSKernel.terminal.rows - 5)
-                height =DSKernel.terminal.rows - 5;
+                height = DSKernel.terminal.rows - 5;
             if (height < 4)
                 height = 4;
-            
-            doc.render(width);
+
+            doc.render(width, DSKernel.terminal.cellwidth, DSKernel.terminal.cellheight);
             console.log(doc);
 
             let fillstr: string = "+";
@@ -68,13 +69,13 @@ export class PRDemoMarkdown extends DSProcess {
 
             const char = await this.stdin.read();
             if (char == "\x1b[D") {
-                    width -= 1;
+                width -= 1;
             } else if (char == "\x1b[C") {
-                    width += 1;
+                width += 1;
             } else if (char == "\x1b[A") {
-                    height -= 1;
+                height -= 1;
             } else if (char == "\x1b[B") {
-                    height += 1;
+                height += 1;
             } else if (char == "w") {
                 index -= 1;
                 if (index < 0)
