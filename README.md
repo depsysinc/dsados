@@ -11,8 +11,6 @@
   * update scanline filter to choose a definite line as center (avoid weird moire patterns or dim renders)
   * Enable click and touch
   * Enable images
-* tests
-  * move test binaries into test folder
 * process
   * autoexec.dssh
     * look for profile in /local/
@@ -24,7 +22,6 @@
   * mv
   * cp
   * dsmdbrowser
-    * get words/rows to remember attributes
   * imgview
 
 # Setup

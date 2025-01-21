@@ -1,6 +1,6 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSOptionParser } from "../lib/dsOptionParser";
-import { DSMDDoc } from "../lib/dsMarkdown";
+import { DSMDDoc, ImageBlock } from "../lib/dsMarkdown";
 import { gotoxy, reset, setattr, textattrs } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
 
@@ -62,9 +62,21 @@ export class PRDemoMarkdown extends DSProcess {
                 `height: ${height}`
             )
 
+            // Draw the text
             for (let j = 0; j < height && j + index < doc.rows.length; j++) {
                 const row = doc.rows[j + index];
                 w(gotoxy(2, j + 2) + `${row.text}`);
+            }
+
+            // Update the sprites
+            for (let i = 0; i < doc.blocks.length; i++) {
+                const block = doc.blocks[i];
+                if ((block instanceof ImageBlock) && block.sprite) {
+                    const sprite = block.sprite;
+                    sprite.enabled = true;
+                    sprite.x = doc.cellwidth;
+                    sprite.y = (block.firstrow - index + 1) * doc.cellheight;
+                }
             }
 
             const char = await this.stdin.read();
@@ -89,5 +101,6 @@ export class PRDemoMarkdown extends DSProcess {
             }
         }
         w(reset());
+        DSKernel.terminal.resetSprites();
     }
 }

@@ -1,4 +1,6 @@
 import { DSIDirectory } from "../dsFileSystem";
+import { DSKernel } from "../dsKernel";
+import { DSSprite } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
 import { setattr, textattrs } from "./dsCurses";
 import { load_image } from "./dsLib";
@@ -210,9 +212,6 @@ abstract class DSMDBlock {
                 }
             }
         }
-        // Compress whitespace
-
-
     }
 
     protected handle_emptyline() { }
@@ -271,7 +270,7 @@ abstract class DSMDBlock {
 
     // Default block renderer
     render(width: number, rows: DSMDRow[]): void {
-        const row = new DSMDRow(width);
+        const row = new DSMDRow(width, this);
         row.text = `[!${this.constructor.name}!]`;
         row.length = row.text.length;
         rows.push(row);
@@ -280,9 +279,11 @@ abstract class DSMDBlock {
     abstract debugstr(indent: string): string;
 }
 
-class ImageBlock extends DSMDBlock {
+export class ImageBlock extends DSMDBlock {
     static readonly imageregex = /^!\[([^\]]*)\]\(([^\)]+)\)(?:\(([^\)]+)\))?/;
 
+    firstrow: number;
+    
     alttext: string = undefined;
     imgurl: string = undefined;
     linkurl: string = undefined;
@@ -290,6 +291,7 @@ class ImageBlock extends DSMDBlock {
     img: HTMLImageElement = undefined;
     imgcellwidth: number = undefined;
     imgcellheight: number = undefined;
+    sprite: DSSprite = undefined;
 
     constructor(doc: DSMDDoc, line: string) {
         super(doc);
@@ -319,11 +321,13 @@ class ImageBlock extends DSMDBlock {
     }
 
     render(width: number, rows: DSMDRow[]): void {
+        this.firstrow = rows.length;
+
         if (this.img) {
             const imgrows: DSMDRow[] = [];
             this.imgcellheight = Math.ceil(this.img.height/this.doc.cellheight);
             this.imgcellwidth = Math.ceil(this.img.width/this.doc.cellwidth);
-            let currow = new DSMDRow(width);
+            let currow = new DSMDRow(width,this);
             currow.indent = this.imgcellwidth + 1;
             currow.text = " ".repeat(currow.indent-1);
             currow.length = currow.text.length;
@@ -338,7 +342,7 @@ class ImageBlock extends DSMDBlock {
             });
             // Fill out any missing rows
             for (let i = imgrows.length; i < this.imgcellheight; i++) {
-                const imgrow = new DSMDRow(width);
+                const imgrow = new DSMDRow(width,this);
                 imgrow.text = " ".repeat(this.imgcellwidth);
                 imgrow.length = imgrow.text.length;
                 imgrows.push(imgrow);
@@ -347,7 +351,7 @@ class ImageBlock extends DSMDBlock {
             return;
         }
         // Handle the alttext case
-        const altrow = new DSMDRow(width);
+        const altrow = new DSMDRow(width,this);
         altrow.text = `[${this.alttext}]`;
         altrow.length = altrow.text.length;
         rows.push(altrow);
@@ -356,7 +360,7 @@ class ImageBlock extends DSMDBlock {
             return;
 
         // Handle trailing text
-        let currow = new DSMDRow(width);
+        let currow = new DSMDRow(width,this);
         currow.indent = 2;
         currow.text = " ";
         currow.length = 1;
@@ -418,12 +422,12 @@ class ListBlock extends DSMDBlock {
 
     render(width: number, rows: DSMDRow[]): DSMDRow[] {
         // start with sacrificial row
-        let currow = new DSMDRow(width);
+        let currow = new DSMDRow(width,this);
         this.tokens.forEach((token) => {
             let newrow = currow.addtoken(token);
             if (newrow) {
                 if ((token instanceof ListItemToken) && (token.spaced))
-                    rows.push(new DSMDRow(width));
+                    rows.push(new DSMDRow(width,this));
                 rows.push(newrow);
                 currow = newrow;
             }
@@ -462,7 +466,7 @@ class CodeBlock extends DSMDBlock {
     // Fully custom renderer
     render(width: number, rows: DSMDRow[]): void {
         this.rawlines.forEach((line) => {
-            const row = new DSMDRow(width);
+            const row = new DSMDRow(width,this);
             row.length = width;
             row.text = line.slice(0, width);
             row.text = row.text.padEnd(width);
@@ -506,7 +510,7 @@ class ParagraphBlock extends DSMDBlock {
 
     render(width: number, rows: DSMDRow[]): DSMDRow[] {
         // Paragraph starts with a new row
-        let currow = new DSMDRow(width);
+        let currow = new DSMDRow(width, this);
         rows.push(currow);
         this.tokens.forEach((token) => {
             let newrow = currow.addtoken(token);
@@ -529,7 +533,7 @@ class TitleBlock extends DSMDBlock {
     render(width: number, rows: DSMDRow[]): DSMDRow[] {
         // Title starts with new row
         let maxlength = 0;
-        let currow = new DSMDRow(width);
+        let currow = new DSMDRow(width,this);
         rows.push(currow);
         this.tokens.forEach((token) => {
             let newrow = currow.addtoken(token);
@@ -587,7 +591,7 @@ class DSMDRow {
     italics_at_close: boolean = false;
     link_at_close: boolean = false;
 
-    constructor(readonly width: number) { }
+    constructor(readonly width: number, readonly block: DSMDBlock) { }
 
     addword() {
         this.text += this.word.text;
@@ -640,7 +644,7 @@ class DSMDRow {
     finalize(): DSMDRow {
         // Finalize this row
         const carryword = this.word;
-        const newrow = new DSMDRow(this.width);
+        const newrow = new DSMDRow(this.width,this.block);
 
         // Carry over attributes
         this.word = new DSMDWord();    // The closing word
@@ -721,8 +725,10 @@ export class DSMDDoc {
                     const inode = dir.getfile(block.imgurl);
                     if (!(inode instanceof DSIWebFile))
                         continue;
-                    // do the img load
+                    // Do the img load
                     block.img = await load_image(inode.url);
+                    // Create the sprite
+                    block.sprite = DSKernel.terminal.newSprite([block.img]);
                 } catch (e) {
                     
                 }
@@ -737,7 +743,7 @@ export class DSMDDoc {
         this.blocks.forEach((block, idx) => {
             block.render(width, this.rows);
             if (idx != this.blocks.length - 1)
-                this.rows.push(new DSMDRow(width));
+                this.rows.push(new DSMDRow(width,undefined));
         });
     }
 
