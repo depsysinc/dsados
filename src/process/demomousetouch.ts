@@ -60,6 +60,8 @@ export class PRDemoMouseTouch extends DSProcess {
             if (input == 'q')
                 done = true;
         }
+        w(reset());
+        DSKernel.terminal.resetSprites();
         return;
     }
 
