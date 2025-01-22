@@ -1,5 +1,6 @@
 import { DSIDirectory } from "./dsFileSystem";
 import { DSStream } from "./dsStream";
+import { DSPointerEvent } from "./dsTerminal";
 
 export class DSProcessError extends Error {
     constructor(message: string) {
@@ -10,11 +11,10 @@ export class DSProcessError extends Error {
 }
 
 export abstract class DSProcess {
-
-    get cwd() : DSIDirectory {
+    get cwd(): DSIDirectory {
         return this._cwd;
     }
-    
+
     constructor(
         readonly pid: number,
         readonly ppid: number,
@@ -24,7 +24,7 @@ export abstract class DSProcess {
         readonly stdin: DSStream,
         readonly stdout: DSStream,
     ) { }
-    
+
     get procname(): string {
         return this.argv[0];
     }
@@ -38,7 +38,9 @@ export abstract class DSProcess {
     }
 
     // Default ignore handlers
-    handleResize(): void {} 
+    handleResize(): void { }
+
+    handlePointer(e: DSPointerEvent) { }
 
     chdir(dirname: string) {
         this._cwd = this._cwd.getdir(dirname);

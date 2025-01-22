@@ -28,6 +28,14 @@ export type DSSprite = {
     enabled: boolean
 }
 
+export type DSPointerEvent = {
+    type: string,
+    x: number,
+    y: number,
+    col: number,
+    row: number,
+}
+
 export class DSTerminal {
     private _terminal: Terminal;
     private _webglAddon: WebglAddon;
@@ -73,8 +81,8 @@ export class DSTerminal {
 
         const t = this._terminal = new Terminal(
             {
-                cols: 20,              // Set the number of columns (width)
-                rows: 10,              // Set the number of rows (height)
+                cols: 40,              // Set the number of columns (width)
+                rows: 20,              // Set the number of rows (height)
                 fontFamily: 'CRTFont, monospace', // Set the font family
                 fontSize: 32,          // Set the font size
                 fontWeight: 'normal',  // Optional: font weight
@@ -168,15 +176,60 @@ export class DSTerminal {
         // hook up text io
         t.onData((data): void => { this.outputstream.write(data); });
 
+        // hook up mouse
+        t.element.onmousedown = (e) => { this._handleMouseEvents(e); }
+        t.element.onmouseup = (e) => { this._handleMouseEvents(e); }
+        t.element.onmousemove = (e) => { this._handleMouseEvents(e); }
+
+        t.element.ontouchstart = (e) => { this._handleTouchEvents(e); }
+        t.element.ontouchend = (e) => { this._handleTouchEvents(e); }
+        t.element.ontouchmove = (e) => { this._handleTouchEvents(e); }
+        t.element.ontouchcancel = (e) => { this._handleTouchEvents(e); }
+
+        // Start text input handling
         this._handleInput();
 
         // Hook up per frame processing
         this._baudBuffer = "";
         requestAnimationFrame(() => { this._baudFrame() });
 
-        // TODO: Add listeners for keystrokes, clicks, and touches
-
         t.focus();
+    }
+
+    private _handleMouseEvents(e: MouseEvent) {
+        e.preventDefault(); // Prevent mobile keyboard
+        // Container element doesn't have same dimensions as actual screen
+        const el = this._terminal.element.querySelector(".xterm-screen") as HTMLElement;
+        const pe: DSPointerEvent = {
+            type: e.type,
+            // The element dimensions don't match reality!
+            // GD web development >:{
+            x: Math.floor(e.clientX / el.offsetWidth * this._width),
+            y: Math.floor(e.clientY / el.offsetHeight * this._height),
+            col: 0,
+            row: 0
+        };
+        pe.col = Math.ceil(pe.x / this.cellwidth);
+        pe.row = Math.ceil(pe.y / this.cellheight);
+        DSKernel.handlePointer(pe);
+    }
+
+    private _handleTouchEvents(e: TouchEvent) {
+        e.preventDefault(); // Prevent mobile keyboard
+        // Container element doesn't have same dimensions as actual screen
+        const el = this._terminal.element.querySelector(".xterm-screen") as HTMLElement;
+        const pe: DSPointerEvent = {
+            type: e.type,
+            // The element dimensions don't match reality!
+            // GD web development >:{
+            x: e.touches.length > 0 ? Math.floor(e.touches[0].clientX / el.offsetWidth * this._width) : 0,
+            y: e.touches.length > 0 ? Math.floor(e.touches[0].clientY / el.offsetHeight * this._height) : 0,
+            col: 0,
+            row: 0
+        };
+        pe.col = Math.ceil(pe.x / this.cellwidth);
+        pe.row = Math.ceil(pe.y / this.cellheight);
+        DSKernel.handlePointer(pe);
     }
 
     private async _handleInput() {

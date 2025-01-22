@@ -18,6 +18,8 @@ async function initApp(): Promise<void> {
     // Boot the OS
     console.log("Calling DepSysOS boot");
     DSKernel.boot(terminalContainer);
+
+    setTimeout(() => {window.scrollTo(0,1);},1000);
     
     console.log("DepSysOS handoff complete");
 }

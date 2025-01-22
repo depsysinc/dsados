@@ -1,6 +1,6 @@
 import '@xterm/xterm/css/xterm.css';
 
-import { DSTerminal } from "./dsTerminal";
+import { DSPointerEvent, DSTerminal } from "./dsTerminal";
 import { DSFileInfo, DSFileSystem, DSIDirectory } from "./dsFileSystem";
 import { DSIDBFileSystem } from "./filesystem/dsIDBFileSystem";
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
@@ -164,7 +164,7 @@ export class DSKernel {
                 t.baud = 50;
                 await t.baudWrite("...\n");
                 nvram_set("fastboot", String(true));
-                nvram_set("baud", "2400");
+                nvram_set("baud", "0");
                 t.baud = oldbaud;
             }
             // Start init process
@@ -285,9 +285,16 @@ export class DSKernel {
             return undefined;
         return this.procstack[this.procstack.length - 1];
     }
+
     static handleResize(): void {
         if (!this.curproc)
             return;
         this.curproc.handleResize();
     };
+
+    static handlePointer(e: DSPointerEvent): void {
+        if (!this.curproc)
+            return;
+        this.curproc.handlePointer(e);
+    }
 }

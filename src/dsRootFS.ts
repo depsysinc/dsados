@@ -14,6 +14,7 @@ import { PRCat } from "./process/cat";
 import { PRTestAnim } from "./process/demoanim";
 import { PRDemoCurses } from "./process/democurses";
 import { PRDemoMarkdown } from "./process/demomarkdown";
+import { PRDemoMouseTouch } from "./process/demomousetouch";
 import { PRDSMDBrowser } from "./process/dsmdbrowser";
 import { DSShell } from "./process/dssh";
 import { PREcho } from "./process/echo";
@@ -60,6 +61,9 @@ export function buildrootfs(): DSFileSystem {
     
     binfile = new DSIProcessFile(fs, PRDemoMarkdown);
     bindir.addfile("demomarkdown", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRDemoMouseTouch);
+    bindir.addfile("demomousetouch", binfile);
     
     binfile = new DSIProcessFile(fs, PRDSMDBrowser);
     bindir.addfile("dsmdbrowser", binfile);

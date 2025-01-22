@@ -33,6 +33,10 @@ body {
   /* Prevent scrolling */
 }
 
+.xterm-screen {
+  cursor: pointer;
+}
+
 .xterm-scroll-area {
   display: none !important;
   /* Hide the scrollbar */
@@ -42,7 +46,10 @@ body {
   display: flex;
   width: 100%;
   height: 100%;
-  /* border: 5px solid grey; */
+
+  justify-content: center;
+  align-items: center;
+
   box-sizing: border-box;
   /* Includes the border in the element's dimensions */
   background-color: black;
