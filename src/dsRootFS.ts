@@ -33,6 +33,7 @@ import root_data_demo_animation_32x32_B_png from "./root/data/demo/animation/32x
 import root_data_demo_animation_32x32_C_png from "./root/data/demo/animation/32x32_C.png";
 import root_data_demo_markdown_32x32_testpattern_png from "./root/data/demo/markdown/32x32_testpattern.png";
 import root_data_demo_markdown_demomarkdown_dsmd from "./root/data/demo/markdown/demomarkdown.dsmd";
+import root_data_demo_mousetouch_pointer_png from "./root/data/demo/mousetouch/pointer.png";
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
 import root_data_depsys_txt from "./root/data/depsys.txt";
 import root_data_test_bazisa_txt from "./root/data/test/bazisa.txt";
@@ -159,6 +160,19 @@ export function buildrootfs(): DSFileSystem {
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
     // Exited root/data/demo/markdown
+        
+    // Traversing root/data/demo/mousetouch
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('mousetouch');
+    
+    // Creating root/data/demo/mousetouch/pointer.png
+    curfile = new DSIWebFile(fs, root_data_demo_mousetouch_pointer_png);
+    curdir.addfile("pointer.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/demo/mousetouch
         
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
