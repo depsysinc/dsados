@@ -22,23 +22,12 @@ export class PRDemoMouseTouch extends DSProcess {
         const w = (str: string) => { this.stdout.write(str); };
         // Load sprites
 
-        w("Loading test images...\n");
-        const animdir = this.cwd.getdir("/data/demo/animation");
-        const images: HTMLImageElement[] = [];
-        for (let i = 0; i < animdir.filelist.length; i++) {
-            const file = animdir.filelist[i];
-            if (file.inode instanceof DSIWebFile) {
-                const webnode = file.inode as DSIWebFile;
-                w(`Loading ${file.name}\n  URL: ${webnode.url}...`);
-                const img = await load_image(webnode.url);
-                w("done\n");
-                w(`  Dimensions: ${img.width} x ${img.height}\n`);
-                images.push(img);
-            }
-        };
+        w("Loading sprites...\n");
+        const webnode = this.cwd.getfile("/data/demo/mousetouch/pointer.png") as DSIWebFile;
+        const img = await load_image(webnode.url);
 
         // Create the sprite
-        this.sprite = DSKernel.terminal.newSprite(images);
+        this.sprite = DSKernel.terminal.newSprite([img]);
         w(reset());
 
         // Draw border
