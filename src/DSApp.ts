@@ -32,8 +32,42 @@ export abstract class DSApp extends DSProcess {
     }
 
     handlePointer(e: DSPointerEvent): void {
-        if (e.type == "wheel")
-            this.eventQueue.enqueue(new WheelAppEvent(e.dy));
+        if (e.type == "wheel") {
+
+            this.eventQueue.enqueue(new WheelAppEvent(
+                e.x,
+                e.y,
+                e.col,
+                e.row,
+                0,
+                e.dy
+            ));
+        } else if (e.type == "touchstart") {
+            this.eventQueue.enqueue(new TouchStartAppEvent(
+                e.x,
+                e.y,
+                e.col,
+                e.row
+            ));
+        } else if (e.type == "touchmove") {
+            this.eventQueue.enqueue(new TouchMoveAppEvent(
+                e.x,
+                e.y,
+                e.col,
+                e.row
+            ));
+        } else if (e.type == "touchend") {
+            this.eventQueue.enqueue(new TouchEndAppEvent(
+                e.x,
+                e.y,
+                e.col,
+                e.row
+            ));
+        }
+
+        else {
+            console.log(e);
+        }
     }
 
     handleResize(): void {
@@ -49,8 +83,8 @@ export class UpArrowAppEvent extends DSAppEvent { }
 export class DownArrowAppEvent extends DSAppEvent { }
 export class LeftArrowAppEvent extends DSAppEvent { }
 export class RightArrowAppEvent extends DSAppEvent { }
-export class PageDownAppEvent extends DSAppEvent {}
-export class PageUpAppEvent extends DSAppEvent {}
+export class PageDownAppEvent extends DSAppEvent { }
+export class PageUpAppEvent extends DSAppEvent { }
 export class DeleteAppEvent extends DSAppEvent { }
 export class BackspaceAppEvent extends DSAppEvent { }
 export class TextAppEvent extends DSAppEvent {
@@ -59,13 +93,27 @@ export class TextAppEvent extends DSAppEvent {
     }
 }
 
-// Mouse
-export class WheelAppEvent extends DSAppEvent { 
-    constructor(readonly deltaY: number) {
+export abstract class PointerAppEvent extends DSAppEvent {
+    constructor(
+        readonly x: number,
+        readonly y: number,
+        readonly col: number,
+        readonly row: number,
+        readonly deltaX: number = 0,
+        readonly deltaY: number = 0,
+    ) {
         super();
     }
 }
+// Mouse
+export class WheelAppEvent extends PointerAppEvent { }
 
+// Touch
+export class TouchStartAppEvent extends PointerAppEvent { }
+export class TouchEndAppEvent extends PointerAppEvent { }
+export class TouchMoveAppEvent extends PointerAppEvent { }
+
+// App
 export class ResizeAppEvent extends DSAppEvent { }
 export class TerminateAppEvent extends DSAppEvent { }
 
@@ -102,7 +150,7 @@ export function createAppEventsFromStdin(str: string): DSAppEvent[] {
             } else if (unprocessed.startsWith("\x1b[6~")) { // PgDown
                 events.push(new PageDownAppEvent());
                 unprocessed = unprocessed.slice(4);
-            
+
             } else {  // Slice off the escape
                 console.log("unknown escape sequence: " + unprocessed);
                 unprocessed = unprocessed.slice(1);

@@ -4,7 +4,7 @@ import { DSMDDoc, ImageBlock } from "../lib/dsMarkdown";
 import { DSIDirectory } from "../dsFileSystem";
 import { gotoxy, reset } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
-import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent } from "../DSApp";
+import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent } from "../DSApp";
 
 export class PRDSMDBrowser extends DSApp {
 
@@ -12,6 +12,7 @@ export class PRDSMDBrowser extends DSApp {
     private _curdoc: DSMDDoc;
     private _history: string[] = [];
     private _rowidx: number = 0;
+    private _touchstart: { col: number; row: number; idx: number};
 
     protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
@@ -68,8 +69,20 @@ export class PRDSMDBrowser extends DSApp {
             } else if (e instanceof WheelAppEvent) {
                 if (this._changeRowidx(e.deltaY < 0 ? -1 : 1))
                     this._redraw();
+
+            } else if (e instanceof TouchStartAppEvent) {
+                this._touchstart = {col: e.col, row: e.row, idx: this._rowidx};
+
+            } else if (e instanceof TouchMoveAppEvent) {
+                const rowdelta = - e.row + this._touchstart.row - this._rowidx + this._touchstart.idx;
+                if (this._changeRowidx(rowdelta))
+                    this._redraw();
+            } else {
+                console.log(e);
             }
         }
+        this.stdout.write(reset());
+        t.resetSprites();
     }
 
     private _changeRowidx(val: number) {
