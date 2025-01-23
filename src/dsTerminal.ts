@@ -32,6 +32,7 @@ export type DSPointerEvent = {
     type: string,
     x: number,
     y: number,
+    dy: number,
     col: number,
     row: number,
 }
@@ -186,6 +187,14 @@ export class DSTerminal {
         t.element.ontouchmove = (e) => { this._handleTouchEvents(e); }
         t.element.ontouchcancel = (e) => { this._handleTouchEvents(e); }
 
+        // So we want to replace the xterm.js default wheel event
+        // to avoid weird lockup situation that can happen with
+        // multiple wheel events in rapid succession
+        t.attachCustomWheelEventHandler((e) => {
+            this._handleWheelEvents(e);
+            return false;
+        })
+
         // Start text input handling
         this._handleInput();
 
@@ -194,6 +203,24 @@ export class DSTerminal {
         requestAnimationFrame(() => { this._baudFrame() });
 
         t.focus();
+    }
+
+    private _handleWheelEvents(e: WheelEvent) {
+        // Container element doesn't have same dimensions as actual screen
+        const el = this._terminal.element.querySelector(".xterm-screen") as HTMLElement;
+        const pe: DSPointerEvent = {
+            type: e.type,
+            // The element dimensions don't match reality!
+            // GD web development >:{
+            x: Math.floor(e.clientX / el.offsetWidth * this._width),
+            y: Math.floor(e.clientY / el.offsetHeight * this._height),
+            dy: e.deltaY,
+            col: 0,
+            row: 0
+        };
+        pe.col = Math.ceil(pe.x / this.cellwidth);
+        pe.row = Math.ceil(pe.y / this.cellheight);
+        DSKernel.handlePointer(pe);
     }
 
     private _handleMouseEvents(e: MouseEvent) {
@@ -206,6 +233,7 @@ export class DSTerminal {
             // GD web development >:{
             x: Math.floor(e.clientX / el.offsetWidth * this._width),
             y: Math.floor(e.clientY / el.offsetHeight * this._height),
+            dy: 0,
             col: 0,
             row: 0
         };
@@ -224,6 +252,7 @@ export class DSTerminal {
             // GD web development >:{
             x: e.touches.length > 0 ? Math.floor(e.touches[0].clientX / el.offsetWidth * this._width) : 0,
             y: e.touches.length > 0 ? Math.floor(e.touches[0].clientY / el.offsetHeight * this._height) : 0,
+            dy: 0,
             col: 0,
             row: 0
         };
@@ -259,7 +288,7 @@ export class DSTerminal {
         if (this._baudBuffer.length <= 0) {
             if (this._baudPromise) {
                 this._baudPromise = undefined;
-                this._baudResolver();    
+                this._baudResolver();
             }
             return;
         }

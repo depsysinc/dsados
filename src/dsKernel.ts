@@ -197,7 +197,6 @@ export class DSKernel {
             while (true)
                 try {
                     const str = await this.terminal.outputstream.read();
-                    console.log(this.curproc);
                     if (this.curproc && this.curproc.stdin.isatty)
                         this.curproc.stdin.write(str);
                 } catch (e) {
