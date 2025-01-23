@@ -256,8 +256,13 @@ export class DSTerminal {
     private _baudFrame() {
         // Always set up the next frame first
         requestAnimationFrame(() => { this._baudFrame() });
-        if (this._baudBuffer.length <= 0)
+        if (this._baudBuffer.length <= 0) {
+            if (this._baudPromise) {
+                this._baudPromise = undefined;
+                this._baudResolver();    
+            }
             return;
+        }
         if (this.baud == 0) {
             this._terminal.write(this._baudBuffer,
                 () => { this._baudCheckDone() });

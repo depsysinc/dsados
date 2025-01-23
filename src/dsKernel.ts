@@ -7,6 +7,7 @@ import { DSIProcessFile } from "./filesystem/dsIProcessFile";
 import { buildrootfs } from "./dsRootFS";
 import { DSProcess } from "./dsProcess";
 import { nvram_clear, nvram_get, nvram_set, sleep } from './lib/dsLib';
+import { DSStream } from './dsStream';
 
 export class DSKernelError extends Error {
     constructor(message: string) {
@@ -72,7 +73,7 @@ export class DSKernel {
             nvram_clear();
             await DSIDBFileSystem.delete("depsys_local_fs");
         }
-        
+
         console.log("Initializing Terminal")
         this.terminal = new DSTerminal(terminalContainer);
 
@@ -108,11 +109,14 @@ export class DSKernel {
         this.terminal.write(`BOOTING DepSysOS ${DSKernel.version}...\n\n`);
         await sleep(1000 * bootfactor);
         const t = this.terminal;
-        t.baud = 1200 * bootfactor;
+        t.baud = 1000 * bootfactor;
 
         try {
             if (bootcount == 0) {
-                await t.baudWrite(`New terminal detected, doing first time configuration\n\n`);
+                await t.baudWrite(`New terminal detected\n`);
+                await (sleep(1000));
+                await t.baudWrite(`Doing first time configuration\n\n`);
+                await (sleep(1000));
             }
 
             await t.baudWrite(
@@ -139,6 +143,8 @@ export class DSKernel {
                     await t.baudWrite(`             - ${altsmatch[i].trim()}\n`);
 
             }
+            await t.baudWrite("term: start io handlers\n");
+            this._startStdioHandlers();
 
             // Init filesystem
             await t.baudWrite(`fsck: rootfs\n`)
@@ -161,16 +167,15 @@ export class DSKernel {
             if (bootcount == 0) {
                 await t.baudWrite("nvram: enable fastboot");
                 const oldbaud = t.baud;
-                t.baud = 50;
+                t.baud = 10;
                 await t.baudWrite("...\n");
                 nvram_set("fastboot", String(true));
-                nvram_set("baud", "0");
                 t.baud = oldbaud;
             }
+
             // Start init process
             await t.baudWrite("exec: init\n");
-
-            t.baud = +nvram_get("baud");
+            t.baud = 0;
             await DSKernel.exec("/bin/init", ["init"]);
         } catch (e) {
             this.panic(e);
@@ -179,6 +184,26 @@ export class DSKernel {
 
         // Should never get here
         this.panic(new Error("UNEXPECTED INIT EXIT"));
+    }
+
+    private static _startStdioHandlers() {
+        // Handle proc.stdin events
+        // NB: We discard input (does not buffer!) if 
+        //   there is no active process 
+        //   there is a write exception
+        //   the active process is not attached to the terminal
+
+        (async () => {
+            while (true)
+                try {
+                    const str = await this.terminal.outputstream.read();
+                    console.log(this.curproc);
+                    if (this.curproc && this.curproc.stdin.isatty)
+                        this.curproc.stdin.write(str);
+                } catch (e) {
+                    console.log("process.stdin: " + e);
+                }
+        })();
     }
 
     static mount(mountpath: string, fs: DSFileSystem) {
@@ -221,7 +246,7 @@ export class DSKernel {
 
         const ppid = this.curproc ? this.curproc.pid : 0;
         const cwd = this.curproc ? this.curproc.cwd : this.fstable[0].mount;
-        let stdin = this.curproc ? this.curproc.stdin : this.terminal.outputstream;
+        let stdin = new DSStream(true);
         const stdout = this.curproc ? this.curproc.stdout : this.terminal.inputstream;
         let processClass;
 
@@ -260,6 +285,7 @@ export class DSKernel {
         try {
             await newproc.start();
         } finally {
+            this.curproc.stdin.close();
             this.procstack.pop();
         }
 
