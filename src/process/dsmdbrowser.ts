@@ -4,7 +4,7 @@ import { DSMDDoc, ImageBlock } from "../lib/dsMarkdown";
 import { DSIDirectory } from "../dsFileSystem";
 import { gotoxy, reset } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
-import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent } from "../DSApp";
+import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent } from "../dsApp";
 
 export class PRDSMDBrowser extends DSApp {
 
@@ -78,7 +78,7 @@ export class PRDSMDBrowser extends DSApp {
                 if (this._changeRowidx(rowdelta))
                     this._redraw();
             } else {
-                console.log(e);
+                // console.log(e);
             }
         }
         this.stdout.write(reset());

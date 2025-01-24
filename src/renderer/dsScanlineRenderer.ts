@@ -50,9 +50,10 @@ export class DSScanlineRenderer {
             }
             return;
         }
+
         // PROS: respects actual center of scanline
         // CONS: ends up being dim when center falls between real pixels
-        // NB: Works very well when u_pixelHeight > 3.0
+        // NB: Works reliably and well when u_pixelHeight > 3.0
 
         float pixelPos = mod(float(gl_FragCoord.y), u_pixelHeight);
         float centerDistance = (pixelPos - u_pixelHeight * 0.5) / (u_pixelHeight * 0.5);

@@ -64,9 +64,8 @@ export abstract class DSApp extends DSProcess {
                 e.row
             ));
         }
-
         else {
-            console.log(e);
+            // console.log(e);
         }
     }
 
