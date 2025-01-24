@@ -34,24 +34,58 @@ export class DSScanlineRenderer {
     
     void main() {
         outColor = texture(u_texture, v_texCoord);
+
+        // Just pass through when less than 2 pixel rows per scan line
+        // Readability trumps aesthetics
         if (u_pixelHeight < 2.0) {
             return;
         }
         
-        float lastPixelPos = mod(float(gl_FragCoord.y - 1.0), u_pixelHeight);
-        float lastCenterDistance = (lastPixelPos - u_pixelHeight * 0.5) / (u_pixelHeight * 0.5);
+        // Below 3 pixels per scanline, everything eles creates weird artifacts
+        // and asymmetries, so just fake it with alternating intensity
+        if (u_pixelHeight < 3.0) {
+            float wholeY = floor(gl_FragCoord.y);
+            if (mod(wholeY,2.0) < 0.1) {
+                outColor.rgb /= 2.0;
+            }
+            return;
+        }
+        // PROS: respects actual center of scanline
+        // CONS: ends up being dim when center falls between real pixels
+        // NB: Works very well when u_pixelHeight > 3.0
 
         float pixelPos = mod(float(gl_FragCoord.y), u_pixelHeight);
         float centerDistance = (pixelPos - u_pixelHeight * 0.5) / (u_pixelHeight * 0.5);
-
-        // This reliably detects when we have passed over the center line of a pixel
-        // Guaranteeing at least one line rendered at full intensity
-        //if ((lastCenterDistance < 0.0) && (centerDistance >= 0.0)) {
-        //    return;
-        //}
-
         float falloff = pow(abs(centerDistance), 1.5);
         outColor.rgb -= vec3(falloff);
+        
+        // PROS: Reliably detects when we have passed over the center line of a pixel
+        // Guaranteeing at least one line rendered at full intensity
+        // CONS: very inconsistent intensity of non center lines
+
+        /*
+        float lastPixelPos = mod(float(gl_FragCoord.y - 1.0), u_pixelHeight);
+        float lastCenterDistance = (lastPixelPos - u_pixelHeight * 0.5) / (u_pixelHeight * 0.5);
+        if ((lastCenterDistance < 0.0) && (centerDistance >= 0.0)) {
+            return;
+        }
+        */
+
+        // PROS: Ensures full brightness for pixel row closest to middle of scanline
+        // CONS: Uneven gaps between scanlines
+
+        /*
+        if (u_pixelHeight < 30.0) {
+            float wholeY = floor(gl_FragCoord.y);
+            float startPixel = ceil(floor((wholeY) / u_pixelHeight) * u_pixelHeight);
+            float centerDistance = abs(wholeY - startPixel)/u_pixelHeight;
+            if (wholeY - startPixel < 0.2)
+                return;
+            outColor.rgb -= vec3(centerDistance);
+            return;
+        }
+        */
+
     }`;
 
     private _pixelheightLocation: WebGLUniformLocation;
