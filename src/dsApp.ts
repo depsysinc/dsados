@@ -63,7 +63,35 @@ export abstract class DSApp extends DSProcess {
                 e.col,
                 e.row
             ));
+        } else if (e.type == "mousemove") {
+            this.eventQueue.enqueue(new MouseMoveAppEvent(
+                e.x,
+                e.y,
+                e.col,
+                e.row
+            ));
+        } else if (e.type == "mousedown") {
+            this.eventQueue.enqueue(new MouseButtonDownEvent(
+                e.x,
+                e.y,
+                e.col,
+                e.row,
+                0,
+                0,
+                e.button
+            ));
+        }else if (e.type == "mouseup") {
+            this.eventQueue.enqueue(new MouseButtonUpEvent(
+                e.x,
+                e.y,
+                e.col,
+                e.row,
+                0,
+                0,
+                e.button
+            ));
         }
+
         else {
             // console.log(e);
         }
@@ -100,12 +128,17 @@ export abstract class PointerAppEvent extends DSAppEvent {
         readonly row: number,
         readonly deltaX: number = 0,
         readonly deltaY: number = 0,
+        readonly button: number = 0,
     ) {
         super();
     }
 }
+
 // Mouse
 export class WheelAppEvent extends PointerAppEvent { }
+export class MouseMoveAppEvent extends PointerAppEvent { }
+export class MouseButtonDownEvent extends PointerAppEvent { }
+export class MouseButtonUpEvent extends PointerAppEvent { }
 
 // Touch
 export class TouchStartAppEvent extends PointerAppEvent { }
@@ -167,7 +200,6 @@ export function createAppEventsFromStdin(str: string): DSAppEvent[] {
                 events.push(new TextAppEvent(unprocessed));
                 unprocessed = "";
             }
-
         }
     }
     return events;

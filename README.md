@@ -22,6 +22,7 @@
   * mv
   * cp
   * dsmdbrowser
+    * Implement img links
   * imgview
 
 # Setup

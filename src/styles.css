@@ -34,7 +34,7 @@ body {
 }
 
 .xterm-screen {
-  cursor: pointer;
+  /* cursor: default; */
 }
 
 .xterm-scroll-area {

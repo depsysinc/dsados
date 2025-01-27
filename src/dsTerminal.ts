@@ -35,6 +35,7 @@ export type DSPointerEvent = {
     dy: number,
     col: number,
     row: number,
+    button: number,
 }
 
 export class DSTerminal {
@@ -203,6 +204,8 @@ export class DSTerminal {
         requestAnimationFrame(() => { this._baudFrame() });
 
         t.focus();
+        
+        this.setCursor("default");
     }
 
     private _handleWheelEvents(e: WheelEvent) {
@@ -216,7 +219,8 @@ export class DSTerminal {
             y: Math.floor(e.clientY / el.offsetHeight * this._height),
             dy: e.deltaY,
             col: 0,
-            row: 0
+            row: 0,
+            button: 0
         };
         pe.col = Math.ceil(pe.x / this.cellwidth);
         pe.row = Math.ceil(pe.y / this.cellheight);
@@ -235,7 +239,8 @@ export class DSTerminal {
             y: Math.floor(e.clientY / el.offsetHeight * this._height),
             dy: 0,
             col: 0,
-            row: 0
+            row: 0,
+            button: e.button
         };
         pe.col = Math.ceil(pe.x / this.cellwidth);
         pe.row = Math.ceil(pe.y / this.cellheight);
@@ -254,7 +259,8 @@ export class DSTerminal {
             y: e.touches.length > 0 ? Math.floor(e.touches[0].clientY / el.offsetHeight * this._height) : 0,
             dy: 0,
             col: 0,
-            row: 0
+            row: 0,
+            button: 0
         };
         pe.col = Math.ceil(pe.x / this.cellwidth);
         pe.row = Math.ceil(pe.y / this.cellheight);
@@ -378,6 +384,14 @@ export class DSTerminal {
             deleteTexture(this._gl, sprite.texture);
         });
         this._sprites = [];
+    }
+
+    setCursor(style: string) {
+        this._terminal.element.style.cursor = style;
+    }
+
+    getRow(row: number) {
+        return this._terminal.buffer.active.getLine(row-1).translateToString();
     }
 }
 

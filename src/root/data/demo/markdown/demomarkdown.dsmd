@@ -1,3 +1,4 @@
+
 # $$$$ Images
 ![demo text wrapping](/data/test/image/gorzocrop.png)
 This is text to the right of the image less than the height of the image
@@ -27,7 +28,7 @@ because not on same line](/an/image/url)
 
 # $$$$ Links
 
-[Demonstrate a standalone link long enough to be easily wrapped](/an/invalid/url)
+Some prefix text [Demonstrate a link long enough to be easily wrapped on multiple lines so that we can show link location detection in the browser](/an/invalid/url) some suffix text
 
 Demonstrate a [link](/an/invalid/url) that is embedded in a paragraph.
 

@@ -6,9 +6,12 @@ import { setattr, textattrs } from "./dsCurses";
 import { load_image } from "./dsLib";
 
 // TOKENS
-abstract class DSMDToken {
+export abstract class DSMDToken {
+    startrow: DSMDRow;
+    startlen: number;
     render(word: DSMDWord) {
-        throw new Error(`${this.constructor.name} render unsupported`);
+        word.tokens.push(this);
+        this.startlen = word.length;
     }
 }
 
@@ -18,6 +21,7 @@ class TextToken extends DSMDToken {
     }
 
     render(word: DSMDWord): void {
+        super.render(word);
         word.text += this.text;
         word.length += this.text.length;
     }
@@ -41,6 +45,7 @@ abstract class MatchToken extends DSMDToken {
 
 class ItalicToken extends MatchToken {
     render(word: DSMDWord): void {
+        super.render(word);
         if (!this.matched) {
             word.length += 1;
             word.text += "*";
@@ -63,6 +68,7 @@ class ItalicToken extends MatchToken {
 
 class BoldToken extends MatchToken {
     render(word: DSMDWord): void {
+        super.render(word);
         if (!this.matched) {
             word.length += 2;
             word.text += "**";
@@ -82,19 +88,20 @@ class BoldToken extends MatchToken {
     }
 }
 
-class LinkToken extends MatchToken {
-    constructor(readonly linktext: string, private url: string) {
+export class LinkToken extends MatchToken {
+    constructor(readonly linktext: string, readonly url: string) {
         super();
     }
 
     render(word: DSMDWord): void {
+        super.render(word);
         if (!this.matched) {
             word.length += 2;
             word.text += "[!LINK!]";
         }
         if (this.opening) {
             word.text += setattr(textattrs.curlyunderline);
-            word.link_close = true;
+            word.link_open = true;
         }
         if (this.closing) {
             word.text += setattr(textattrs.nounderline);
@@ -108,6 +115,7 @@ class ListItemToken extends DSMDToken {
         super();
     }
     render(word: DSMDWord): void {
+        super.render(word);
         // NB: no whitespace token in here because ' ' after dash 
         //  is considered part of same word as the dash
         let prefix = `${" ".repeat((this.level - 1) * 2)}- `;
@@ -119,7 +127,9 @@ class ListItemToken extends DSMDToken {
 // BLOCKS
 
 abstract class DSMDBlock {
-    protected tokens: DSMDToken[] = [];
+    tokens: DSMDToken[] = [];
+
+    firstrow: number;
 
     constructor(readonly doc: DSMDDoc) { }
 
@@ -270,10 +280,7 @@ abstract class DSMDBlock {
 
     // Default block renderer
     render(width: number, rows: DSMDRow[]): void {
-        const row = new DSMDRow(width, this);
-        row.text = `[!${this.constructor.name}!]`;
-        row.length = row.text.length;
-        rows.push(row);
+        this.firstrow = rows.length;
     };
 
     abstract debugstr(indent: string): string;
@@ -282,8 +289,6 @@ abstract class DSMDBlock {
 export class ImageBlock extends DSMDBlock {
     static readonly imageregex = /^!\[([^\]]*)\]\(([^\)]+)\)(?:\(([^\)]+)\))?/;
 
-    firstrow: number;
-    
     alttext: string = undefined;
     imgurl: string = undefined;
     linkurl: string = undefined;
@@ -321,19 +326,19 @@ export class ImageBlock extends DSMDBlock {
     }
 
     render(width: number, rows: DSMDRow[]): void {
-        this.firstrow = rows.length;
+        super.render(width, rows);
 
         if (this.img) {
             const imgrows: DSMDRow[] = [];
-            this.imgcellheight = Math.ceil(this.img.height/this.doc.cellheight);
-            this.imgcellwidth = Math.ceil(this.img.width/this.doc.cellwidth);
-            let currow = new DSMDRow(width,this);
+            this.imgcellheight = Math.ceil(this.img.height / this.doc.cellheight);
+            this.imgcellwidth = Math.ceil(this.img.width / this.doc.cellwidth);
+            let currow = new DSMDRow(width, this);
             currow.indent = this.imgcellwidth + 1;
-            currow.text = " ".repeat(currow.indent-1);
+            currow.text = " ".repeat(currow.indent - 1);
             currow.length = currow.text.length;
             imgrows.push(currow);
             // Parse paragraph tokens
-            this.tokens.forEach((token)=>{
+            this.tokens.forEach((token) => {
                 let newrow = currow.addtoken(token);
                 if (newrow) {
                     imgrows.push(newrow);
@@ -342,7 +347,7 @@ export class ImageBlock extends DSMDBlock {
             });
             // Fill out any missing rows
             for (let i = imgrows.length; i < this.imgcellheight; i++) {
-                const imgrow = new DSMDRow(width,this);
+                const imgrow = new DSMDRow(width, this);
                 imgrow.text = " ".repeat(this.imgcellwidth);
                 imgrow.length = imgrow.text.length;
                 imgrows.push(imgrow);
@@ -351,7 +356,7 @@ export class ImageBlock extends DSMDBlock {
             return;
         }
         // Handle the alttext case
-        const altrow = new DSMDRow(width,this);
+        const altrow = new DSMDRow(width, this);
         altrow.text = `[${this.alttext}]`;
         altrow.length = altrow.text.length;
         rows.push(altrow);
@@ -360,7 +365,7 @@ export class ImageBlock extends DSMDBlock {
             return;
 
         // Handle trailing text
-        let currow = new DSMDRow(width,this);
+        let currow = new DSMDRow(width, this);
         currow.indent = 2;
         currow.text = " ";
         currow.length = 1;
@@ -421,13 +426,14 @@ class ListBlock extends DSMDBlock {
     }
 
     render(width: number, rows: DSMDRow[]): DSMDRow[] {
+        super.render(width, rows);
         // start with sacrificial row
-        let currow = new DSMDRow(width,this);
+        let currow = new DSMDRow(width, this);
         this.tokens.forEach((token) => {
             let newrow = currow.addtoken(token);
             if (newrow) {
                 if ((token instanceof ListItemToken) && (token.spaced))
-                    rows.push(new DSMDRow(width,this));
+                    rows.push(new DSMDRow(width, this));
                 rows.push(newrow);
                 currow = newrow;
             }
@@ -465,13 +471,14 @@ class CodeBlock extends DSMDBlock {
 
     // Fully custom renderer
     render(width: number, rows: DSMDRow[]): void {
+        super.render(width, rows);
         this.rawlines.forEach((line) => {
-            const row = new DSMDRow(width,this);
+            const row = new DSMDRow(width, this);
             row.length = width;
             row.text = line.slice(0, width);
             row.text = row.text.padEnd(width);
-            row.text = setattr(`${textattrs.bg_black};${textattrs.dim}`)
-                + row.text + setattr(`${textattrs.bg_default};${textattrs.normal}`);
+            row.text = setattr(`${textattrs.bg_black}`)
+                + row.text + setattr(`${this.doc.bgcolor}`);
             rows.push(row);
         });
     };
@@ -509,6 +516,7 @@ class ParagraphBlock extends DSMDBlock {
     }
 
     render(width: number, rows: DSMDRow[]): DSMDRow[] {
+        super.render(width, rows);
         // Paragraph starts with a new row
         let currow = new DSMDRow(width, this);
         rows.push(currow);
@@ -531,9 +539,10 @@ class TitleBlock extends DSMDBlock {
     }
 
     render(width: number, rows: DSMDRow[]): DSMDRow[] {
+        super.render(width, rows);
         // Title starts with new row
         let maxlength = 0;
-        let currow = new DSMDRow(width,this);
+        let currow = new DSMDRow(width, this);
         rows.push(currow);
         this.tokens.forEach((token) => {
             let newrow = currow.addtoken(token);
@@ -580,6 +589,7 @@ class DSMDWord {
     bold_close: boolean = false;
     link_open: boolean = false;
     link_close: boolean = false;
+    tokens: DSMDToken[] = [];
 }
 
 class DSMDRow {
@@ -594,6 +604,12 @@ class DSMDRow {
     constructor(readonly width: number, readonly block: DSMDBlock) { }
 
     addword() {
+        // Finalize the token pointers
+        this.word.tokens.forEach((token) => {
+            token.startrow = this;
+            token.startlen += this.length;
+        });
+
         this.text += this.word.text;
         this.length += this.word.length;
 
@@ -644,7 +660,7 @@ class DSMDRow {
     finalize(): DSMDRow {
         // Finalize this row
         const carryword = this.word;
-        const newrow = new DSMDRow(this.width,this.block);
+        const newrow = new DSMDRow(this.width, this.block);
 
         // Carry over attributes
         this.word = new DSMDWord();    // The closing word
@@ -655,6 +671,9 @@ class DSMDRow {
 
         if (this.italics_at_close)
             termtokens.push(new ItalicToken());
+
+        if (this.link_at_close)
+            termtokens.push(new LinkToken("",""));
 
         termtokens.forEach((matchtoken) => {
             matchtoken.matched = true;
@@ -692,6 +711,9 @@ export class DSMDDoc {
     public cellwidth: number;
     public cellheight: number;
 
+    public fgcolor = textattrs.fg_green;
+    public bgcolor = textattrs.bg_default;
+
     parse(text: string): void {
         this.blocks = [new NullBlock(this)];
 
@@ -717,10 +739,10 @@ export class DSMDDoc {
     }
 
     async loadContent(dir: DSIDirectory) {
-        for(let i = 0; i < this.blocks.length; i++) {
+        for (let i = 0; i < this.blocks.length; i++) {
             const block = this.blocks[i];
             if (block instanceof ImageBlock) {
-                try{
+                try {
                     // Look up the file
                     const inode = dir.getfile(block.imgurl);
                     if (!(inode instanceof DSIWebFile))
@@ -730,7 +752,6 @@ export class DSMDDoc {
                     // Create the sprite
                     block.sprite = DSKernel.terminal.newSprite([block.img]);
                 } catch (e) {
-                    
                 }
             }
         };
@@ -743,8 +764,50 @@ export class DSMDDoc {
         this.blocks.forEach((block, idx) => {
             block.render(width, this.rows);
             if (idx != this.blocks.length - 1)
-                this.rows.push(new DSMDRow(width,undefined));
+                this.rows.push(new DSMDRow(width, undefined));
         });
+    }
+
+    getlink(col: number, rowidx: number): { open: LinkToken, close: LinkToken } | undefined {
+        if (rowidx >= this.rows.length)
+            return;
+        const row = this.rows[rowidx];
+        // Find the block
+        const block = row.block;
+        if (block == undefined)
+            return;
+        // Find the token
+        for (let i = 0; i < block.tokens.length; i++) {
+            const opentoken = block.tokens[i];
+            if ((opentoken instanceof LinkToken) &&
+                (opentoken.opening)) {
+                // Find terminator
+                let closetoken: DSMDToken;
+                for (let j = i + 1; j < block.tokens.length; j++) {
+                    closetoken = block.tokens[j];
+                    if ((closetoken instanceof LinkToken) &&
+                    (closetoken.closing)) {
+                        // Does this pair enclose the col/row?
+                        const startidx = this.rows.indexOf(opentoken.startrow);
+                        const endidx = this.rows.indexOf(closetoken.startrow)
+                        if ((startidx <= rowidx) && (endidx >= rowidx)) {
+                        // OPT: skip forward to the first token past
+                        // the closing token 
+                        if ((rowidx == startidx) &&
+                                (col < opentoken.startlen + 1))
+                                break;
+                            if ((rowidx == endidx) &&
+                                (col > closetoken.startlen))
+                                break;
+                            // Return the pair
+                            return { open: opentoken, close: closetoken }
+                        }
+                    }
+                }
+            }
+        }
+        // Didn't find any link
+        return;
     }
 
     debugstr(indent: string): string {
