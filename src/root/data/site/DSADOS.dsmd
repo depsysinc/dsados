@@ -1,0 +1,33 @@
+```
+=======================================
+  ____  ____    _    ____   ___  ____  
+ |  _ \/ ___|  / \  |  _ \ / _ \/ ___| 
+ | | | \___ \ / _ \ | | | | | | \___ \ 
+ | |_| |___) / ___ \| |_| | |_| |___) |
+ |____/|____/_/   \_\____/ \___/|____/ 
+                                      
+=======================================
+
+DSADOS V1.0
+
+Deprecated Systems
+    Autonomous Distributed
+        Operating System
+ 
+<c> 2025 Deprecated Systems Incorporated
+____
+```
+
+DSADOS is a DOS-like, single threaded, terminal oriented application framework designed
+to run in the browser.
+
+Written in [typescript](https://www.typescriptlang.org/), 
+it is built on top of the [xterm.js](https://xtermjs.org/) library, 
+with a custom fork of the xterm.js [webgl addon](https://github.com/xtermjs/xterm.js/tree/master/addons/addon-webgl).
+
+- **Autonomous** & **Distributed** - 
+DSADOS runs entirely in the browsers of users like you,
+downloading some static assets,
+but otherwise requiring no backend server support.
+
+This website is implemented in DSADOS.

@@ -37,8 +37,12 @@ import root_data_demo_markdown_demomarkdown_dsmd from "./root/data/demo/markdown
 import root_data_demo_mousetouch_pointer_png from "./root/data/demo/mousetouch/pointer.png";
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
 import root_data_depsys_txt from "./root/data/depsys.txt";
+import root_data_site_DSADOS_dsmd from "./root/data/site/DSADOS.dsmd";
 import root_data_site_about_dsmd from "./root/data/site/about.dsmd";
+import root_data_site_concursion_dsmd from "./root/data/site/concursion.dsmd";
+import root_data_site_games_dsmd from "./root/data/site/games.dsmd";
 import root_data_site_index_dsmd from "./root/data/site/index.dsmd";
+import root_data_site_tech_dsmd from "./root/data/site/tech.dsmd";
 import root_data_test_bazisa_txt from "./root/data/test/bazisa.txt";
 import root_data_test_image_gorzocrop_png from "./root/data/test/image/gorzocrop.png";
 import root_etc_autoexec_dssh from "./root/etc/autoexec.dssh";
@@ -216,14 +220,34 @@ export function buildrootfs(): DSFileSystem {
     dirstack.push(curdir);
     curdir = curdir.mkdir('site');
     
+    // Creating root/data/site/DSADOS.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_DSADOS_dsmd);
+    curdir.addfile("DSADOS.dsmd", curfile);
+    
+    
     // Creating root/data/site/about.dsmd
     curfile = new DSIWebFile(fs, root_data_site_about_dsmd);
     curdir.addfile("about.dsmd", curfile);
     
     
+    // Creating root/data/site/concursion.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_concursion_dsmd);
+    curdir.addfile("concursion.dsmd", curfile);
+    
+    
+    // Creating root/data/site/games.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_games_dsmd);
+    curdir.addfile("games.dsmd", curfile);
+    
+    
     // Creating root/data/site/index.dsmd
     curfile = new DSIWebFile(fs, root_data_site_index_dsmd);
     curdir.addfile("index.dsmd", curfile);
+    
+    
+    // Creating root/data/site/tech.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_tech_dsmd);
+    curdir.addfile("tech.dsmd", curfile);
     
     
     curdir.chmod(DSFilePerms.rx());
