@@ -1,0 +1,15 @@
+```
+====================================================
+  ____                                _             
+ / ___|___  _ __   ___ _   _ _ __ ___(_) ___  _ __  
+| |   / _ \| '_ \ / __| | | | '__/ __| |/ _ \| '_ \ 
+| |__| (_) | | | | (__| |_| | |  \__ \ | (_) | | | |
+ \____\___/|_| |_|\___|\__,_|_|  |___/_|\___/|_| |_|
+                                                      
+====================================================
+```                                                 
+
+The **Concursion Engine** is a custom server backend implemented
+in [C++](https://isocpp.org/) on which DepSys gameworlds are implemented.
+
+It is designed to integrate with the GODOT graphical game client.

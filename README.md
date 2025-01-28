@@ -23,6 +23,7 @@
   * cp
   * dsmdbrowser
     * Implement img links
+    * Implement scroll persistence in browser history
   * imgview
 
 # Setup
@@ -47,3 +48,8 @@
 * jest.config.js
 * webpack.config.js
 * src/declarations.d.ts
+
+# Notes
+## Figlet
+* slant - DepSys logo
+* standard - page titles
