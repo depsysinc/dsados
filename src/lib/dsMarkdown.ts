@@ -41,6 +41,8 @@ abstract class MatchToken extends DSMDToken {
     public matched = false;
     public opening = false;
     public closing = false;
+    public closingtoken: MatchToken;
+    public openingtoken: MatchToken;
 }
 
 class ItalicToken extends MatchToken {
@@ -100,7 +102,7 @@ export class LinkToken extends MatchToken {
             word.text += "[!LINK!]";
         }
         if (this.opening) {
-            word.text += setattr(textattrs.curlyunderline);
+            word.text += setattr(textattrs.dottedunderline);
             word.link_open = true;
         }
         if (this.closing) {
@@ -215,8 +217,11 @@ abstract class DSMDBlock {
                         ((token instanceof LinkToken) && (matchtoken instanceof LinkToken))) {
                         token.matched = true;
                         token.opening = true;
+                        token.closingtoken = matchtoken;
+
                         matchtoken.matched = true;
                         matchtoken.closing = true;
+                        matchtoken.openingtoken = token;
                         break;
                     }
                 }
@@ -474,11 +479,13 @@ class CodeBlock extends DSMDBlock {
         super.render(width, rows);
         this.rawlines.forEach((line) => {
             const row = new DSMDRow(width, this);
+            const doc = this.doc;
             row.length = width;
             row.text = line.slice(0, width);
             row.text = row.text.padEnd(width);
-            row.text = setattr(`${textattrs.bg_black}`)
-                + row.text + setattr(`${this.doc.bgcolor}`);
+            row.text = setattr(`${doc.codefgcolor};${doc.codebgcolor}`) +
+                row.text +
+                setattr(`${this.doc.fgcolor};${this.doc.bgcolor}`);
             rows.push(row);
         });
     };
@@ -673,7 +680,7 @@ class DSMDRow {
             termtokens.push(new ItalicToken());
 
         if (this.link_at_close)
-            termtokens.push(new LinkToken("",""));
+            termtokens.push(new LinkToken("", ""));
 
         termtokens.forEach((matchtoken) => {
             matchtoken.matched = true;
@@ -713,6 +720,8 @@ export class DSMDDoc {
 
     public fgcolor = textattrs.fg_green;
     public bgcolor = textattrs.bg_default;
+    public codefgcolor = textattrs.fg_green;
+    public codebgcolor = textattrs.bg_default;
 
     parse(text: string): void {
         this.blocks = [new NullBlock(this)];
@@ -768,7 +777,7 @@ export class DSMDDoc {
         });
     }
 
-    getlink(col: number, rowidx: number): { open: LinkToken, close: LinkToken } | undefined {
+    getlink(col: number, rowidx: number): LinkToken | undefined {
         if (rowidx >= this.rows.length)
             return;
         const row = this.rows[rowidx];
@@ -781,28 +790,21 @@ export class DSMDDoc {
             const opentoken = block.tokens[i];
             if ((opentoken instanceof LinkToken) &&
                 (opentoken.opening)) {
-                // Find terminator
-                let closetoken: DSMDToken;
-                for (let j = i + 1; j < block.tokens.length; j++) {
-                    closetoken = block.tokens[j];
-                    if ((closetoken instanceof LinkToken) &&
-                    (closetoken.closing)) {
-                        // Does this pair enclose the col/row?
-                        const startidx = this.rows.indexOf(opentoken.startrow);
-                        const endidx = this.rows.indexOf(closetoken.startrow)
-                        if ((startidx <= rowidx) && (endidx >= rowidx)) {
-                        // OPT: skip forward to the first token past
-                        // the closing token 
-                        if ((rowidx == startidx) &&
-                                (col < opentoken.startlen + 1))
-                                break;
-                            if ((rowidx == endidx) &&
-                                (col > closetoken.startlen))
-                                break;
-                            // Return the pair
-                            return { open: opentoken, close: closetoken }
-                        }
-                    }
+                const closetoken = opentoken.closingtoken;
+                // Does this pair enclose the col/row?
+                const startidx = this.rows.indexOf(opentoken.startrow);
+                const endidx = this.rows.indexOf(closetoken.startrow)
+                if ((startidx <= rowidx) && (endidx >= rowidx)) {
+                    // OPT: skip forward to the first token past
+                    // the closing token 
+                    if ((rowidx == startidx) &&
+                        (col < opentoken.startlen + 1))
+                        break;
+                    if ((rowidx == endidx) &&
+                        (col > closetoken.startlen))
+                        break;
+                    // Return the token
+                    return opentoken;
                 }
             }
         }

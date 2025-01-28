@@ -322,4 +322,10 @@ export class DSKernel {
             return;
         this.curproc.handlePointer(e);
     }
+
+    static handleHistoryEvents(e: PopStateEvent) {
+        if (!this.curproc)
+            return;
+        this.curproc.handleHistory(e);        
+    }
 }

@@ -101,9 +101,20 @@ export abstract class DSApp extends DSProcess {
         this.eventQueue.enqueue(new ResizeAppEvent());
     }
 
+    handleHistory(e: PopStateEvent): void {
+        this.eventQueue.enqueue(new HistoryAppEvent(e));
+    }
+
 }
 
 export abstract class DSAppEvent { }
+
+// History
+export class HistoryAppEvent extends DSAppEvent {
+    constructor(readonly e: PopStateEvent) {
+        super();
+    }
+}
 
 // Keys
 export class UpArrowAppEvent extends DSAppEvent { }

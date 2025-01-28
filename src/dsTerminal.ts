@@ -188,6 +188,9 @@ export class DSTerminal {
         t.element.ontouchmove = (e) => { this._handleTouchEvents(e); }
         t.element.ontouchcancel = (e) => { this._handleTouchEvents(e); }
 
+        // Hook up browser actions
+        window.onpopstate = (e) => { this._handleHistoryEvents(e); }
+
         // So we want to replace the xterm.js default wheel event
         // to avoid weird lockup situation that can happen with
         // multiple wheel events in rapid succession
@@ -206,6 +209,10 @@ export class DSTerminal {
         t.focus();
         
         this.setCursor("default");
+    }
+
+    private _handleHistoryEvents(e: PopStateEvent) {
+        DSKernel.handleHistoryEvents(e);
     }
 
     private _handleWheelEvents(e: WheelEvent) {

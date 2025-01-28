@@ -115,7 +115,7 @@ for (const entry of entries) {
 
     console.log(`Create ${binFileName} from ${srcPath}`);
     const file = fs.readFileSync(srcPath, 'utf-8');
-    match = file.match(/export class (\w+) extends DSProcess {/);
+    match = file.match(/export class (\w+) extends (DSProcess|DSApp) {/);
     if (!match)
         throw Error("could not find DSProcess class");
     const className = match[1];

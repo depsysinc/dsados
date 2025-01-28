@@ -28,6 +28,7 @@ import { PRPwd } from "./process/pwd";
 import { PRReset } from "./process/reset";
 import { PRSleep } from "./process/sleep";
 // WEBFILE TRAVERSAL IMPORTS
+import root_data_app_dsmdbrowser_404_dsmd from "./root/data/app/dsmdbrowser/404.dsmd";
 import root_data_demo_animation_32x32_A_png from "./root/data/demo/animation/32x32_A.png";
 import root_data_demo_animation_32x32_B_png from "./root/data/demo/animation/32x32_B.png";
 import root_data_demo_animation_32x32_C_png from "./root/data/demo/animation/32x32_C.png";
@@ -36,6 +37,8 @@ import root_data_demo_markdown_demomarkdown_dsmd from "./root/data/demo/markdown
 import root_data_demo_mousetouch_pointer_png from "./root/data/demo/mousetouch/pointer.png";
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
 import root_data_depsys_txt from "./root/data/depsys.txt";
+import root_data_site_about_dsmd from "./root/data/site/about.dsmd";
+import root_data_site_index_dsmd from "./root/data/site/index.dsmd";
 import root_data_test_bazisa_txt from "./root/data/test/bazisa.txt";
 import root_data_test_image_gorzocrop_png from "./root/data/test/image/gorzocrop.png";
 import root_etc_autoexec_dssh from "./root/etc/autoexec.dssh";
@@ -116,6 +119,27 @@ export function buildrootfs(): DSFileSystem {
     dirstack.push(curdir);
     curdir = curdir.mkdir('data');
     
+    // Traversing root/data/app
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('app');
+    
+    // Traversing root/data/app/dsmdbrowser
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('dsmdbrowser');
+    
+    // Creating root/data/app/dsmdbrowser/404.dsmd
+    curfile = new DSIWebFile(fs, root_data_app_dsmdbrowser_404_dsmd);
+    curdir.addfile("404.dsmd", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/app/dsmdbrowser
+        
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/app
+        
     // Traversing root/data/demo
     dirstack.push(curdir);
     curdir = curdir.mkdir('demo');
@@ -188,6 +212,24 @@ export function buildrootfs(): DSFileSystem {
     curdir.addfile("depsys.txt", curfile);
     
     
+    // Traversing root/data/site
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('site');
+    
+    // Creating root/data/site/about.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_about_dsmd);
+    curdir.addfile("about.dsmd", curfile);
+    
+    
+    // Creating root/data/site/index.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_index_dsmd);
+    curdir.addfile("index.dsmd", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/site
+        
     // Traversing root/data/test
     dirstack.push(curdir);
     curdir = curdir.mkdir('test');

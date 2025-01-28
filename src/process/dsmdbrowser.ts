@@ -4,17 +4,15 @@ import { DSMDDoc, ImageBlock, DSMDToken, LinkToken } from "../lib/dsMarkdown";
 import { DSIDirectory } from "../dsFileSystem";
 import { gotoxy, reset, setattr, textattrs } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
-import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent, MouseMoveAppEvent, MouseButtonDownEvent, MouseButtonUpEvent } from "../dsApp";
+import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent, MouseMoveAppEvent, MouseButtonDownEvent, MouseButtonUpEvent, TouchEndAppEvent, LeftArrowAppEvent, HistoryAppEvent } from "../dsApp";
 
 export class PRDSMDBrowser extends DSApp {
 
-    private _docdir: DSIDirectory;
     private _curdoc: DSMDDoc;
-    private _history: string[] = [];
     private _rowidx: number = 0;
     private _touchstart: { col: number; row: number; idx: number };
-    _hoverlink: { open: LinkToken; close: LinkToken; };
-    // private _hoverlink: LinkToken;
+    private _hoverlink: LinkToken;
+    private _err404: string;
 
     protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
@@ -27,14 +25,16 @@ export class PRDSMDBrowser extends DSApp {
         if (nextarg == -1)
             throw new DSProcessError(optparser.usage());
 
+        // Load assets
+        this._err404 = await this.cwd.getfile("/data/app/dsmdbrowser/404.dsmd").contentAsText().read();
         // Start up AppEvent processing
         this.init();
         // inject an initial resize event
-        this.eventQueue.enqueue(new ResizeAppEvent());
-
+        // this.eventQueue.enqueue(new ResizeAppEvent());
+        
         let filename = this.argv[nextarg];
-        this._docdir = this.cwd;
-        this._curdoc = await this.loadDoc(filename);
+        history.replaceState({filepath: filename},"");
+        await this._loadDoc(filename);
 
         const t = DSKernel.terminal;
         while (!this.done) {
@@ -42,6 +42,10 @@ export class PRDSMDBrowser extends DSApp {
             if (e instanceof ResizeAppEvent) {
                 this._curdoc.render(t.cols, t.cellwidth, t.cellheight);
                 this._redraw();
+                
+            } else if (e instanceof HistoryAppEvent) {
+                await this._loadDoc(history.state.filepath);
+
             } else if (e instanceof TextAppEvent) {
                 if (e.text == 'r') {
                     this._redraw();
@@ -69,23 +73,40 @@ export class PRDSMDBrowser extends DSApp {
                 if (this._changeRowidx(t.rows))
                     this._redraw();
 
+            } else if (e instanceof LeftArrowAppEvent) {
+                history.back();
+
             } else if (e instanceof WheelAppEvent) {
                 if (this._changeRowidx(e.deltaY < 0 ? -1 : 1))
                     this._redraw();
 
             } else if (e instanceof TouchStartAppEvent) { // TOUCH
                 this._touchstart = { col: e.col, row: e.row, idx: this._rowidx };
+                const rowidx = e.row + this._rowidx - 1;
+                const link = this._curdoc.getlink(e.col, rowidx);
+                if (link) {
+                    this._hoverlink = link;
+                    this.highlightLink(link);
+                }
 
             } else if (e instanceof TouchMoveAppEvent) {
+                // If we're moving then forget the hovered link
+                this._hoverlink = undefined;
                 const rowdelta = - e.row + this._touchstart.row - this._rowidx + this._touchstart.idx;
                 if (this._changeRowidx(rowdelta))
                     this._redraw();
 
-            // } else if (e instanceof MouseButtonDownEvent) {
+            } else if (e instanceof TouchEndAppEvent) {
+                // If this is a link click then load
+                if (this._hoverlink) {
+                    history.pushState({filepath: this._hoverlink.url},"");
+                    await this._loadDoc(this._hoverlink.url);
+                }
 
             } else if (e instanceof MouseButtonUpEvent) {
                 if (this._hoverlink) {
-                    console.log(this._hoverlink.open.url);
+                    history.pushState({filepath: this._hoverlink.url},"");
+                    await this._loadDoc(this._hoverlink.url);
                 }
 
             } else if (e instanceof MouseMoveAppEvent) { // MOUSE
@@ -94,7 +115,7 @@ export class PRDSMDBrowser extends DSApp {
                 // deal with link unhighlighting
                 if (this._hoverlink != undefined) {
                     if ((link == undefined) ||
-                        (link.open != this._hoverlink.open)) {
+                        (link != this._hoverlink)) {
                         this._redraw();
                     }
                 }
@@ -102,10 +123,10 @@ export class PRDSMDBrowser extends DSApp {
                 // deal with link highlighting
                 if (link != undefined) {
                     if ((this._hoverlink == undefined) ||
-                        (this._hoverlink.open != link.open)) {
-                            // TODO: Highlight link
-                            this.highlightLink(link);
-                        }
+                        (this._hoverlink != link)) {
+                        // TODO: Highlight link
+                        this.highlightLink(link);
+                    }
                 }
 
                 // deal with the cursor
@@ -127,15 +148,16 @@ export class PRDSMDBrowser extends DSApp {
         t.resetSprites();
     }
 
-    private highlightLink(link: { open: LinkToken; close: LinkToken; }) {
-        const startrow = this._curdoc.rows.indexOf(link.open.startrow) - this._rowidx + 1;
-        const endrow = this._curdoc.rows.indexOf(link.close.startrow) - this._rowidx + 1;
+    private highlightLink(openlink: LinkToken) {
+        const closelink = openlink.closingtoken;
+        const startrow = this._curdoc.rows.indexOf(openlink.startrow) - this._rowidx + 1;
+        const endrow = this._curdoc.rows.indexOf(closelink.startrow) - this._rowidx + 1;
 
         if (startrow == endrow) {
             const rowtext = DSKernel.terminal.getRow(startrow);
-            const linktext = rowtext.slice(link.open.startlen, link.close.startlen);
+            const linktext = rowtext.slice(openlink.startlen, closelink.startlen);
             this.stdout.write(
-                gotoxy(link.open.startlen + 1, startrow) +
+                gotoxy(openlink.startlen + 1, startrow) +
                 setattr(textattrs.bg_blue) +
                 linktext +
                 setattr(this._curdoc.bgcolor)
@@ -146,9 +168,9 @@ export class PRDSMDBrowser extends DSApp {
         // startrow
         if (startrow > 0) {
             const rowtext = DSKernel.terminal.getRow(startrow);
-            const linktext = rowtext.slice(link.open.startlen);
+            const linktext = rowtext.slice(openlink.startlen);
             this.stdout.write(
-                gotoxy(link.open.startlen + 1, startrow) +
+                gotoxy(openlink.startlen + 1, startrow) +
                 setattr(textattrs.bg_blue) +
                 linktext +
                 setattr(this._curdoc.bgcolor)
@@ -170,7 +192,7 @@ export class PRDSMDBrowser extends DSApp {
         // endrow
         if (endrow < DSKernel.terminal.rows) {
             const rowtext = DSKernel.terminal.getRow(endrow);
-            const linktext = rowtext.slice(0, link.close.startlen);
+            const linktext = rowtext.slice(0, closelink.startlen);
             this.stdout.write(
                 gotoxy(1, endrow) +
                 setattr(textattrs.bg_blue) +
@@ -199,6 +221,7 @@ export class PRDSMDBrowser extends DSApp {
         const t = DSKernel.terminal;
         const doc = this._curdoc;
         this.stdout.write(reset());
+        this.stdout.write(setattr(`${this._curdoc.fgcolor};${this._curdoc.bgcolor}`));
         for (let j = 0; j < t.rows && j + this._rowidx < doc.rows.length; j++) {
             const row = doc.rows[this._rowidx + j];
             this.stdout.write(gotoxy(1, j + 1) + `${row.text}`);
@@ -217,16 +240,21 @@ export class PRDSMDBrowser extends DSApp {
 
     }
 
-    private async loadDoc(filename: string) {
+    private async _loadDoc(filepath: string) {
 
         // Clear screen place loading message
-        this.stdout.write(reset() + "LOADING...\n");
         DSKernel.terminal.resetSprites();
-        const doc = new DSMDDoc();
-        const inode = this.cwd.getfile(filename);
-        const text = await inode.contentAsText().read();
-        doc.parse(text);
-        await doc.loadContent(this.cwd);
-        return doc;
+        this.stdout.write(reset() + `LOADING [${filepath}]\n`);
+        try {
+            const inode = this.cwd.getfile(filepath);
+            const text = await inode.contentAsText().read();
+            this._curdoc = new DSMDDoc();
+            this._curdoc.parse(text);
+            await this._curdoc.loadContent(this.cwd);
+        } catch (e) {
+            this._curdoc = new DSMDDoc();
+            this._curdoc.parse(this._err404+`\n\n[${e}]`);
+        }
+        this.eventQueue.enqueue(new ResizeAppEvent());
     }
 }

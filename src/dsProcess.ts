@@ -42,6 +42,8 @@ export abstract class DSProcess {
 
     handlePointer(e: DSPointerEvent) { }
 
+    handleHistory(e: PopStateEvent) { }
+
     chdir(dirname: string) {
         this._cwd = this._cwd.getdir(dirname);
     }
