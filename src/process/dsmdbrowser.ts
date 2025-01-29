@@ -29,9 +29,9 @@ export class PRDSMDBrowser extends DSApp {
         this._err404 = await this.cwd.getfile("/data/app/dsmdbrowser/404.dsmd").contentAsText().read();
         // Start up AppEvent processing
         this.init();
-        
+
         let filename = this.argv[nextarg];
-        history.pushState({filepath: filename},"");
+        history.pushState({ filepath: filename }, "");
         await this._loadDoc(filename);
 
         const t = DSKernel.terminal;
@@ -42,9 +42,10 @@ export class PRDSMDBrowser extends DSApp {
                 this._redraw();
 
             } else if (e instanceof HistoryAppEvent) {
-                if (history.state != null)
+                if (history.state != null) {
                     await this._loadDoc(history.state.filepath);
-                else
+                    this._rowidx = 0;
+                } else
                     console.log(e);
 
             } else if (e instanceof TextAppEvent) {
@@ -101,11 +102,13 @@ export class PRDSMDBrowser extends DSApp {
                 // If this is a link click then load
                 if (this._hoverlink) {
                     await this.openLink(this._hoverlink.url);
+                    this._hoverlink = undefined;
                 }
 
             } else if (e instanceof MouseButtonUpAppEvent) { // MOUSE
                 if (this._hoverlink && e.button == 0) {
                     await this.openLink(this._hoverlink.url);
+                    this._hoverlink = undefined;
                 }
 
             } else if (e instanceof MouseButtonDownAppEvent) {
@@ -115,7 +118,7 @@ export class PRDSMDBrowser extends DSApp {
                     history.forward();
                 }
 
-            } else if (e instanceof MouseMoveAppEvent) { 
+            } else if (e instanceof MouseMoveAppEvent) {
                 const rowidx = e.row + this._rowidx - 1;
                 const link = this._curdoc.getlink(e.col, rowidx);
                 // deal with link unhighlighting
@@ -157,7 +160,7 @@ export class PRDSMDBrowser extends DSApp {
     private async openLink(url: string) {
         // Check for external link
         if (url.startsWith("http")) {
-            window.open(url,'_blank');
+            window.open(url, '_blank');
         } else {
             this._rowidx = 0;
             history.pushState({ filepath: url }, "");
@@ -270,7 +273,7 @@ export class PRDSMDBrowser extends DSApp {
             await this._curdoc.loadContent(this.cwd);
         } catch (e) {
             this._curdoc = new DSMDDoc();
-            this._curdoc.parse(this._err404+`\n\n[${e}]`);
+            this._curdoc.parse(this._err404 + `\n\n[${e}]`);
         }
         this.eventQueue.enqueue(new ResizeAppEvent());
     }
