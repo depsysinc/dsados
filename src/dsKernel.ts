@@ -303,6 +303,7 @@ export class DSKernel {
             `\nDepSysOS ${DSKernel.version}\n`)
         this.terminal.write(e.stack);
         this.terminal.write("\n\nReset Required")
+        throw e;
     }
 
     static get curproc(): DSProcess {

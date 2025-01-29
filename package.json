@@ -6,7 +6,7 @@
   "private": "true",
   "repository": "https://github.com/depsysinc/depsysweb.git",
   "author": "Michael Gentili <gentili@mcpnet.ca>",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@webpack-cli/generators": "^3.0.7",

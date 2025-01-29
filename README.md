@@ -24,6 +24,7 @@
   * dsmdbrowser
     * Implement img links
     * Implement scroll persistence in browser history
+    * Fix link clicks to only work on button 1
   * imgview
 
 # Setup

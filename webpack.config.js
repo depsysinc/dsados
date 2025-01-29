@@ -23,7 +23,6 @@ const config = {
             chunks: 'all',
         },
     },
-    devtool: 'source-map',
     devServer: {
         open: false,
         host: '0.0.0.0', // Required for container to host port forwarding
@@ -68,12 +67,13 @@ const config = {
 module.exports = () => {
     if (isProduction) {
         config.mode = 'production';
-
+        config.devtool = false;
         config.plugins.push(new MiniCssExtractPlugin());
 
 
     } else {
         config.mode = 'development';
+        config.devtool = 'source-map';
     }
     return config;
 };

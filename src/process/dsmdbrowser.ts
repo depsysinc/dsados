@@ -104,7 +104,7 @@ export class PRDSMDBrowser extends DSApp {
                 }
 
             } else if (e instanceof MouseButtonUpAppEvent) { // MOUSE
-                if (this._hoverlink) {
+                if (this._hoverlink && e.button == 0) {
                     await this.openLink(this._hoverlink.url);
                 }
 
