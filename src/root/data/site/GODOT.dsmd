@@ -1,0 +1,20 @@
+![godot](/data/site/181x64_godot.png)
+
+Our client side game interfaces are built with the exceptional opensource [GODOT Game Engine](https://godotengine.org/).
+
+While the server side gameworld simulation, persistance, and networking layer are implemented in our custom
+[Concursion Engine](/data/site/concursion.dsmd), everything you see and interact with is handled by GODOT.
+
+# Why GODOT?
+
+- **Open Source** - GODOT is constantly receiving attention and updates from many contributors around the world.
+Developers get to:
+
+  - "look under the hood" to understand how it works
+  - make custom modifications or additions to the core engine for their specific usecases
+  - directly fix their own issues without waiting for the "mothership" to care
+  - contribute all of the above back to the community, sharing the labour and 
+  leveraging the distributed brain power to check and maintain those contributions
+
+- **Unencumbered** - GODOT is unencumbered by proprietary technologies,
+arcane licensing schemes, or bysantine fee schedules and profit sharing rules.

@@ -3,6 +3,7 @@
   * writeable files in DSIDBFileSystem
   * S3 backed filesystem
 * general
+  * Get PANIC to suggest clearing cache
   * Exceptions
     * make all prototypes explicit
     * Switch all tests to test type rather than err string
@@ -22,9 +23,10 @@
   * mv
   * cp
   * dsmdbrowser
+    * Fix coordinate translation due to canvas centering in containing div (maybe fix in DSApp or DSTerminal)
     * Implement img links
+    * Implement explicit linebreaks
     * Implement scroll persistence in browser history
-    * Fix link clicks to only work on button 1
   * imgview
 
 # Setup
@@ -33,7 +35,7 @@
   * NB: If dev in both depsysweb and xterm.js, up wsl mem to 16gb in `%UserProfile%\\.wslconfig`
     * `[wsl2]`
     * `memory=16gb`
-* NB: If silent failure for the following: in wsl bash terminal
+* NB: If silent failure happens in vscode for git actions: in wsl bash terminal
   * `git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/bin/git-credential-manager.exe"`
 * Clone depsysinc/xterm.js 
   * Dev Containers: Clone Repository in Named Container Volume (depsysweb)

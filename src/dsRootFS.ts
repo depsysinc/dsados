@@ -37,7 +37,10 @@ import root_data_demo_markdown_demomarkdown_dsmd from "./root/data/demo/markdown
 import root_data_demo_mousetouch_pointer_png from "./root/data/demo/mousetouch/pointer.png";
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
 import root_data_depsys_txt from "./root/data/depsys.txt";
+import root_data_site_130x46_godot_png from "./root/data/site/130x46_godot.png";
+import root_data_site_181x64_godot_png from "./root/data/site/181x64_godot.png";
 import root_data_site_DSADOS_dsmd from "./root/data/site/DSADOS.dsmd";
+import root_data_site_GODOT_dsmd from "./root/data/site/GODOT.dsmd";
 import root_data_site_about_dsmd from "./root/data/site/about.dsmd";
 import root_data_site_concursion_dsmd from "./root/data/site/concursion.dsmd";
 import root_data_site_games_dsmd from "./root/data/site/games.dsmd";
@@ -220,9 +223,24 @@ export function buildrootfs(): DSFileSystem {
     dirstack.push(curdir);
     curdir = curdir.mkdir('site');
     
+    // Creating root/data/site/130x46_godot.png
+    curfile = new DSIWebFile(fs, root_data_site_130x46_godot_png);
+    curdir.addfile("130x46_godot.png", curfile);
+    
+    
+    // Creating root/data/site/181x64_godot.png
+    curfile = new DSIWebFile(fs, root_data_site_181x64_godot_png);
+    curdir.addfile("181x64_godot.png", curfile);
+    
+    
     // Creating root/data/site/DSADOS.dsmd
     curfile = new DSIWebFile(fs, root_data_site_DSADOS_dsmd);
     curdir.addfile("DSADOS.dsmd", curfile);
+    
+    
+    // Creating root/data/site/GODOT.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_GODOT_dsmd);
+    curdir.addfile("GODOT.dsmd", curfile);
     
     
     // Creating root/data/site/about.dsmd
