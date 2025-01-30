@@ -10,7 +10,7 @@
     * make all prototypes explicit
     * Switch all tests to test type rather than err string
 * terminal
-  * FIXME resize to not do linear search of font sizes to get proper size
+  * FIX resize to not do linear search of font sizes to get proper size
   * update scanline filter to choose a definite line as center (avoid weird moire patterns or dim renders)
   * Enable click and touch
   * Enable images
@@ -25,7 +25,8 @@
   * mv
   * cp
   * dsmdbrowser
-    * Fix coordinate translation due to canvas centering in containing div (maybe fix in DSApp or DSTerminal)
+    * FIX coordinate translation due to canvas centering in containing div
+      * maybe fix in DSApp or DSTerminal instead
     * Implement img links
     * Implement explicit linebreaks
     * Implement scroll persistence in browser history

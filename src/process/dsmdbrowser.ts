@@ -109,6 +109,7 @@ export class PRDSMDBrowser extends DSApp {
                 if (this._hoverlink && e.button == 0) {
                     await this.openLink(this._hoverlink.url);
                     this._hoverlink = undefined;
+                    DSKernel.terminal.setCursor("default");
                 }
 
             } else if (e instanceof MouseButtonDownAppEvent) {
