@@ -1,5 +1,7 @@
 # TODO
 * fs
+  * fix filetype based on constructor name blowing up in production build (because of mangled constructors)
+    * dsFileSystem.ts:266 toJSON()
   * writeable files in DSIDBFileSystem
   * S3 backed filesystem
 * general
