@@ -42,7 +42,13 @@ import root_data_site_181x64_godot_png from "./root/data/site/181x64_godot.png";
 import root_data_site_DSADOS_dsmd from "./root/data/site/DSADOS.dsmd";
 import root_data_site_GODOT_dsmd from "./root/data/site/GODOT.dsmd";
 import root_data_site_about_dsmd from "./root/data/site/about.dsmd";
+import root_data_site_avatars_posterized_globnobulous_png from "./root/data/site/avatars/posterized_globnobulous.png";
 import root_data_site_concursion_dsmd from "./root/data/site/concursion.dsmd";
+import root_data_site_devlog_30_01_2025_C64_png from "./root/data/site/devlog/30-01-2025/C64.png";
+import root_data_site_devlog_30_01_2025_Road_Toad_png from "./root/data/site/devlog/30-01-2025/Road-Toad.png";
+import root_data_site_devlog_30_01_2025_devlog_30_01_2025_dsmd from "./root/data/site/devlog/30-01-2025/devlog_30-01-2025.dsmd";
+import root_data_site_devlog_devlog_dsmd from "./root/data/site/devlog/devlog.dsmd";
+import root_data_site_devlog_entry_template_dsmd from "./root/data/site/devlog/entry-template.dsmd";
 import root_data_site_games_dsmd from "./root/data/site/games.dsmd";
 import root_data_site_index_dsmd from "./root/data/site/index.dsmd";
 import root_data_site_tech_dsmd from "./root/data/site/tech.dsmd";
@@ -248,11 +254,65 @@ export function buildrootfs(): DSFileSystem {
     curdir.addfile("about.dsmd", curfile);
     
     
+    // Traversing root/data/site/avatars
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('avatars');
+    
+    // Creating root/data/site/avatars/posterized_globnobulous.png
+    curfile = new DSIWebFile(fs, root_data_site_avatars_posterized_globnobulous_png);
+    curdir.addfile("posterized_globnobulous.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/site/avatars
+        
     // Creating root/data/site/concursion.dsmd
     curfile = new DSIWebFile(fs, root_data_site_concursion_dsmd);
     curdir.addfile("concursion.dsmd", curfile);
     
     
+    // Traversing root/data/site/devlog
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('devlog');
+    
+    // Traversing root/data/site/devlog/30-01-2025
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('30-01-2025');
+    
+    // Creating root/data/site/devlog/30-01-2025/C64.png
+    curfile = new DSIWebFile(fs, root_data_site_devlog_30_01_2025_C64_png);
+    curdir.addfile("C64.png", curfile);
+    
+    
+    // Creating root/data/site/devlog/30-01-2025/Road-Toad.png
+    curfile = new DSIWebFile(fs, root_data_site_devlog_30_01_2025_Road_Toad_png);
+    curdir.addfile("Road-Toad.png", curfile);
+    
+    
+    // Creating root/data/site/devlog/30-01-2025/devlog_30-01-2025.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_devlog_30_01_2025_devlog_30_01_2025_dsmd);
+    curdir.addfile("devlog_30-01-2025.dsmd", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/site/devlog/30-01-2025
+        
+    // Creating root/data/site/devlog/devlog.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_devlog_devlog_dsmd);
+    curdir.addfile("devlog.dsmd", curfile);
+    
+    
+    // Creating root/data/site/devlog/entry-template.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_devlog_entry_template_dsmd);
+    curdir.addfile("entry-template.dsmd", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/site/devlog
+        
     // Creating root/data/site/games.dsmd
     curfile = new DSIWebFile(fs, root_data_site_games_dsmd);
     curdir.addfile("games.dsmd", curfile);
