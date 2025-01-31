@@ -1,7 +1,5 @@
 # TODO
 * fs
-  * fix filetype based on constructor name blowing up in production build (because of mangled constructors)
-    * dsFileSystem.ts:266 toJSON()
   * writeable files in DSIDBFileSystem
   * S3 backed filesystem
 * general
@@ -10,16 +8,13 @@
     * make all prototypes explicit
     * Switch all tests to test type rather than err string
 * terminal
-  * FIX resize to not do linear search of font sizes to get proper size
-  * update scanline filter to choose a definite line as center (avoid weird moire patterns or dim renders)
-  * Enable click and touch
-  * Enable images
+  * get resize to not do linear search of font sizes to get proper size
 * process
   * autoexec.dssh
     * look for profile in /local/
   * dssh
     * [tab] complete
-    * command history persistence across boots <--->
+    * command history persistence across boots
   * chmod
   * nvram
   * mv
