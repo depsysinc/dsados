@@ -44,9 +44,10 @@ import root_data_site_GODOT_dsmd from "./root/data/site/GODOT.dsmd";
 import root_data_site_about_dsmd from "./root/data/site/about.dsmd";
 import root_data_site_avatars_posterized_globnobulous_png from "./root/data/site/avatars/posterized_globnobulous.png";
 import root_data_site_concursion_dsmd from "./root/data/site/concursion.dsmd";
-import root_data_site_devlog_30_01_2025_C64_png from "./root/data/site/devlog/30-01-2025/C64.png";
-import root_data_site_devlog_30_01_2025_Road_Toad_png from "./root/data/site/devlog/30-01-2025/Road-Toad.png";
-import root_data_site_devlog_30_01_2025_devlog_30_01_2025_dsmd from "./root/data/site/devlog/30-01-2025/devlog_30-01-2025.dsmd";
+import root_data_site_devlog_2025_01_30_20250130_dsmd from "./root/data/site/devlog/2025-01-30/20250130.dsmd";
+import root_data_site_devlog_2025_01_30_C64_png from "./root/data/site/devlog/2025-01-30/C64.png";
+import root_data_site_devlog_2025_01_30_Road_Toad_png from "./root/data/site/devlog/2025-01-30/Road-Toad.png";
+import root_data_site_devlog_2025_02_10_20250210_dsmd from "./root/data/site/devlog/2025-02-10/20250210.dsmd";
 import root_data_site_devlog_devlog_dsmd from "./root/data/site/devlog/devlog.dsmd";
 import root_data_site_devlog_entry_template_dsmd from "./root/data/site/devlog/entry-template.dsmd";
 import root_data_site_games_dsmd from "./root/data/site/games.dsmd";
@@ -276,28 +277,41 @@ export function buildrootfs(): DSFileSystem {
     dirstack.push(curdir);
     curdir = curdir.mkdir('devlog');
     
-    // Traversing root/data/site/devlog/30-01-2025
+    // Traversing root/data/site/devlog/2025-01-30
     dirstack.push(curdir);
-    curdir = curdir.mkdir('30-01-2025');
+    curdir = curdir.mkdir('2025-01-30');
     
-    // Creating root/data/site/devlog/30-01-2025/C64.png
-    curfile = new DSIWebFile(fs, root_data_site_devlog_30_01_2025_C64_png);
+    // Creating root/data/site/devlog/2025-01-30/20250130.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_01_30_20250130_dsmd);
+    curdir.addfile("20250130.dsmd", curfile);
+    
+    
+    // Creating root/data/site/devlog/2025-01-30/C64.png
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_01_30_C64_png);
     curdir.addfile("C64.png", curfile);
     
     
-    // Creating root/data/site/devlog/30-01-2025/Road-Toad.png
-    curfile = new DSIWebFile(fs, root_data_site_devlog_30_01_2025_Road_Toad_png);
+    // Creating root/data/site/devlog/2025-01-30/Road-Toad.png
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_01_30_Road_Toad_png);
     curdir.addfile("Road-Toad.png", curfile);
-    
-    
-    // Creating root/data/site/devlog/30-01-2025/devlog_30-01-2025.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_devlog_30_01_2025_devlog_30_01_2025_dsmd);
-    curdir.addfile("devlog_30-01-2025.dsmd", curfile);
     
     
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
-    // Exited root/data/site/devlog/30-01-2025
+    // Exited root/data/site/devlog/2025-01-30
+        
+    // Traversing root/data/site/devlog/2025-02-10
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2025-02-10');
+    
+    // Creating root/data/site/devlog/2025-02-10/20250210.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_02_10_20250210_dsmd);
+    curdir.addfile("20250210.dsmd", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/site/devlog/2025-02-10
         
     // Creating root/data/site/devlog/devlog.dsmd
     curfile = new DSIWebFile(fs, root_data_site_devlog_devlog_dsmd);

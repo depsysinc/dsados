@@ -1,0 +1,40 @@
+![globnobulous](/data/site/avatars/posterized_globnobulous.png)
+Globnobulous
+
+# [2025-02-10] - KISS! (Keep It Simple, Stupid!)
+
+I've been making stuff on computers for 40 years and, either through my professional work
+or amateur exploration, I have picked up knowledge on many of the apps, tools, languages 
+and frameworks needed to build a video game.
+However, actually creating a video game isn't something I've done beyond some small
+toys many years ago.  So, before diving headfirst into this venture, I took the time to talk to a bunch of folks
+in the industry to glean as many nuggets of wisdom as I could.
+
+I got a bunch of good advice, but the piece of advice that came up in nearly every conversation, and the
+biggest takeaway by far was the repeated exhortation to:
+
+***Keep It Simple, Stupid***!
+
+Many different failure modes can fit under the KISS! umbrella:
+
+- Feature/scope creep
+- Overly complicated game mechanics
+- Premature optimization
+
+It's important to avoid having too grandiose a vision to pack into a single game let alone your first.
+So I *thought* I had that firmly in my consciousness as I started down the path to my first playable demo.
+Turns out, the advice is apropos on more levels than I expected.
+
+This past week I've been been struggling with the [SCons build system](https://scons.org/).
+I'm a [CMake](https://cmake.org/) man myself, but the GODOT team use SCons to build the Engine itself and the [godot-cpp](https://github.com/godotengine/godot-cpp) library for creating GODOT C++ extensions that
+I'll need to integrate my backend with their client.
+
+So what was the stumbling block?  The picture in my head of what a "good build structure" looks like, and the **Horrible Horrible Freedom ™** afforded me by the SCons build system.  I'm a big fan of opinionated frameworks and the confidence that comes with them that I'm "Doing the Right Thing".  SCons is very unopinionated and let's you do whatever you want, however you want (shudder).
+
+After 3 days of agonizing and refactoring and trying to make the build hierarchy look like what I'm used to, I threw away the rats nest of SConscript files and started from scratch with KISS! in mind.  3 hours later I have simple, readable build scripts, and a working build.
+
+I need to get a KISS! poster...
+
+____
+
+End of Line
