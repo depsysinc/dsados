@@ -27,6 +27,7 @@ import { PRPs } from "./process/ps";
 import { PRPwd } from "./process/pwd";
 import { PRReset } from "./process/reset";
 import { PRSleep } from "./process/sleep";
+import { PRSplash } from "./process/splash";
 // WEBFILE TRAVERSAL IMPORTS
 import root_data_app_dsmdbrowser_404_dsmd from "./root/data/app/dsmdbrowser/404.dsmd";
 import root_data_demo_animation_32x32_A_png from "./root/data/demo/animation/32x32_A.png";
@@ -48,6 +49,10 @@ import root_data_site_devlog_2025_01_30_20250130_dsmd from "./root/data/site/dev
 import root_data_site_devlog_2025_01_30_C64_png from "./root/data/site/devlog/2025-01-30/C64.png";
 import root_data_site_devlog_2025_01_30_Road_Toad_png from "./root/data/site/devlog/2025-01-30/Road-Toad.png";
 import root_data_site_devlog_2025_02_10_20250210_dsmd from "./root/data/site/devlog/2025-02-10/20250210.dsmd";
+import root_data_site_devlog_2025_03_01_20250301_dsmd from "./root/data/site/devlog/2025-03-01/20250301.dsmd";
+import root_data_site_devlog_2025_03_01_Signal11_png from "./root/data/site/devlog/2025-03-01/Signal11.png";
+import root_data_site_devlog_2025_03_02_20250302_dsmd from "./root/data/site/devlog/2025-03-02/20250302.dsmd";
+import root_data_site_devlog_2025_03_02_console_log_png from "./root/data/site/devlog/2025-03-02/console.log.png";
 import root_data_site_devlog_devlog_dsmd from "./root/data/site/devlog/devlog.dsmd";
 import root_data_site_devlog_entry_template_dsmd from "./root/data/site/devlog/entry-template.dsmd";
 import root_data_site_games_dsmd from "./root/data/site/games.dsmd";
@@ -118,6 +123,9 @@ export function buildrootfs(): DSFileSystem {
     
     binfile = new DSIProcessFile(fs, PRSleep);
     bindir.addfile("sleep", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRSplash);
+    bindir.addfile("splash", binfile);
     
     // BIN FOOTER
     bindir.chmod(DSFilePerms.rx());
@@ -312,6 +320,42 @@ export function buildrootfs(): DSFileSystem {
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
     // Exited root/data/site/devlog/2025-02-10
+        
+    // Traversing root/data/site/devlog/2025-03-01
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2025-03-01');
+    
+    // Creating root/data/site/devlog/2025-03-01/20250301.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_01_20250301_dsmd);
+    curdir.addfile("20250301.dsmd", curfile);
+    
+    
+    // Creating root/data/site/devlog/2025-03-01/Signal11.png
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_01_Signal11_png);
+    curdir.addfile("Signal11.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/site/devlog/2025-03-01
+        
+    // Traversing root/data/site/devlog/2025-03-02
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2025-03-02');
+    
+    // Creating root/data/site/devlog/2025-03-02/20250302.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_02_20250302_dsmd);
+    curdir.addfile("20250302.dsmd", curfile);
+    
+    
+    // Creating root/data/site/devlog/2025-03-02/console.log.png
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_02_console_log_png);
+    curdir.addfile("console.log.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/site/devlog/2025-03-02
         
     // Creating root/data/site/devlog/devlog.dsmd
     curfile = new DSIWebFile(fs, root_data_site_devlog_devlog_dsmd);

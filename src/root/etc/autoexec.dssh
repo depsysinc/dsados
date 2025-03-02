@@ -3,5 +3,5 @@
 #
 
 PATH=/bin
-reset
+/bin/splash
 /bin/dsmdbrowser /data/site/index.dsmd
