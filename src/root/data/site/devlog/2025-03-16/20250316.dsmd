@@ -1,0 +1,52 @@
+![globnobulous](/data/site/avatars/posterized_globnobulous.png)
+Globnobulous
+
+# [16-03-2025] - Lights On
+
+I'm super jazzed to present the Main Menu for The Dauntless!
+
+![Main Menu](/data/site/devlog/2025-03-16/mainmenu.png)
+
+It might not look like much, but it demonstrates all the basic functionality for a networked client/server application with a fully functional 3D scene and 2D GUI.  From that menu, the player can:
+
+- Interact with 3D elements (flip the red switch) to
+  - Boot up/shutdown a local game server
+
+- Interact with 2D elements (click GUI buttons) to
+  - Connect and disconnect from the local game server
+  - Quit the game
+
+- Activate and use the in-game Steam overlay to
+  - Invite a friend to your server
+  - Accept an invite to a remote server
+
+Once connected, I wanted to show multiple clients interacting with the environment while visible to each other
+
+![Play Area](/data/site/devlog/2025-03-16/playarea.png)
+
+The above is a screenshot in the main play area demonstrating
+
+- A blue capsule avatar representing the position of a remote player
+- A green cursor controlled by a remote player
+
+I had to load so much into my head to make the above possible that I think I'll just make a list:
+
+- Scene management with [godot](https://godotengine.org/)
+- C++ build management with [scons](https://scons.org)
+- 3d modelling with [blender](https://blender.org)
+- Client/server networking with the [Steamworks SDK](https://partner.steamgames.com/doc/sdk)
+- Message de/serialization with [Cap'n Proto](https://capnproto.org)
+
+It's hard to convey the magical thrill I get from moving something on one computer and seeing it happen on another.  Radio network connected computers are so ubiquitous now that most people aren't even aware that that's what they are, but the first time I connected 2 machines together I got a feeling like I was opening a portal to another universe.
+
+Here's my first portal generator:
+
+![C64 Modem](/data/site/devlog/2025-03-16/modem_300_users_manual_front.png)
+
+Connecting to the Toronto Buy & Sell Bulletin Board System was the first step on a journey that's lasted 40+ years.  From screeches over the phone line to photons in mile long glass tubes, I feel lucky to have grown up watching each layer of our modern computing technology ecosystem grow out of the last.
+
+So now that I've got the frame in place, it's time to build the actual game model.  More on that soon...
+
+_____
+
+EOL

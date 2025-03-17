@@ -53,6 +53,10 @@ import root_data_site_devlog_2025_03_01_20250301_dsmd from "./root/data/site/dev
 import root_data_site_devlog_2025_03_01_Signal11_png from "./root/data/site/devlog/2025-03-01/Signal11.png";
 import root_data_site_devlog_2025_03_02_20250302_dsmd from "./root/data/site/devlog/2025-03-02/20250302.dsmd";
 import root_data_site_devlog_2025_03_02_console_log_png from "./root/data/site/devlog/2025-03-02/console.log.png";
+import root_data_site_devlog_2025_03_16_20250316_dsmd from "./root/data/site/devlog/2025-03-16/20250316.dsmd";
+import root_data_site_devlog_2025_03_16_mainmenu_png from "./root/data/site/devlog/2025-03-16/mainmenu.png";
+import root_data_site_devlog_2025_03_16_modem_300_users_manual_front_png from "./root/data/site/devlog/2025-03-16/modem_300_users_manual_front.png";
+import root_data_site_devlog_2025_03_16_playarea_png from "./root/data/site/devlog/2025-03-16/playarea.png";
 import root_data_site_devlog_devlog_dsmd from "./root/data/site/devlog/devlog.dsmd";
 import root_data_site_devlog_entry_template_dsmd from "./root/data/site/devlog/entry-template.dsmd";
 import root_data_site_games_dsmd from "./root/data/site/games.dsmd";
@@ -356,6 +360,34 @@ export function buildrootfs(): DSFileSystem {
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
     // Exited root/data/site/devlog/2025-03-02
+        
+    // Traversing root/data/site/devlog/2025-03-16
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2025-03-16');
+    
+    // Creating root/data/site/devlog/2025-03-16/20250316.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_16_20250316_dsmd);
+    curdir.addfile("20250316.dsmd", curfile);
+    
+    
+    // Creating root/data/site/devlog/2025-03-16/mainmenu.png
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_16_mainmenu_png);
+    curdir.addfile("mainmenu.png", curfile);
+    
+    
+    // Creating root/data/site/devlog/2025-03-16/modem_300_users_manual_front.png
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_16_modem_300_users_manual_front_png);
+    curdir.addfile("modem_300_users_manual_front.png", curfile);
+    
+    
+    // Creating root/data/site/devlog/2025-03-16/playarea.png
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_16_playarea_png);
+    curdir.addfile("playarea.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/site/devlog/2025-03-16
         
     // Creating root/data/site/devlog/devlog.dsmd
     curfile = new DSIWebFile(fs, root_data_site_devlog_devlog_dsmd);
