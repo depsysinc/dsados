@@ -27,11 +27,12 @@
 * Install [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
 * Clone depsysinc/xterm.js 
   * Use the VSCode command "Dev Containers: Clone Repository in Named Container Volume" (depsysweb)
-  * In the terminal of the new dev container, run `yarn run esbuild-watch` 
+  * Switch branches to the [crt branch](https://github.com/depsysinc/xterm.js/tree/crt)
+  * In the terminal of the dev container, run `yarn run esbuild-watch` 
 * Clone depsysinc/depsysweb
   * Use the VSCode command "Dev Containers: Clone Repository in Named Container Volume" (depsysweb)
   * NB: Repo links set up automatically by `init.sh`
-* Go to the Remote Explorer tab and find depsysweb under Dev Containers
+* Go to the Remote Explorer tab and find depsysweb under Dev Containers. You should be able to view and edit all the files.
 
 
 # Development
@@ -43,7 +44,7 @@
   * Changes will not be reflected on [depsys.io](https://depsys.io) until you push to the main repo
   * Ctrl-C in the terminal will kill the site
 
-  
+
 ## Adding new file extensions
 * jest.config.js
 * webpack.config.js
