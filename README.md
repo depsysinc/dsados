@@ -1,40 +1,30 @@
-# TODO
-* fs
-  * writeable files in DSIDBFileSystem
-  * S3 backed filesystem
-* general
-  * Get PANIC to suggest clearing cache
-  * Exceptions
-    * make all prototypes explicit
-    * Switch all tests to test type rather than err string
-* terminal
-  * get resize to not do linear search of font sizes to get proper size
-* process
-  * autoexec.dssh
-    * look for profile in /local/
-  * dssh
-    * [tab] complete
-    * command history persistence across boots
-  * chmod
-  * nvram
-  * mv
-  * cp
-  * dsmdbrowser
-    * FIX coordinate translation due to canvas centering in containing div
-      * maybe fix in DSApp or DSTerminal instead
-    * Implement img links
-    * Implement explicit linebreaks
-    * Implement scroll persistence in browser history
-  * imgview
+# Development Setup
 
-# Setup
+## Windows Subsystem for Linux (WSL2)
+* Install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
+* Make sure the installation is [set to version 2](https://learn.microsoft.com/en-us/windows/wsl/install#upgrade-version-from-wsl-1-to-wsl-2)
+
+## Docker Desktop for Windows
+* Install [Docker](https://docs.docker.com/desktop/setup/install/windows-install/)
 * [enable docker support in wsl 2 distros](https://docs.docker.com/desktop/features/wsl/#enabling-docker-support-in-wsl-2-distros)
-  * NB: If unix://var/docker socket disappears, check `DockerDesktop->Settings->Resources->WSL Integration->Enable Integration with default distro`
-  * NB: If dev in both depsysweb and xterm.js, up wsl mem to 16gb in `%UserProfile%\\.wslconfig`
+
+### Troubleshooting
+* If unix://var/docker socket disappears
+  * Check `DockerDesktop->Settings->Resources->WSL Integration->Enable Integration with default distro`
+* If vscode fails silently for git actions
+  * Open a wsl bash terminal and run:
+    * `git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/bin/git-credential-manager.exe"`
+* If developing in both depsysweb and xterm.js at the same time
+  * Increase wsl mem to 16gb in `%UserProfile%\\.wslconfig`
     * `[wsl2]`
     * `memory=16gb`
-* NB: If silent failure happens in vscode for git actions: in wsl bash terminal
-  * `git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/bin/git-credential-manager.exe"`
+
+## GIT
+* Install [git](https://git-scm.com/downloads/win)
+
+## Visual Studio Code
+* Install [VSCode](https://code.visualstudio.com/Download)
+* Install [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
 * Clone depsysinc/xterm.js 
   * Dev Containers: Clone Repository in Named Container Volume (depsysweb)
   * `yarn run esbuild-watch`
