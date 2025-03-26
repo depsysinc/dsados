@@ -20,21 +20,30 @@
     * `memory=16gb`
 
 ## GIT
-* Install [git](https://git-scm.com/downloads/win)
+* Install and set up [git](https://git-scm.com/downloads/win)
 
 ## Visual Studio Code
 * Install [VSCode](https://code.visualstudio.com/Download)
 * Install [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
 * Clone depsysinc/xterm.js 
-  * Dev Containers: Clone Repository in Named Container Volume (depsysweb)
-  * `yarn run esbuild-watch`
+  * Use the VSCode command "Dev Containers: Clone Repository in Named Container Volume" (depsysweb)
+  * In the terminal of the new dev container, run `yarn run esbuild-watch` 
 * Clone depsysinc/depsysweb
-  * Dev Containers: Clone Repository in Named Container Volume (depsysweb)
+  * Use the VSCode command "Dev Containers: Clone Repository in Named Container Volume" (depsysweb)
   * NB: Repo links set up automatically by `init.sh`
+* Go to the Remote Explorer tab and find depsysweb under Dev Containers
+
 
 # Development
 ## Live Update
-* `yarn serve`
+* In the depsysweb dev container, run `yarn serve` in the terminal
+* Go to Docker Desktop, find the newly active container, and open the [localhost](https://en.wikipedia.org/wiki/Localhost) link to view the page
+* Notes:
+  * The website will reload and update automatically when you make changes to source files
+  * Changes will not be reflected on [depsys.io](https://depsys.io) until you push to the main repo
+  * Ctrl-C in the terminal will kill the site
+
+  
 ## Adding new file extensions
 * jest.config.js
 * webpack.config.js
