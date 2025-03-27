@@ -33,7 +33,7 @@
 * If developing in both depsysweb and xterm.js at the same time
   * Increase wsl memory to 16gb in `%UserProfile%\\.wslconfig`
     * `[wsl2]`
-      `memory=16gb`
+    * `memory=16gb`
 
 
 # Development
