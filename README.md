@@ -45,6 +45,8 @@
   * Changes will not be reflected on the official [depsys.io](https://depsys.io) until the website is deployed to AWS
   * Ctrl-C in the terminal will kill the site
 * To run tests, run `yarn test` in the terminal (recommended before pushing)
+  * Changes will not be reflected on the official [depsys.io](https://depsys.io) until you pull to the main repository
+  * Ctrl-C in the terminal will kill the site
 
 
 ## Adding new file extensions
