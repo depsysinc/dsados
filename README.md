@@ -44,6 +44,7 @@
   * The website will reload and update automatically when you make changes to source files
   * Changes will not be reflected on the official [depsys.io](https://depsys.io) until the website is deployed to AWS
   * Ctrl-C in the terminal will kill the site
+* To run tests, run `yarn test` in the terminal (recommended before pushing)
 
 
 ## Adding new file extensions
