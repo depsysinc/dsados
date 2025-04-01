@@ -799,12 +799,10 @@ export class DSMDDoc {
                 if ((startidx <= rowidx) && (endidx >= rowidx)) {
                     // OPT: skip forward to the first token past
                     // the closing token 
-                    if ((rowidx == startidx) &&
-                        (col < opentoken.startlen + 1))
-                        break;
-                    if ((rowidx == endidx) &&
-                        (col > closetoken.startlen))
-                        break;
+                    if (!(((rowidx == startidx) &&
+                        (col < opentoken.startlen + 1)) ||
+                     ((rowidx == endidx) &&
+                        (col > closetoken.startlen))))
                     // Return the token
                     return opentoken;
                 }
