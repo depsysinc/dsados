@@ -49,13 +49,20 @@
   * Ctrl-C in the terminal will kill the site
 
 ## Committing changes
-* All main line commits start with a git issue, so create one
-* On the issue page, click `Create a branch` in the *Development* section of the right panel.
-* In the source control panel, choose ... -> fetch
-* Click the branch dropdown and select the appropriate remote branch
-* dev->build->test->commit
-* In the source control panel, choose `Synchronize Changes`
-* 
+* On github
+  * All main line commits start with a git issue, so create one
+  * On the issue page, click `Create a branch` in the *Development* section of the right panel.
+* In VSCode
+  * In the source control panel, choose ... -> fetch
+  * Click the branch dropdown and select the appropriate remote branch
+  * dev->build->test->commit
+  * In the source control panel, choose `Synchronize Changes`
+* On github
+  * Select the issue branch
+  * Click `Compare & pull request`
+  * _Manually copy_ the title of the issue into the pull request title
+  * Add an admin as reviewer and await merge
+
 
 ## Adding new file extensions
 * jest.config.js
