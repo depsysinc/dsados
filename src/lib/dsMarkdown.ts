@@ -797,15 +797,13 @@ export class DSMDDoc {
                 const startidx = this.rows.indexOf(opentoken.startrow);
                 const endidx = this.rows.indexOf(closetoken.startrow)
                 if ((startidx <= rowidx) && (endidx >= rowidx)) {
+                    //This section checks for the column being within the link (could be cleaned up)
                     // OPT: skip forward to the first token past
                     // the closing token 
-                    if ((rowidx == startidx) &&
-                        (col < opentoken.startlen + 1))
-                        break;
-                    if ((rowidx == endidx) &&
-                        (col > closetoken.startlen))
-                        break;
-                    // Return the token
+                    if (!(((rowidx == startidx) &&
+                        (col < opentoken.startlen + 1)) ||
+                        ((rowidx == endidx) &&
+                        (col > closetoken.startlen))))
                     return opentoken;
                 }
             }
