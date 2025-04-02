@@ -297,6 +297,7 @@ export class ImageBlock extends DSMDBlock {
     alttext: string = undefined;
     imgurl: string = undefined;
     linkurl: string = undefined;
+    linktoken: LinkToken = undefined;
 
     img: HTMLImageElement = undefined;
     imgcellwidth: number = undefined;
@@ -323,10 +324,22 @@ export class ImageBlock extends DSMDBlock {
         this.tokenize(line);
     }
 
+    addlinktokens(): void {
+        this.linktoken = new LinkToken('',this.linkurl)
+        this.tokens.push(this.linktoken);
+        this.tokens.push(new LinkToken('',this.linkurl));
+
+    }
+
     finalize(): void {
         // Trim leading whitespace tokens
         while ((this.tokens.length > 0) && (this.tokens[0] instanceof WhiteSpaceToken))
             this.tokens = this.tokens.slice(1);
+
+        if (this.linkurl) {
+            this.addlinktokens();
+        }
+
         super.finalize();
     }
 
@@ -787,6 +800,13 @@ export class DSMDDoc {
         const block = row.block;
         if (block == undefined)
             return;
+
+        if (block instanceof ImageBlock) {
+            if (col < block.imgcellwidth) {
+                return block.linktoken;
+            }
+        }
+
         // Find the token
         for (let i = 0; i < block.tokens.length; i++) {
             const opentoken = block.tokens[i];
