@@ -14,8 +14,6 @@ demonstrate wrapping.
 
 ![](/an/invalid/image/url) An image with no alt text
 
-![image link](/an/invalid/image/url)(/a/link/url)
-
 ![image tag with empty link url](/an/invalid/image/url)()
 trailing parenthesis will be treated as paragraph text
 
@@ -26,6 +24,13 @@ trailing parenthesis will be treated as paragraph text
 ![invalid image tag
 because not on same line](/an/image/url)
 
+## $$$$ Links from images
+
+![invalid link](data/demo/markdown/32x32_testpattern.png)(an/invalid/link)
+This is an image with an invalid link
+
+![invalid link](data/demo/markdown/32x32_testpattern.png)(https://google.com)
+This is an image with a valid link
 # $$$$ Links
 
 Some prefix text [Demonstrate a link long enough to be easily wrapped on multiple lines so that we can show link location detection in the browser](/an/invalid/url) some suffix text
