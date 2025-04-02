@@ -175,6 +175,10 @@ export class PRDSMDBrowser extends DSApp {
         const endrow = this._curdoc.rows.indexOf(closelink.startrow) - this._rowidx + 1;
 
         if (startrow == endrow) {
+            if (openlink.startlen == closelink.startlen) {
+                return;
+            }
+
             const rowtext = DSKernel.terminal.getRow(startrow);
             const linktext = rowtext.slice(openlink.startlen, closelink.startlen);
             this.stdout.write(

@@ -1,4 +1,3 @@
-
 # $$$$ Images
 ![demo text wrapping](/data/test/image/gorzocrop.png)
 This is text to the right of the image less than the height of the image
@@ -14,8 +13,6 @@ demonstrate wrapping.
 
 ![](/an/invalid/image/url) An image with no alt text
 
-![image link](/an/invalid/image/url)(/a/link/url)
-
 ![image tag with empty link url](/an/invalid/image/url)()
 trailing parenthesis will be treated as paragraph text
 
@@ -25,6 +22,14 @@ trailing parenthesis will be treated as paragraph text
 
 ![invalid image tag
 because not on same line](/an/image/url)
+
+## $$$$ Images with Links
+
+![demo img link](data/demo/markdown/32x32_testpattern.png)(https://google.com)
+This is an image with a valid link
+
+![demo invalide img link](data/demo/markdown/32x32_testpattern.png)(an/invalid/link)
+This is an image with an invalid link
 
 # $$$$ Links
 
