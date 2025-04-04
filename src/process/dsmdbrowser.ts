@@ -13,6 +13,7 @@ export class PRDSMDBrowser extends DSApp {
     private _touchstart: { col: number; row: number; idx: number };
     private _hoverlink: LinkToken;
     private _err404: string;
+    private _currentfilename: string;
 
     protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
@@ -30,6 +31,7 @@ export class PRDSMDBrowser extends DSApp {
         // Start up AppEvent processing
         this.init();
 
+        this._currentfilename = this.argv[nextarg];
         let filename = this.argv[nextarg];
         history.pushState({ filepath: filename }, "");
         await this._loadDoc(filename);
@@ -43,10 +45,13 @@ export class PRDSMDBrowser extends DSApp {
 
             } else if (e instanceof HistoryAppEvent) {
                 if (history.state != null) {
+                    this._currentfilename = history.state.filepath;
                     await this._loadDoc(history.state.filepath);
                     this._rowidx = 0;
-                } else
+                } else {
+                    console.log("history.state was null. Event: ");
                     console.log(e);
+                }
 
             } else if (e instanceof TextAppEvent) {
                 if (e.text == 'r') {
@@ -164,8 +169,9 @@ export class PRDSMDBrowser extends DSApp {
             window.open(url, '_blank');
         } else {
             this._rowidx = 0;
-            history.pushState({ filepath: url }, "");
+            history.pushState({ filepath: this._currentfilename }, "");
             await this._loadDoc(url);
+            this._currentfilename = url;
         }
     }
 
@@ -262,6 +268,7 @@ export class PRDSMDBrowser extends DSApp {
                 sprite.y = (block.firstrow - this._rowidx) * doc.cellheight;
             }
         }
+        history.replaceState({ filepath: this._currentfilename }, "")
 
     }
 
