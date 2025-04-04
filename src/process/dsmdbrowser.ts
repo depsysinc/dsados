@@ -33,7 +33,7 @@ export class PRDSMDBrowser extends DSApp {
 
         this._currentfilename = this.argv[nextarg];
         let filename = this.argv[nextarg];
-        history.pushState({ filepath: filename }, "");
+        history.replaceState({ filepath: filename }, "");
         await this._loadDoc(filename);
 
         const t = DSKernel.terminal;
