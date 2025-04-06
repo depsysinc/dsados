@@ -66,6 +66,7 @@ export class DSTerminal {
     private _height: number;
     readonly cellwidth: number = 10; // Number of terminal pixels per cell
     readonly cellheight: number = 16;
+    readonly smallconstant: number = 0.00001;
 
     private _warmupStart: number;
     private _warmupDuration: number;
@@ -250,7 +251,7 @@ export class DSTerminal {
             button: e.button
         };
         pe.col = Math.ceil(pe.x / this.cellwidth);
-        pe.row = Math.ceil(pe.y / this.cellheight);
+        pe.row = Math.ceil(pe.y / this.cellheight+this.smallconstant); //Add the small constant to avoid problems when y is exactly 0
         DSKernel.handlePointer(pe);
     }
 
