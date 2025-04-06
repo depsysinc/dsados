@@ -170,8 +170,8 @@ export class PRDSMDBrowser extends DSApp {
         } else {
             this._rowidx = 0;
             history.pushState({ filepath: this._currentfilename }, "");
-            await this._loadDoc(url);
             this._currentfilename = url;
+            await this._loadDoc(url);
         }
     }
 
@@ -268,7 +268,6 @@ export class PRDSMDBrowser extends DSApp {
                 sprite.y = (block.firstrow - this._rowidx) * doc.cellheight;
             }
         }
-        history.replaceState({ filepath: this._currentfilename }, "")
 
     }
 
@@ -287,6 +286,8 @@ export class PRDSMDBrowser extends DSApp {
             this._curdoc = new DSMDDoc();
             this._curdoc.parse(this._err404 + `\n\n[${e}]`);
         }
+        history.replaceState({ filepath: this._currentfilename }, "")
+
         this.eventQueue.enqueue(new ResizeAppEvent());
     }
 }
