@@ -793,8 +793,6 @@ export class DSMDDoc {
     getlink(col: number, rowidx: number): LinkToken | undefined {
         if (rowidx >= this.rows.length)
             return;
-        if (rowidx < 0)
-            return;
         const row = this.rows[rowidx];
         // Find the block
         const block = row.block;

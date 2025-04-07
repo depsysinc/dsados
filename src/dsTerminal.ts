@@ -250,7 +250,10 @@ export class DSTerminal {
             button: e.button
         };
         pe.col = Math.ceil(pe.x / this.cellwidth);
-        pe.row = Math.ceil(pe.y / this.cellheight);
+        pe.row = Math.ceil(pe.y / this.cellheight); 
+        if (pe.y == 0) 
+            pe.row = 1; // If the mouse is at the exact top of the page (pe.y = 0), the smallest allowed row is 1, not 0
+        
         DSKernel.handlePointer(pe);
     }
 
