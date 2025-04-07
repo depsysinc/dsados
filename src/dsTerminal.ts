@@ -66,7 +66,6 @@ export class DSTerminal {
     private _height: number;
     readonly cellwidth: number = 10; // Number of terminal pixels per cell
     readonly cellheight: number = 16;
-    readonly smallconstant: number = 0.00001;
 
     private _warmupStart: number;
     private _warmupDuration: number;
