@@ -33,7 +33,7 @@ export class PRDSMDBrowser extends DSApp {
 
         this._currentfilename = this.argv[nextarg];
         let filename = this.argv[nextarg];
-        history.replaceState({ filepath: filename }, "");
+        history.replaceState({ filepath: filename,row:this._rowidx }, "");
         await this._loadDoc(filename);
 
         const t = DSKernel.terminal;
@@ -46,8 +46,8 @@ export class PRDSMDBrowser extends DSApp {
             } else if (e instanceof HistoryAppEvent) {
                 if (history.state != null) {
                     this._currentfilename = history.state.filepath;
+                    this._rowidx = history.state.row;
                     await this._loadDoc(history.state.filepath);
-                    this._rowidx = 0;
                 } else {
                     console.log("history.state was null. Event: ");
                     console.log(e);
@@ -169,7 +169,7 @@ export class PRDSMDBrowser extends DSApp {
             window.open(url, '_blank');
         } else {
             this._rowidx = 0;
-            history.pushState({ filepath: this._currentfilename }, "");
+            history.pushState({ filepath: this._currentfilename, row:this._rowidx }, "");
             this._currentfilename = url;
             await this._loadDoc(url);
         }
@@ -257,6 +257,9 @@ export class PRDSMDBrowser extends DSApp {
             const row = doc.rows[this._rowidx + j];
             this.stdout.write(gotoxy(1, j + 1) + `${row.text}`);
         }
+
+        history.replaceState({ filepath: this._currentfilename ,row:this._rowidx}, "")
+
         // Update the sprites
         // OPT: Check if sprites are actually on screen before enabling.
         for (let i = 0; i < this._curdoc.blocks.length; i++) {
@@ -286,7 +289,6 @@ export class PRDSMDBrowser extends DSApp {
             this._curdoc = new DSMDDoc();
             this._curdoc.parse(this._err404 + `\n\n[${e}]`);
         }
-        history.replaceState({ filepath: this._currentfilename }, "")
 
         this.eventQueue.enqueue(new ResizeAppEvent());
     }
