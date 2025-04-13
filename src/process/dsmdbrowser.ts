@@ -240,9 +240,9 @@ export class PRDSMDBrowser extends DSApp {
         if (this._rowidx < 0)
             this._rowidx = 0;
 
-        if (this._curdoc.rows.length == 0) {
+        if (this._curdoc.rows.length == 0) { //Document hasn't been loaded yet, so don't let row updates go through
             this._rowidx = 0;
-            return false; //Return no change to avoid triggering a screen refresh which would crash it
+            return false; 
         }
         if (this._rowidx > this._curdoc.rows.length - 1)
             this._rowidx = this._curdoc.rows.length - 1;
