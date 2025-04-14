@@ -9,7 +9,7 @@ export class PRCHMod extends DSProcess {
             this.procname,
             true,
             "   change permissions of a file",
-            "<filename>, <perms>"
+            "<filename> <perms>"
         );
         let nextarg = optparser.parseWithUsageAndHelp(this.argv);
         if (nextarg == -1)
