@@ -246,7 +246,7 @@ export class PRDSMDBrowser extends DSApp {
         }
         if (this._rowidx > this._curdoc.rows.length - 1)
             this._rowidx = this._curdoc.rows.length - 1;
-            
+
         if (this._rowidx != startidx)
             return true;
         else
