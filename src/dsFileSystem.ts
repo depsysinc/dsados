@@ -231,6 +231,18 @@ export class DSFilePerms {
             throw new DSFilePermsExecError();
     }
 
+    static parsePermString(permstring: String): DSFilePerms {
+        try {
+            let r = permstring[0] == 'r';
+            let w = permstring[1] == 'w';
+            let x = permstring[2] == 'x';
+            return new DSFilePerms(r, w, x);
+        }
+        catch (e) {
+            throw new DSFilePermsError("Invalid permission string");
+        }
+    }
+
     // Factory method for readonly permissions
     static readonly(): DSFilePerms {
         return new DSFilePerms(true, false, false);
