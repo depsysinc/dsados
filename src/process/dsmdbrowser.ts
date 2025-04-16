@@ -84,7 +84,7 @@ export class PRDSMDBrowser extends DSApp {
                 history.back();
 
             } else if (e instanceof WheelAppEvent) {
-                if (this._changeRowidx(e.deltaY < 0 ? -1 : 1))
+                if (Math.abs(e.deltaX) < Math.abs(e.deltaY) && this._changeRowidx(e.deltaY < 0 ? -1 : 1))
                     this._redraw();
 
             } else if (e instanceof TouchStartAppEvent) { // TOUCH
@@ -236,8 +236,14 @@ export class PRDSMDBrowser extends DSApp {
     private _changeRowidx(val: number) {
         const startidx = this._rowidx;
         this._rowidx += val;
+
         if (this._rowidx < 0)
             this._rowidx = 0;
+
+        if (this._curdoc.rows.length == 0) { //Document hasn't been loaded yet, so don't let row updates go through
+            this._rowidx = 0;
+            return false; 
+        }
         if (this._rowidx > this._curdoc.rows.length - 1)
             this._rowidx = this._curdoc.rows.length - 1;
 
@@ -246,6 +252,7 @@ export class PRDSMDBrowser extends DSApp {
         else
             return false;
     }
+
 
     // Redraw the whole screen
     private _redraw() {
