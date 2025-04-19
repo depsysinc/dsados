@@ -208,7 +208,7 @@ export class DSTerminal {
         this._baudBuffer = "";
         requestAnimationFrame(() => { this._baudFrame() });
 
-        t.focus();        
+        t.focus();
         
         this.setCursor("default");
     }
@@ -372,7 +372,7 @@ export class DSTerminal {
         }
         t.resize(newdim.cols, newdim.rows);
     }
-    
+
     public startWarmup(duration: number) {
         this._warmupStart = Date.now();
         this._warmupDuration = duration;
