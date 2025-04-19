@@ -177,6 +177,8 @@ export class DSTerminal {
 
         // hook up text io
         t.onData((data): void => { this.outputstream.write(data); });
+        
+        t.onScroll(() => this.scrollSprites(this._sprites, -1))
 
         // hook up mouse
         t.element.onmousedown = (e) => { this._handleMouseEvents(e); }
@@ -206,7 +208,7 @@ export class DSTerminal {
         this._baudBuffer = "";
         requestAnimationFrame(() => { this._baudFrame() });
 
-        t.focus();
+        t.focus();        
         
         this.setCursor("default");
     }
@@ -370,7 +372,7 @@ export class DSTerminal {
         }
         t.resize(newdim.cols, newdim.rows);
     }
-
+    
     public startWarmup(duration: number) {
         this._warmupStart = Date.now();
         this._warmupDuration = duration;
@@ -394,6 +396,12 @@ export class DSTerminal {
             deleteTexture(this._gl, sprite.texture);
         });
         this._sprites = [];
+    }
+
+    public scrollSprites(sprites: DSSprite[], amount:number) {
+        sprites.forEach(element => {
+            element.y += amount * this.cellheight;
+        });
     }
 
     setCursor(style: string) {
