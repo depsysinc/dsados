@@ -11,6 +11,7 @@ import { DSIWebFile } from "./filesystem/dsIWebFile";
 
 // BIN IMPORTS
 import { PRCat } from "./process/cat";
+import { PRCHMod } from "./process/chmod";
 import { PRTestAnim } from "./process/demoanim";
 import { PRDemoCurses } from "./process/democurses";
 import { PRDemoMarkdown } from "./process/demomarkdown";
@@ -80,6 +81,9 @@ export function buildrootfs(): DSFileSystem {
 
     binfile = new DSIProcessFile(fs, PRCat);
     bindir.addfile("cat", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRCHMod);
+    bindir.addfile("chmod", binfile);
     
     binfile = new DSIProcessFile(fs, PRTestAnim);
     bindir.addfile("demoanim", binfile);

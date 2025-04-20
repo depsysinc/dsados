@@ -1,3 +1,4 @@
+import { DSFilePermsError } from "../dsFileSystem";
 import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
@@ -14,14 +15,15 @@ export class PRCat extends DSProcess {
         if (nextarg == -1)
             throw new DSProcessError(optparser.usage());
 
+        let inode
         let filename = this.argv[nextarg];
         try {
-            const inode = this.cwd.getfile(filename);
-            const text = await inode.contentAsText().read();
-            this.stdout.write(text);
+            inode = this.cwd.getfile(filename);
         } catch (e) {
             throw new DSProcessError(`'${filename}' not found\n`);
         }
+        const text = await inode.contentAsText().read();
+        this.stdout.write(text);
 
 
 
