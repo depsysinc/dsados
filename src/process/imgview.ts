@@ -8,7 +8,7 @@ import { DSInode } from "../dsFileSystem";
 
 export class PRImgview extends DSProcess {
 
-    private optparser:DSOptionParser;
+    private optparser: DSOptionParser;
 
     protected async main(): Promise<void> {
         this.optparser = new DSOptionParser(
@@ -23,11 +23,11 @@ export class PRImgview extends DSProcess {
         const img = await this.getImageData(inode);
         const sprite = this.setupSprite(img);
         this.printWhitespaceBehindImage(sprite);
-            
+
     }
 
-    
-    private getFilename():string {
+
+    private getFilename(): string {
         let nextarg = this.optparser.parseWithUsageAndHelp(this.argv);
         if (nextarg == -1) {
             throw new DSProcessError(this.optparser.usage());
@@ -36,7 +36,7 @@ export class PRImgview extends DSProcess {
     }
 
 
-    private getDSInode(filename:string):DSInode {
+    private getDSInode(filename: string): DSInode {
         let inode;
         try {
             inode = this.cwd.getfile(filename);
@@ -48,7 +48,7 @@ export class PRImgview extends DSProcess {
     }
 
 
-    private async getImageData(inode:DSInode) {
+    private async getImageData(inode: DSInode) {
         if (!(inode instanceof DSIWebFile)) {
             throw new DSProcessError(`Not an image file\n`);
         }
@@ -61,8 +61,8 @@ export class PRImgview extends DSProcess {
         }
     }
 
-    
-    private setupSprite(img:HTMLImageElement) {
+
+    private setupSprite(img: HTMLImageElement) {
         const sprite = DSKernel.terminal.newSprite([img]);
         const ycoordoflowestrow = DSKernel.terminal.xterm.buffer.active.cursorY * DSKernel.terminal.cellheight;
         sprite.enabled = true;
@@ -71,7 +71,7 @@ export class PRImgview extends DSProcess {
     }
 
 
-    private printWhitespaceBehindImage(sprite:DSSprite) {
+    private printWhitespaceBehindImage(sprite: DSSprite) {
         for (let i = 0; i < sprite.texture.height; i += DSKernel.terminal.cellheight) {
             this.stdout.write('\n')
         }
