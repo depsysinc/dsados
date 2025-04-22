@@ -2,10 +2,9 @@
 
 Deploy the depsysweb website
 
-## Workflow
-* `yarn watch`
-* `yarn cdk diff`
-* `yarn cdk deploy`
+## Configure
+* create config and credentials files in workspace/.aws
+* init.sh will link .aws to root homedirectory
 
 ## Commands
 

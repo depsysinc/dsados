@@ -21,6 +21,7 @@ import { DSShell } from "./process/dssh";
 import { PREcho } from "./process/echo";
 import { PREnv } from "./process/env";
 import { PRFile } from "./process/file";
+import { PRImgview } from "./process/imgview";
 import { PRInit } from "./process/init";
 import { PRLs } from "./process/ls";
 import { PRMkdir } from "./process/mkdir";
@@ -111,6 +112,9 @@ export function buildrootfs(): DSFileSystem {
     
     binfile = new DSIProcessFile(fs, PRFile);
     bindir.addfile("file", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRImgview);
+    bindir.addfile("imgview", binfile);
     
     binfile = new DSIProcessFile(fs, PRInit);
     bindir.addfile("init", binfile);

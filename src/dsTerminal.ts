@@ -177,6 +177,8 @@ export class DSTerminal {
 
         // hook up text io
         t.onData((data): void => { this.outputstream.write(data); });
+        
+        t.onScroll(() => this.scrollSprites(this._sprites, -1))
 
         // hook up mouse
         t.element.onmousedown = (e) => { this._handleMouseEvents(e); }
@@ -394,6 +396,12 @@ export class DSTerminal {
             deleteTexture(this._gl, sprite.texture);
         });
         this._sprites = [];
+    }
+
+    public scrollSprites(sprites: DSSprite[], amount:number) {
+        sprites.forEach(element => {
+            element.y += amount * this.cellheight;
+        });
     }
 
     setCursor(style: string) {
