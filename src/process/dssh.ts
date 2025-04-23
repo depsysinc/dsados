@@ -287,7 +287,7 @@ class CommandLinePrompt {
     private _userinput: string = "";
     private _cursor: number = 0;
     private _historyIdx: number;
-    private _tabkeypressed: boolean;
+    private _waitingfortab: boolean;
 
     constructor(private _shell: DSShell) {
         this._promptprefix = "depsys.io:";
@@ -343,6 +343,11 @@ class CommandLinePrompt {
     }
 
     private _processInput(data: string): boolean {
+
+        if (data.charAt(0) != '\t') {
+            this._waitingfortab = false;
+        }
+
         // handle DEL
         if (data.charAt(0) == "\x7f") {
             if (this._cursor > 0) {
@@ -396,14 +401,18 @@ class CommandLinePrompt {
         if (data == "\t") {
             this._shell.stdout.write("\x07");
 
-            let tokens = this._userinput.split(' ');
-            let options = new Array<string>()
+            if (this._cursor != this._userinput.length) {
+                return false; //Exit if cursor isn't at the end of the line
+            }
+
+            const tokens = this._userinput.trim().split(' ');
+            const options = new Array<string>()
             let appendtext;
-            if (tokens.length == 1) {
-                return false; //Not yet implemented - autocomplete for commands
+            if (tokens.length == 1) { //Not yet implemented - autocomplete for commands
+                return false; 
             }
             else {
-                let matchtext = tokens[tokens.length-1];
+                const matchtext = tokens[tokens.length-1];
                 for (let i = 0; i < this._shell.cwd.filelist.length; i++) {
                     let currentfilename = this._shell.cwd.filelist[i].name
                     if (currentfilename.slice(0, matchtext.length) == matchtext &&
@@ -411,26 +420,25 @@ class CommandLinePrompt {
                         options.push(currentfilename);
                     }
                 }
-                appendtext = options[0].slice(matchtext.length);
+                appendtext = options[0]?.slice(matchtext.length);
             }
-            console.log(options);
+
             if (options.length == 0) {
                 return false;
             }
             else if (options.length == 1) {
-                console.log(appendtext + 'END');
                 this._shell.stdout.write(appendtext);
                 this._userinput += appendtext;
                 this._cursor += appendtext.length;
                 return false;
             }
-            else if (!this._tabkeypressed) {
-                this._tabkeypressed = true;
+            else if (!this._waitingfortab) {
+                this._waitingfortab = true;
                 return false;
             }
             else {
+                this._waitingfortab = false;
                 this._shell.stdout.write('\n' + options.toString() + '\n\n');
-                this._tabkeypressed = false;
                 this._shell.stdout.write(this._prompt);
                 this._shell.stdout.write(this._userinput);
                 return false;
