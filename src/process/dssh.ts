@@ -239,7 +239,6 @@ export class DSShell extends DSProcess {
                 const filepath = paths[i] + '/' + command;
                 try {
                     this.cwd.getfile(filepath);
-                    console.log(filepath)
                     return DSKernel.exec(filepath, tokens, this.envp);
                 } catch (e) {
                     // next
@@ -287,7 +286,7 @@ class CommandLinePrompt {
     private _userinput: string = "";
     private _cursor: number = 0;
     private _historyIdx: number;
-    private _waitingfortab: boolean;
+    private _waitingForDoubleTab: boolean;
 
     constructor(private _shell: DSShell) {
         this._promptprefix = "depsys.io:";
@@ -342,10 +341,67 @@ class CommandLinePrompt {
         stdout.write("\x1b[u"); // Restore cursor position
     }
 
-    private _processInput(data: string): boolean {
 
-        if (data.charAt(0) != '\t') {
-            this._waitingfortab = false;
+    private _getCwdCompletions(): string[] {
+        const tokens = splitRespectingQuotes(this._userinput);
+        const options: string[] = [];
+        const matchtext = tokens[tokens.length - 1];
+
+        for (let i = 0; i < this._shell.cwd.filelist.length; i++) {
+            let currentfilename = this._shell.cwd.filelist[i].name
+            if (currentfilename.slice(0, matchtext.length) == matchtext &&
+                currentfilename[0] != '.') {
+                options.push(currentfilename);
+            }
+        }
+
+        return options
+    }
+
+    private _completeUserInput(completion: string) {
+        const tokens = splitRespectingQuotes(this._userinput);
+        const lengthtoappend = tokens[tokens.length - 1].length
+        const appendtext = completion.slice(lengthtoappend);
+
+        this._userinput += appendtext;
+        this._rewriteUserInput(); //Not just stdout.write to avoid issues when cursor isn't at the end of the line
+        this._cursor += appendtext.length;
+
+    }
+
+    private _displayAutocompleteOptions(options: string[]) {
+        this._shell.stdout.write('\n' + options.toString() + '\n\n');
+        this._shell.stdout.write(this._prompt);
+        this._shell.stdout.write(this._userinput);
+
+    }
+
+    private _processInput(data: string): boolean {
+        
+        //Handle [tab] and autocomplete
+        if (data.charAt(0) == '\t') {
+            this._shell.stdout.write("\x07");
+            if (splitRespectingQuotes(this._userinput).length == 1) { //autocomplete for commands not implemented yet, so require that at least one argument has been started
+                return false;
+            }
+            const autocompleteOptions = this._getCwdCompletions();
+
+            if (autocompleteOptions.length == 0) {
+                return false;
+            }
+            else if (autocompleteOptions.length == 1) {
+                this._completeUserInput(autocompleteOptions[0]);
+            }
+            else if (!this._waitingForDoubleTab) {
+                this._waitingForDoubleTab = true;
+            }
+            else {
+                this._displayAutocompleteOptions(autocompleteOptions);
+            }
+            return false;
+        }
+        else { 
+            this._waitingForDoubleTab = false;
         }
 
         // handle DEL
@@ -397,53 +453,7 @@ class CommandLinePrompt {
             }
             return false;
         }
-        // Check for [tab] and autocomplete
-        if (data == "\t") {
-            this._shell.stdout.write("\x07");
 
-            if (this._cursor != this._userinput.length) {
-                return false; //Exit if cursor isn't at the end of the line
-            }
-
-            const tokens = this._userinput.trim().split(' ');
-            const options = new Array<string>()
-            let appendtext;
-            if (tokens.length == 1) { //Not yet implemented - autocomplete for commands
-                return false; 
-            }
-            else {
-                const matchtext = tokens[tokens.length-1];
-                for (let i = 0; i < this._shell.cwd.filelist.length; i++) {
-                    let currentfilename = this._shell.cwd.filelist[i].name
-                    if (currentfilename.slice(0, matchtext.length) == matchtext &&
-                        currentfilename[0] != '.') {
-                        options.push(currentfilename);
-                    }
-                }
-                appendtext = options[0]?.slice(matchtext.length);
-            }
-
-            if (options.length == 0) {
-                return false;
-            }
-            else if (options.length == 1) {
-                this._shell.stdout.write(appendtext);
-                this._userinput += appendtext;
-                this._cursor += appendtext.length;
-                return false;
-            }
-            else if (!this._waitingfortab) {
-                this._waitingfortab = true;
-                return false;
-            }
-            else {
-                this._waitingfortab = false;
-                this._shell.stdout.write('\n' + options.toString() + '\n\n');
-                this._shell.stdout.write(this._prompt);
-                this._shell.stdout.write(this._userinput);
-                return false;
-            }
-        }
         // If LF we're done
         if (data == "\r") {
             this._shell.stdout.write("\n");
