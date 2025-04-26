@@ -321,21 +321,57 @@ class CommandLinePrompt {
         return this._userinput;
     }
 
-    private _rewriteUserInput() {
-        const stdout = this._shell.stdout;
-
-        stdout.write(`\x1b[${this._prompt.length + 1}G`); // Put cursor at end of prompt
-        stdout.write("\x1b[K"); // Clear to EoL
-        stdout.write(this._userinput); // write the entry
-        this._cursor = this._userinput.length; // set cursor to end of entry
+    private _cursorAtLeftEdge(): boolean {
+        const totalchars = this._cursor + this._prompt.length;
+        return (totalchars % DSKernel.terminal.cols == 0);
     }
+
+    private _cursorAtRightEdge(): boolean {
+        const totalchars = this._cursor + this._prompt.length;
+        return ((totalchars + 1) % DSKernel.terminal.cols == 0)
+    }
+
+    private _cursorLeft() {
+        if (this._cursorAtLeftEdge()) {
+            this._shell.stdout.write("\x1b[F\x1b[200000C")
+        }
+        else {
+            this._shell.stdout.write('\x1b[D');
+        }
+        this._cursor--;
+    }
+
+    private _cursorRight() {
+        if (this._cursorAtRightEdge()) {
+            this._shell.stdout.write("\x1b[E")
+        }
+        else {
+            this._shell.stdout.write('\x1b[C');
+
+        }
+        this._cursor++;
+    }
+
+    private _updateUserInput(newUserInput: string) {
+        const stdout = this._shell.stdout;
+        const linesacross = Math.ceil((this._userinput.length + this._prompt.length) / DSKernel.terminal.cols)
+        if (linesacross > 1) {
+            stdout.write(`\x1b[${linesacross - 1}A`) //Move cursor up to the top line of the old userinput
+        }
+        stdout.write(`\x1b[${this._prompt.length + 1}G`); // Put cursor at end of prompt
+        stdout.write("\x1b[J"); // Clear to EoF
+        stdout.write(newUserInput); // write the entry
+        this._cursor = newUserInput.length; // set cursor to end of entry
+        this._userinput = newUserInput
+    }
+
 
     private _delFromCursor(): void {
         const stdout = this._shell.stdout;
 
         this._userinput = this._userinput.slice(0, this._cursor) + this._userinput.slice(this._cursor + 1);
         stdout.write("\x1b[s"); // Save cursor position
-        stdout.write("\x1b[K"); // Clear to EoL
+        stdout.write("\x1b[J"); // Clear to EoF
         stdout.write(this._userinput.slice(this._cursor));
         stdout.write("\x1b[u"); // Restore cursor position
     }
@@ -344,8 +380,7 @@ class CommandLinePrompt {
         // handle DEL
         if (data.charAt(0) == "\x7f") {
             if (this._cursor > 0) {
-                this._cursor--;
-                this._shell.stdout.write("\x1b[D");
+                this._cursorLeft();
                 this._delFromCursor();
             }
             return false;
@@ -355,34 +390,32 @@ class CommandLinePrompt {
             switch (data.slice(1)) {
                 case "[D": // Left
                     if (this._cursor > 0) {
-                        this._cursor--;
-                        this._shell.stdout.write(data);
+                        this._cursorLeft();
                     }
                     break;
+
                 case "[C": // Right
                     if (this._cursor < this._userinput.length) {
-                        this._cursor++;
-                        this._shell.stdout.write(data);
+                        this._cursorRight();
                     }
                     break;
                 case "[3~": // Delete
-                    if (this._cursor < this._userinput.length)
+                    if (this._cursor < this._userinput.length) {
                         this._delFromCursor();
+                    }
                     break;
                 case "[A": // Up
                     if (this._historyIdx > 0) {
                         this._shell.history[this._historyIdx] = this._userinput;
                         this._historyIdx--;
-                        this._userinput = this._shell.history[this._historyIdx];
-                        this._rewriteUserInput();
+                        this._updateUserInput(this._shell.history[this._historyIdx]);
                     }
                     break;
                 case "[B": // Down
                     if (this._historyIdx < this._shell.history.length - 1) {
                         this._shell.history[this._historyIdx] = this._userinput;
                         this._historyIdx++;
-                        this._userinput = this._shell.history[this._historyIdx];
-                        this._rewriteUserInput();
+                        this._updateUserInput(this._shell.history[this._historyIdx]);
                     }
                     break;
                 default:
