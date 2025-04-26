@@ -381,7 +381,7 @@ class CommandLinePrompt {
         //Handle [tab] and autocomplete
         if (data.charAt(0) == '\t') {
             this._shell.stdout.write("\x07");
-            if (splitRespectingQuotes(this._userinput).length == 1) { //autocomplete for commands not implemented yet, so require that at least one argument has been started
+            if (splitRespectingQuotes(this._userinput).length <= 1) { //autocomplete for commands not implemented yet, so require that at least one argument has been started
                 return false;
             }
             const autocompleteOptions = this._getCwdCompletions();
