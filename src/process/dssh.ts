@@ -331,56 +331,75 @@ class CommandLinePrompt {
         return ((totalchars + 1) % DSKernel.terminal.cols == 0)
     }
 
-    private _cursorLeft() {
-        if (this._cursorAtLeftEdge()) {
-            this._shell.stdout.write("\x1b[F\x1b[200000C")
+    private _cursorLeft(amount: number) {
+        if (amount < 0) {
+            throw new DSShellError("Attempt to move negative positions left");
         }
-        else {
-            this._shell.stdout.write('\x1b[D');
+        for (let _ = 0; _ < amount; _++) {
+            if (this._cursorAtLeftEdge()) {
+                this._shell.stdout.write("\x1b[F\x1b[200000C")
+            }
+            else {
+                this._shell.stdout.write(`\x1b[D`);
+            }
+            this._cursor--
         }
-        this._cursor--;
     }
 
-    private _cursorRight() {
-        if (this._cursorAtRightEdge()) {
-            this._shell.stdout.write("\x1b[E")
+    private _cursorRight(amount: number) {
+        if (amount < 0) {
+            throw new DSShellError("Attempt to move negative amount right");
         }
-        else {
-            this._shell.stdout.write('\x1b[C');
+        for (let _ = 0; _ < amount; _++) {
 
+            if (this._cursorAtRightEdge()) {
+                this._shell.stdout.write("\x1b[E")
+            }
+            else {
+                this._shell.stdout.write(`\x1b[C`);
+
+            }
+            this._cursor++
         }
-        this._cursor++;
     }
 
     private _updateUserInput(newUserInput: string) {
         const stdout = this._shell.stdout;
-        const linesacross = Math.ceil((this._userinput.length + this._prompt.length) / DSKernel.terminal.cols)
-        if (linesacross > 1) {
-            stdout.write(`\x1b[${linesacross - 1}A`) //Move cursor up to the top line of the old userinput
-        }
-        stdout.write(`\x1b[${this._prompt.length + 1}G`); // Put cursor at end of prompt
+        const startcursorpos = this._cursor;
+        this._cursorLeft(startcursorpos);
         stdout.write("\x1b[J"); // Clear to EoF
         stdout.write(newUserInput); // write the entry
-        this._cursor = newUserInput.length; // set cursor to end of entry
-        this._userinput = newUserInput
+        this._cursor += newUserInput.length
+        if (this._cursorAtLeftEdge() && (newUserInput.length + this._prompt.length) % DSKernel.terminal.cols == 0) {
+            stdout.write('\n');}
+        const cursormovement =  Math.min(newUserInput.length,this._userinput.length-startcursorpos) //Move cursor to same relative position
+        console.log(cursormovement);
+        if (cursormovement > 0) {
+            this._cursorLeft(cursormovement);
+        }
+        else if (cursormovement < 0) {
+            this._cursorRight(-cursormovement);
+        }
+        this._userinput = newUserInput;
     }
 
 
     private _delFromCursor(): void {
         const stdout = this._shell.stdout;
 
-        this._userinput = this._userinput.slice(0, this._cursor) + this._userinput.slice(this._cursor + 1);
-        stdout.write("\x1b[s"); // Save cursor position
-        stdout.write("\x1b[J"); // Clear to EoF
-        stdout.write(this._userinput.slice(this._cursor));
-        stdout.write("\x1b[u"); // Restore cursor position
+        let newuserinput = this._userinput.slice(0, this._cursor-1) + this._userinput.slice(this._cursor);
+        this._updateUserInput(newuserinput);
+        //stdout.write("\x1b[s"); // Save cursor position
+       // stdout.write("\x1b[J"); // Clear to EoF
+      //  stdout.write(this._userinput.slice(this._cursor));
+     //   stdout.write("\x1b[u"); // Restore cursor position
     }
 
     private _processInput(data: string): boolean {
-        // handle DEL
+        // handle backspace
         if (data.charAt(0) == "\x7f") {
             if (this._cursor > 0) {
-                this._cursorLeft();
+                //this._cursorRight(1);
                 this._delFromCursor();
             }
             return false;
@@ -390,17 +409,18 @@ class CommandLinePrompt {
             switch (data.slice(1)) {
                 case "[D": // Left
                     if (this._cursor > 0) {
-                        this._cursorLeft();
+                        this._cursorLeft(1);
                     }
                     break;
 
                 case "[C": // Right
                     if (this._cursor < this._userinput.length) {
-                        this._cursorRight();
+                        this._cursorRight(1);
                     }
                     break;
                 case "[3~": // Delete
                     if (this._cursor < this._userinput.length) {
+                        this._cursorRight(1);
                         this._delFromCursor();
                     }
                     break;
@@ -434,12 +454,11 @@ class CommandLinePrompt {
             return true;
         }
         // ok add the character at current cursor location and update cursor location
-        this._userinput = this._userinput.slice(0, this._cursor)
+        let newuserinput = this._userinput.slice(0, this._cursor)
             + data
             + this._userinput.slice(this._cursor);
-        this._cursor++;
 
-        this._shell.stdout.write(data);
+        this._updateUserInput(newuserinput);
         return false;
     }
 }
