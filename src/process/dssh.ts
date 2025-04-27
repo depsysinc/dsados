@@ -450,6 +450,7 @@ class CommandLinePrompt {
         }
         // If LF we're done
         if (data == "\r") {
+            this._cursorRight(this._userinput.length-this._cursor);
             this._shell.stdout.write("\n");
             return true;
         }
