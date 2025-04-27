@@ -450,7 +450,7 @@ class CommandLinePrompt {
             this._shell.stdout.write("\n");
             return true;
         }
-        // ok add the character at current cursor location and update cursor location
+        // ok add the character at current cursor location and update the text
         let newuserinput = this._userinput.slice(0, this._cursor)
             + data
             + this._userinput.slice(this._cursor);
