@@ -348,16 +348,14 @@ class CommandLinePrompt {
 
     private _cursorRight(amount: number) {
         if (amount < 0) {
-            throw new DSShellError("Attempt to move negative amount right");
+            throw new DSShellError("Attempt to move negative positions right");
         }
         for (let _ = 0; _ < amount; _++) {
-
             if (this._cursorAtRightEdge()) {
                 this._shell.stdout.write("\x1b[E")
             }
             else {
                 this._shell.stdout.write(`\x1b[C`);
-
             }
             this._cursor++
         }
@@ -366,41 +364,39 @@ class CommandLinePrompt {
     private _updateUserInput(newUserInput: string) {
         const stdout = this._shell.stdout;
         const startcursorpos = this._cursor;
-        this._cursorLeft(startcursorpos);
+
+        this._cursorLeft(startcursorpos); //Move cursor to start of line
         stdout.write("\x1b[J"); // Clear to EoF
         stdout.write(newUserInput); // write the entry
-        this._cursor += newUserInput.length
+        this._cursor += newUserInput.length //Update internal cursor position
+
+        //The xterm terminal handles cursor position differently at end of line - standardize it to avoid weird edge cases
         if (this._cursorAtLeftEdge() && (newUserInput.length + this._prompt.length) % DSKernel.terminal.cols == 0) {
-            stdout.write('\n');}
-        const cursormovement =  Math.min(newUserInput.length,this._userinput.length-startcursorpos) //Move cursor to same relative position
-        console.log(cursormovement);
+            stdout.write('\n');
+        }
+
+        const cursormovement = Math.min(newUserInput.length, this._userinput.length - startcursorpos) //Move cursor to same relative position
         if (cursormovement > 0) {
             this._cursorLeft(cursormovement);
         }
         else if (cursormovement < 0) {
             this._cursorRight(-cursormovement);
         }
+
         this._userinput = newUserInput;
     }
 
 
-    private _delFromCursor(): void {
-        const stdout = this._shell.stdout;
-
-        let newuserinput = this._userinput.slice(0, this._cursor-1) + this._userinput.slice(this._cursor);
+    private _delAtCursor(): void {
+        let newuserinput = this._userinput.slice(0, this._cursor - 1) + this._userinput.slice(this._cursor);
         this._updateUserInput(newuserinput);
-        //stdout.write("\x1b[s"); // Save cursor position
-       // stdout.write("\x1b[J"); // Clear to EoF
-      //  stdout.write(this._userinput.slice(this._cursor));
-     //   stdout.write("\x1b[u"); // Restore cursor position
     }
 
     private _processInput(data: string): boolean {
         // handle backspace
         if (data.charAt(0) == "\x7f") {
             if (this._cursor > 0) {
-                //this._cursorRight(1);
-                this._delFromCursor();
+                this._delAtCursor();
             }
             return false;
         }
@@ -421,7 +417,7 @@ class CommandLinePrompt {
                 case "[3~": // Delete
                     if (this._cursor < this._userinput.length) {
                         this._cursorRight(1);
-                        this._delFromCursor();
+                        this._delAtCursor();
                     }
                     break;
                 case "[A": // Up
@@ -450,7 +446,7 @@ class CommandLinePrompt {
         }
         // If LF we're done
         if (data == "\r") {
-            this._cursorRight(this._userinput.length-this._cursor);
+            this._cursorRight(this._userinput.length - this._cursor);
             this._shell.stdout.write("\n");
             return true;
         }
