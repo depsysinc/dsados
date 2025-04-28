@@ -337,10 +337,10 @@ class CommandLinePrompt {
         }
         for (let _ = 0; _ < amount; _++) {
             if (this._cursorAtLeftEdge()) {
-                this._shell.stdout.write("\x1b[F\x1b[200000C")
+                this._shell.stdout.write("\x1b[F\x1b[200000C") //Move cursor up one row and then to the rightmost column
             }
             else {
-                this._shell.stdout.write(`\x1b[D`);
+                this._shell.stdout.write(`\x1b[D`); //Move cursor one space left
             }
             this._cursor--
         }
@@ -352,10 +352,10 @@ class CommandLinePrompt {
         }
         for (let _ = 0; _ < amount; _++) {
             if (this._cursorAtRightEdge()) {
-                this._shell.stdout.write("\x1b[E")
+                this._shell.stdout.write("\x1b[E") //Move the cursor down one row and to the leftmost column
             }
             else {
-                this._shell.stdout.write(`\x1b[C`);
+                this._shell.stdout.write(`\x1b[C`); //Move the cursor one space right
             }
             this._cursor++
         }
