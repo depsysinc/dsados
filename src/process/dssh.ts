@@ -286,6 +286,7 @@ class CommandLinePrompt {
     private _userinput: string = "";
     private _cursor: number = 0;
     private _historyIdx: number;
+    private _waitingForDoubleTab: boolean;
 
     constructor(private _shell: DSShell) {
         this._promptprefix = "depsys.io:";
@@ -392,8 +393,68 @@ class CommandLinePrompt {
         this._updateUserInput(newuserinput);
     }
 
-    private _processInput(data: string): boolean {
-        // handle backspace
+
+    private _getCwdCompletions(): string[] {
+        const tokens = splitRespectingQuotes(this._userinput);
+        const options: string[] = [];
+        const matchtext = tokens[tokens.length - 1];
+
+        for (let i = 0; i < this._shell.cwd.filelist.length; i++) {
+            let currentfilename = this._shell.cwd.filelist[i].name
+            if (currentfilename.slice(0, matchtext.length) == matchtext &&
+                currentfilename[0] != '.') {
+                options.push(currentfilename);
+            }
+        }
+
+        return options
+    }
+
+    private _completeUserInput(completion: string) {
+        const tokens = splitRespectingQuotes(this._userinput);
+        const lengthtoappend = tokens[tokens.length - 1].length
+        const appendtext = completion.slice(lengthtoappend);
+
+        let newuserinput = this._userinput + appendtext;
+        this._updateUserInput(newuserinput); //Not just stdout.write to avoid issues when cursor isn't at the end of the line
+
+    }
+
+    private _displayAutocompleteOptions(options: string[]) {
+        this._shell.stdout.write('\n' + options.toString() + '\n\n');
+        this._shell.stdout.write(this._prompt);
+        this._shell.stdout.write(this._userinput);
+
+    }
+
+    private _processInput(data: string): boolean {        
+        //Handle [tab] and autocomplete
+        if (data.charAt(0) == '\t') {
+            this._shell.stdout.write("\x07");
+            if (splitRespectingQuotes(this._userinput).length <= 1) { //autocomplete for commands not implemented yet, so require that at least one argument has been started
+                return false;
+            }
+            const autocompleteOptions = this._getCwdCompletions();
+
+            if (autocompleteOptions.length == 0) {
+                return false;
+            }
+            else if (autocompleteOptions.length == 1) {
+                this._completeUserInput(autocompleteOptions[0]);
+            }
+            else if (!this._waitingForDoubleTab) {
+                this._waitingForDoubleTab = true;
+            }
+            else {
+                this._displayAutocompleteOptions(autocompleteOptions);
+            }
+            return false;
+        }
+        else { 
+            this._waitingForDoubleTab = false;
+        }
+
+        // handle DEL
         if (data.charAt(0) == "\x7f") {
             if (this._cursor > 0) {
                 this._delAtCursor();
@@ -439,11 +500,7 @@ class CommandLinePrompt {
             }
             return false;
         }
-        // Check for [tab]
-        if (data == "\t") {
-            this._shell.stdout.write("\x07");
-            return false;
-        }
+
         // If LF we're done
         if (data == "\r") {
             this._cursorRight(this._userinput.length - this._cursor);
