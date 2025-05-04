@@ -370,7 +370,7 @@ class CommandLinePrompt {
         stdout.write("\x1b[J"); // Clear to EoF
         stdout.write(newUserInput); // write the entry
         this._cursor += newUserInput.length //Update internal cursor position
-
+        
         //The xterm terminal handles cursor position differently at end of line - standardize it to avoid weird edge cases
         if (this._cursorAtLeftEdge() && (newUserInput.length + this._prompt.length) % DSKernel.terminal.cols == 0) {
             stdout.write('\n');
@@ -427,7 +427,7 @@ class CommandLinePrompt {
 
     }
 
-    private _processInput(data: string): boolean {        
+    private _processInput(data: string): boolean {
         //Handle [tab] and autocomplete
         if (data.charAt(0) == '\t') {
             this._shell.stdout.write("\x07");
@@ -498,6 +498,19 @@ class CommandLinePrompt {
                 default:
                     console.log(`unknown escape sequence ${data}`);
             }
+            return false;
+        }
+
+        if (data == '') { //CTRL-V
+            navigator.clipboard.readText().then((clipboardcontents) => {
+                let text = clipboardcontents.split('\r')[0]; //Remove any contents after a linebreak - causes unpredictable behaviour
+
+                let newuserinput = this._userinput.slice(0,this._cursor) +
+                text+
+                this._userinput.slice(this._cursor);
+
+                this._updateUserInput(newuserinput);
+            })
             return false;
         }
 
