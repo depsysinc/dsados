@@ -180,7 +180,7 @@ export class DSTerminal {
 
         // hook up text io
         t.onData((data): void => {
-            this.outputstream.write(data); console.log('breaking news - recieved', data)
+            this.outputstream.write(data);
         });
 
         t.onScroll(() => this.scrollSprites(this._sprites, -1))
@@ -195,9 +195,10 @@ export class DSTerminal {
         t.element.ontouchmove = (e) => { this._handleTouchEvents(e); }
         t.element.ontouchcancel = (e) => { this._handleTouchEvents(e); }
 
+        t.onSelectionChange(() => { this._handleSelectionChange() })
+
         // Note - this is called after onData on every keypress, so the command is propagated before the selection is cleared
         t.attachCustomKeyEventHandler((arg) => { this._clearSelection(); return true });
-        t.onSelectionChange(() => { this._handleSelectionChange() })
 
         // Hook up browser actions
         window.onpopstate = (e) => { this._handleHistoryEvents(e); }
@@ -223,7 +224,7 @@ export class DSTerminal {
     }
 
     private _handleHistoryEvents(e: PopStateEvent) {
-        this._clearSelection();
+        this._clearSelection(); //Clear highlighted text
         DSKernel.handleHistoryEvents(e);
     }
 
