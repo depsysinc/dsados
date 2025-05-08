@@ -71,6 +71,7 @@ export class DSTerminal {
     private _warmupDuration: number;
     private _spriterenderer: DSSpriteRenderer;
     private _sprites: DSSprite[] = [];
+    private _selectedtext: string;
 
     get xterm() { return this._terminal; }
 
@@ -78,6 +79,8 @@ export class DSTerminal {
     get rows(): number { return this._terminal.rows; }
     get width(): number { return this._width; }
     get height(): number { return this._height; }
+
+    get selection(): string { return this._selectedtext; }
 
     constructor(terminalContainer: HTMLDivElement) {
 
@@ -176,8 +179,10 @@ export class DSTerminal {
         window.addEventListener('resize', () => { this.handleResize() });
 
         // hook up text io
-        t.onData((data): void => { this.outputstream.write(data); });
-        
+        t.onData((data): void => {
+            this.outputstream.write(data); console.log('breaking news - recieved', data)
+        });
+
         t.onScroll(() => this.scrollSprites(this._sprites, -1))
 
         // hook up mouse
@@ -189,6 +194,10 @@ export class DSTerminal {
         t.element.ontouchend = (e) => { this._handleTouchEvents(e); }
         t.element.ontouchmove = (e) => { this._handleTouchEvents(e); }
         t.element.ontouchcancel = (e) => { this._handleTouchEvents(e); }
+
+        // Note - this is called after onData on every keypress, so the command is propagated before the selection is cleared
+        t.attachCustomKeyEventHandler((arg) => { this._clearSelection(); return true });
+        t.onSelectionChange(() => { this._handleSelectionChange() })
 
         // Hook up browser actions
         window.onpopstate = (e) => { this._handleHistoryEvents(e); }
@@ -209,15 +218,17 @@ export class DSTerminal {
         requestAnimationFrame(() => { this._baudFrame() });
 
         t.focus();
-        
+
         this.setCursor("default");
     }
 
     private _handleHistoryEvents(e: PopStateEvent) {
+        this._clearSelection();
         DSKernel.handleHistoryEvents(e);
     }
 
     private _handleWheelEvents(e: WheelEvent) {
+        this._clearSelection(); //Clear highlighted text
         // Container element doesn't have same dimensions as actual screen
         const el = this._terminal.element.querySelector(".xterm-screen") as HTMLElement;
         const pe: DSPointerEvent = {
@@ -238,6 +249,7 @@ export class DSTerminal {
 
     private _handleMouseEvents(e: MouseEvent) {
         e.preventDefault(); // Prevent mobile keyboard
+        this._clearSelection(); //Clear highlighted text
         // Container element doesn't have same dimensions as actual screen
         const el = this._terminal.element.querySelector(".xterm-screen") as HTMLElement;
         const pe: DSPointerEvent = {
@@ -252,15 +264,16 @@ export class DSTerminal {
             button: e.button
         };
         pe.col = Math.ceil(pe.x / this.cellwidth);
-        pe.row = Math.ceil(pe.y / this.cellheight); 
-        if (pe.y == 0) 
+        pe.row = Math.ceil(pe.y / this.cellheight);
+        if (pe.y == 0)
             pe.row = 1; // If the mouse is at the exact top of the page (pe.y = 0), the smallest allowed row is 1, not 0
-        
+
         DSKernel.handlePointer(pe);
     }
 
     private _handleTouchEvents(e: TouchEvent) {
         e.preventDefault(); // Prevent mobile keyboard
+        this._clearSelection(); //Clear highlighted text
         // Container element doesn't have same dimensions as actual screen
         const el = this._terminal.element.querySelector(".xterm-screen") as HTMLElement;
         const pe: DSPointerEvent = {
@@ -277,6 +290,18 @@ export class DSTerminal {
         pe.col = Math.ceil(pe.x / this.cellwidth);
         pe.row = Math.ceil(pe.y / this.cellheight);
         DSKernel.handlePointer(pe);
+    }
+
+    private _handleSelectionChange() {
+        if (this._terminal.hasSelection()) {
+            this._selectedtext = this._terminal.getSelection();
+        }
+    }
+
+    private _clearSelection() {
+        if (!this._terminal.hasSelection()) {
+            this._selectedtext = '';
+        }
     }
 
     private async _handleInput() {
@@ -398,7 +423,7 @@ export class DSTerminal {
         this._sprites = [];
     }
 
-    public scrollSprites(sprites: DSSprite[], amount:number) {
+    public scrollSprites(sprites: DSSprite[], amount: number) {
         sprites.forEach(element => {
             element.y += amount * this.cellheight;
         });
@@ -409,7 +434,7 @@ export class DSTerminal {
     }
 
     getRow(row: number) {
-        return this._terminal.buffer.active.getLine(row-1).translateToString();
+        return this._terminal.buffer.active.getLine(row - 1).translateToString();
     }
 }
 

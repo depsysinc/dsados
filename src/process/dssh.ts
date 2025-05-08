@@ -370,7 +370,7 @@ class CommandLinePrompt {
         stdout.write("\x1b[J"); // Clear to EoF
         stdout.write(newUserInput); // write the entry
         this._cursor += newUserInput.length //Update internal cursor position
-        
+
         //The xterm terminal handles cursor position differently at end of line - standardize it to avoid weird edge cases
         if (this._cursorAtLeftEdge() && (newUserInput.length + this._prompt.length) % DSKernel.terminal.cols == 0) {
             stdout.write('\n');
@@ -450,7 +450,7 @@ class CommandLinePrompt {
             }
             return false;
         }
-        else { 
+        else {
             this._waitingForDoubleTab = false;
         }
 
@@ -505,13 +505,21 @@ class CommandLinePrompt {
             navigator.clipboard.readText().then((clipboardcontents) => {
                 let text = clipboardcontents.split('\r')[0]; //Remove any contents after a linebreak - causes unpredictable behaviour
 
-                let newuserinput = this._userinput.slice(0,this._cursor) +
-                text+
-                this._userinput.slice(this._cursor);
+                let newuserinput = this._userinput.slice(0, this._cursor) +
+                    text +
+                    this._userinput.slice(this._cursor);
 
                 this._updateUserInput(newuserinput);
             })
             return false;
+        }
+
+        if (data == '') { //CTRL-C
+            const selection = DSKernel.terminal.selection;
+            if (selection) {
+                navigator.clipboard.writeText(selection);
+                return false;
+            }
         }
 
         // If LF we're done
