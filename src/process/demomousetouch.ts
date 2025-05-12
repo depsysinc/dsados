@@ -27,7 +27,7 @@ export class PRDemoMouseTouch extends DSProcess {
         const img = await load_image(webnode.url);
 
         // Create the sprite
-        this.sprite = DSKernel.terminal.newSprite([img]);
+        this.sprite = DSKernel.terminal.newSprite([{image:img,height:img.height,width:img.width}]);
         w(reset());
 
         // Draw border

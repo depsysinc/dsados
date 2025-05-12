@@ -1,6 +1,6 @@
-import { DSIDirectory } from "../dsFileSystem";
+import { DSIDirectory, DSInode } from "../dsFileSystem";
 import { DSKernel } from "../dsKernel";
-import { DSSprite } from "../dsTerminal";
+import { DSSprite, DSTexture } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
 import { setattr, textattrs } from "./dsCurses";
 import { load_image } from "./dsLib";
@@ -325,9 +325,9 @@ export class ImageBlock extends DSMDBlock {
     }
 
     addlinktokens(): void {
-        this.linktoken = new LinkToken('',this.linkurl)
+        this.linktoken = new LinkToken('', this.linkurl)
         this.tokens.push(this.linktoken);
-        this.tokens.push(new LinkToken('',this.linkurl));
+        this.tokens.push(new LinkToken('', this.linkurl));
 
     }
 
@@ -771,12 +771,52 @@ export class DSMDDoc {
                         continue;
                     // Do the img load
                     block.img = await load_image(inode.url);
-                    // Create the sprite
-                    block.sprite = DSKernel.terminal.newSprite([block.img]);
+                    this.isgif(inode).then(
+                    (isit) => {
+                    if (isit) {
+                        console.log('special)');
+                        this.get_images(inode.url).then((images) =>
+                        {console.log(images);block.sprite = DSKernel.terminal.newSprite(images)});
+
+                    } 
+                    else {
+                        console.log('normal');
+                        block.sprite = DSKernel.terminal.newSprite([{image:block.img, width:block.img.width, height:block.img.height}])
+
+                    };})
+                   
+
                 } catch (e) {
                 }
             }
         };
+    }
+
+
+    async isgif(inode: DSInode): Promise<boolean> {
+        return inode.filetype().then((filetype) => {console.log(filetype);return filetype == 'image/gif'})
+    }
+
+
+    async get_images(url: string): Promise<DSTexture[]> {
+        const frames: DSTexture[] = [];
+        fetch(url).then(
+            (response) => {
+                console.log(isSecureContext);
+                let imagedecoder = new ImageDecoder({ data: response.body, type: "image/gif" })
+                let k = 0
+                console.log(imagedecoder);
+                while (!imagedecoder.complete) {
+                    imagedecoder.decode({ frameIndex: k }).then((result) => {
+                        (frames.push({ image: result.image, width: result.image.codedWidth, height: result.image.codedHeight }))
+                    })
+                    console.log(k);
+                    k++;
+                }
+                return frames;
+            }
+        )
+        return frames;
     }
 
     render(width: number, cellwidth: number, cellheight: number) {
@@ -819,10 +859,10 @@ export class DSMDDoc {
                     // the closing token 
                     if (!(((rowidx == startidx) &&
                         (col < opentoken.startlen + 1)) ||
-                     ((rowidx == endidx) &&
-                        (col > closetoken.startlen))))
-                    // Return the token
-                    return opentoken;
+                        ((rowidx == endidx) &&
+                            (col > closetoken.startlen))))
+                        // Return the token
+                        return opentoken;
                 }
             }
         }

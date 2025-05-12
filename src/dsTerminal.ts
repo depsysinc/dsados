@@ -28,6 +28,13 @@ export type DSSprite = {
     enabled: boolean
 }
 
+export type DSTexture = {
+    image: HTMLImageElement | VideoFrame;
+    width: number;
+    height: number;
+}
+
+
 export type DSPointerEvent = {
     type: string,
     x: number,
@@ -140,6 +147,17 @@ export class DSTerminal {
                 const sprite = this._sprites[i];
                 if (sprite.enabled)
                     this._spriterenderer.render(sprite.texture.glid, sprite.i, sprite.x, sprite.y);
+     //           const update = () => {
+       //             requestAnimationFrame(update);
+         //           const now = performance.now();
+           //         console.log('updating');
+             //       sprite.i = (now/200) % sprite.texture.length;
+               //     this.refresh();
+//                }
+  //              if (sprite.texture.length > 1) {
+    //                requestAnimationFrame(update);
+      //          }
+                
             }
             this._scanlinerenderer.render(texture);
             this._bloomrenderer.render(this._scanlinerenderer.texture);
@@ -379,14 +397,16 @@ export class DSTerminal {
         this._terminal.refresh(0, this._terminal.rows - 1);
     }
 
-    public newSprite(images: HTMLImageElement[]): DSSprite {
+    public newSprite(images: DSTexture[]): DSSprite {
+        console.log(images);
         const sprite: DSSprite = {
             texture: createTexture(this._gl, images),
             x: 0,
             y: 0,
             i: 0,
-            enabled: false
+            enabled: true
         };
+        console.log(images);
         this._sprites.push(sprite);
         return sprite;
     }

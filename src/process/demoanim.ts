@@ -1,5 +1,6 @@
 import { DSKernel } from "../dsKernel";
 import { DSProcess, DSProcessError } from "../dsProcess";
+import { DSTexture } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
 import { load_image } from "../lib/dsLib";
 import { DSOptionParser } from "../lib/dsOptionParser";
@@ -32,9 +33,10 @@ export class PRTestAnim extends DSProcess {
                 images.push(img);
             }
         };
-
+        let texturearray: DSTexture[]; 
+        images.forEach((i)=>{texturearray.push({image:i,width:i.width,height:i.height})})
         // Create the sprite
-        const sprite = DSKernel.terminal.newSprite(images);
+        const sprite = DSKernel.terminal.newSprite(texturearray);
         sprite.enabled = true;
         let done = false;
 
