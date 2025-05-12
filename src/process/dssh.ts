@@ -503,8 +503,7 @@ class CommandLinePrompt {
 
         if (data == '') { //CTRL-V
             navigator.clipboard.readText().then((clipboardcontents) => {
-                let text = clipboardcontents.split('\r')[0]; //Remove any contents after a linebreak - causes unpredictable behaviour
-
+                let text = clipboardcontents.replace('\r','\n');
                 let newuserinput = this._userinput.slice(0, this._cursor) +
                     text +
                     this._userinput.slice(this._cursor);
