@@ -33,7 +33,7 @@ export class PRDSMDBrowser extends DSApp {
 
         this._currentfilename = this.argv[nextarg];
         let filename = this.argv[nextarg];
-        history.replaceState({ filepath: filename,row:this._rowidx }, "");
+        history.replaceState({ filepath: filename, row: this._rowidx }, "");
         await this._loadDoc(filename);
 
         const t = DSKernel.terminal;
@@ -168,8 +168,9 @@ export class PRDSMDBrowser extends DSApp {
         if (url.startsWith("http")) {
             window.open(url, '_blank');
         } else {
+            history.replaceState({ filepath: this._currentfilename, row: this._rowidx }, '')
             this._rowidx = 0;
-            history.pushState({ filepath: this._currentfilename, row:this._rowidx }, "");
+            history.pushState({ filepath: url, row: 0 }, '');
             this._currentfilename = url;
             await this._loadDoc(url);
         }
@@ -242,7 +243,7 @@ export class PRDSMDBrowser extends DSApp {
 
         if (this._curdoc.rows.length == 0) { //Document hasn't been loaded yet, so don't let row updates go through
             this._rowidx = 0;
-            return false; 
+            return false;
         }
         if (this._rowidx > this._curdoc.rows.length - 1)
             this._rowidx = this._curdoc.rows.length - 1;
@@ -264,8 +265,6 @@ export class PRDSMDBrowser extends DSApp {
             const row = doc.rows[this._rowidx + j];
             this.stdout.write(gotoxy(1, j + 1) + `${row.text}`);
         }
-
-        history.replaceState({ filepath: this._currentfilename ,row:this._rowidx}, "")
 
         // Update the sprites
         // OPT: Check if sprites are actually on screen before enabling.

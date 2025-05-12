@@ -286,6 +286,7 @@ class CommandLinePrompt {
     private _userinput: string = "";
     private _cursor: number = 0;
     private _historyIdx: number;
+    private _waitingForDoubleTab: boolean;
 
     constructor(private _shell: DSShell) {
         this._promptprefix = "depsys.io:";
@@ -321,32 +322,142 @@ class CommandLinePrompt {
         return this._userinput;
     }
 
-    private _rewriteUserInput() {
-        const stdout = this._shell.stdout;
-
-        stdout.write(`\x1b[${this._prompt.length + 1}G`); // Put cursor at end of prompt
-        stdout.write("\x1b[K"); // Clear to EoL
-        stdout.write(this._userinput); // write the entry
-        this._cursor = this._userinput.length; // set cursor to end of entry
+    private _cursorAtLeftEdge(): boolean {
+        const totalchars = this._cursor + this._prompt.length;
+        return (totalchars % DSKernel.terminal.cols == 0);
     }
 
-    private _delFromCursor(): void {
-        const stdout = this._shell.stdout;
-
-        this._userinput = this._userinput.slice(0, this._cursor) + this._userinput.slice(this._cursor + 1);
-        stdout.write("\x1b[s"); // Save cursor position
-        stdout.write("\x1b[K"); // Clear to EoL
-        stdout.write(this._userinput.slice(this._cursor));
-        stdout.write("\x1b[u"); // Restore cursor position
+    private _cursorAtRightEdge(): boolean {
+        const totalchars = this._cursor + this._prompt.length;
+        return ((totalchars + 1) % DSKernel.terminal.cols == 0)
     }
 
-    private _processInput(data: string): boolean {
+    private _cursorLeft(amount: number) {
+        if (amount < 0) {
+            throw new DSShellError("Attempt to move negative positions left");
+        }
+        for (let _ = 0; _ < amount; _++) {
+            if (this._cursorAtLeftEdge()) {
+                this._shell.stdout.write("\x1b[F\x1b[200000C") //Move cursor up one row and then to the rightmost column
+            }
+            else {
+                this._shell.stdout.write(`\x1b[D`); //Move cursor one space left
+            }
+            this._cursor--
+        }
+    }
+
+    private _cursorRight(amount: number) {
+        if (amount < 0) {
+            throw new DSShellError("Attempt to move negative positions right");
+        }
+        for (let _ = 0; _ < amount; _++) {
+            if (this._cursorAtRightEdge()) {
+                this._shell.stdout.write("\x1b[E") //Move the cursor down one row and to the leftmost column
+            }
+            else {
+                this._shell.stdout.write(`\x1b[C`); //Move the cursor one space right
+            }
+            this._cursor++
+        }
+    }
+
+    private _updateUserInput(newUserInput: string) {
+        const stdout = this._shell.stdout;
+        const startcursorpos = this._cursor;
+
+        this._cursorLeft(startcursorpos); //Move cursor to start of line
+        stdout.write("\x1b[J"); // Clear to EoF
+        stdout.write(newUserInput); // write the entry
+        this._cursor += newUserInput.length //Update internal cursor position
+
+        //The xterm terminal handles cursor position differently at end of line - standardize it to avoid weird edge cases
+        if (this._cursorAtLeftEdge() && (newUserInput.length + this._prompt.length) % DSKernel.terminal.cols == 0) {
+            stdout.write('\n');
+        }
+
+        const cursormovement = Math.min(newUserInput.length, this._userinput.length - startcursorpos) //Move cursor to same relative position
+        if (cursormovement > 0) {
+            this._cursorLeft(cursormovement);
+        }
+        else if (cursormovement < 0) {
+            this._cursorRight(-cursormovement);
+        }
+
+        this._userinput = newUserInput;
+    }
+
+
+    private _delAtCursor(): void {
+        let newuserinput = this._userinput.slice(0, this._cursor - 1) + this._userinput.slice(this._cursor);
+        this._updateUserInput(newuserinput);
+    }
+
+
+    private _getCwdCompletions(): string[] {
+        const tokens = splitRespectingQuotes(this._userinput);
+        const options: string[] = [];
+        const matchtext = tokens[tokens.length - 1];
+
+        for (let i = 0; i < this._shell.cwd.filelist.length; i++) {
+            let currentfilename = this._shell.cwd.filelist[i].name
+            if (currentfilename.slice(0, matchtext.length) == matchtext &&
+                currentfilename[0] != '.') {
+                options.push(currentfilename);
+            }
+        }
+
+        return options
+    }
+
+    private _completeUserInput(completion: string) {
+        const tokens = splitRespectingQuotes(this._userinput);
+        const lengthtoappend = tokens[tokens.length - 1].length
+        const appendtext = completion.slice(lengthtoappend);
+
+        let newuserinput = this._userinput + appendtext;
+        this._updateUserInput(newuserinput); //Not just stdout.write to avoid issues when cursor isn't at the end of the line
+
+    }
+
+    private _displayAutocompleteOptions(options: string[]) {
+        this._shell.stdout.write('\n' + options.toString() + '\n\n');
+        this._shell.stdout.write(this._prompt);
+        this._shell.stdout.write(this._userinput);
+
+    }
+
+    private _processInput(data: string): boolean {        
+        //Handle [tab] and autocomplete
+        if (data.charAt(0) == '\t') {
+            this._shell.stdout.write("\x07");
+            if (splitRespectingQuotes(this._userinput).length <= 1) { //autocomplete for commands not implemented yet, so require that at least one argument has been started
+                return false;
+            }
+            const autocompleteOptions = this._getCwdCompletions();
+
+            if (autocompleteOptions.length == 0) {
+                return false;
+            }
+            else if (autocompleteOptions.length == 1) {
+                this._completeUserInput(autocompleteOptions[0]);
+            }
+            else if (!this._waitingForDoubleTab) {
+                this._waitingForDoubleTab = true;
+            }
+            else {
+                this._displayAutocompleteOptions(autocompleteOptions);
+            }
+            return false;
+        }
+        else { 
+            this._waitingForDoubleTab = false;
+        }
+
         // handle DEL
         if (data.charAt(0) == "\x7f") {
             if (this._cursor > 0) {
-                this._cursor--;
-                this._shell.stdout.write("\x1b[D");
-                this._delFromCursor();
+                this._delAtCursor();
             }
             return false;
         }
@@ -355,34 +466,33 @@ class CommandLinePrompt {
             switch (data.slice(1)) {
                 case "[D": // Left
                     if (this._cursor > 0) {
-                        this._cursor--;
-                        this._shell.stdout.write(data);
+                        this._cursorLeft(1);
                     }
                     break;
+
                 case "[C": // Right
                     if (this._cursor < this._userinput.length) {
-                        this._cursor++;
-                        this._shell.stdout.write(data);
+                        this._cursorRight(1);
                     }
                     break;
                 case "[3~": // Delete
-                    if (this._cursor < this._userinput.length)
-                        this._delFromCursor();
+                    if (this._cursor < this._userinput.length) {
+                        this._cursorRight(1);
+                        this._delAtCursor();
+                    }
                     break;
                 case "[A": // Up
                     if (this._historyIdx > 0) {
                         this._shell.history[this._historyIdx] = this._userinput;
                         this._historyIdx--;
-                        this._userinput = this._shell.history[this._historyIdx];
-                        this._rewriteUserInput();
+                        this._updateUserInput(this._shell.history[this._historyIdx]);
                     }
                     break;
                 case "[B": // Down
                     if (this._historyIdx < this._shell.history.length - 1) {
                         this._shell.history[this._historyIdx] = this._userinput;
                         this._historyIdx++;
-                        this._userinput = this._shell.history[this._historyIdx];
-                        this._rewriteUserInput();
+                        this._updateUserInput(this._shell.history[this._historyIdx]);
                     }
                     break;
                 default:
@@ -390,23 +500,19 @@ class CommandLinePrompt {
             }
             return false;
         }
-        // Check for [tab]
-        if (data == "\t") {
-            this._shell.stdout.write("\x07");
-            return false;
-        }
+
         // If LF we're done
         if (data == "\r") {
+            this._cursorRight(this._userinput.length - this._cursor);
             this._shell.stdout.write("\n");
             return true;
         }
-        // ok add the character at current cursor location and update cursor location
-        this._userinput = this._userinput.slice(0, this._cursor)
+        // ok add the character at current cursor location and update the text
+        let newuserinput = this._userinput.slice(0, this._cursor)
             + data
             + this._userinput.slice(this._cursor);
-        this._cursor++;
 
-        this._shell.stdout.write(data);
+        this._updateUserInput(newuserinput);
         return false;
     }
 }
