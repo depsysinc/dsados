@@ -514,11 +514,8 @@ class CommandLinePrompt {
         }
 
         if (data == '') { //CTRL-C
-            const selection = DSKernel.terminal.selection;
-            if (selection) {
-                navigator.clipboard.writeText(selection);
-                return false;
-            }
+            return false;
+            
         }
 
         // If LF we're done
