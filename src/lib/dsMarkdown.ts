@@ -1,4 +1,4 @@
-import { DSIDirectory, DSInode } from "../dsFileSystem";
+import { DSIDirectory, DSIFileError, DSInode } from "../dsFileSystem";
 import { DSKernel } from "../dsKernel";
 import { DSSprite, DSTexture } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
@@ -771,20 +771,21 @@ export class DSMDDoc {
                         continue;
                     // Do the img load
                     block.img = await load_image(inode.url);
-                    this.isgif(inode).then(
-                    (isit) => {
-                    if (isit) {
+                    let isgif = await this.isgif(inode)
+                    if (isgif) {
                         console.log('special)');
-                        this.get_images(inode.url).then((images) =>
-                        {console.log(images);block.sprite = DSKernel.terminal.newSprite(images)});
+                        const images = await this.getGifFrames(inode.url)
 
-                    } 
+                        console.log(images);
+                        block.sprite = DSKernel.terminal.newSprite(images);
+
+                    }
                     else {
                         console.log('normal');
-                        block.sprite = DSKernel.terminal.newSprite([{image:block.img, width:block.img.width, height:block.img.height}])
+                        block.sprite = DSKernel.terminal.newSprite([{ image: block.img, width: block.img.width, height: block.img.height }])
 
-                    };})
-                   
+                    }
+
 
                 } catch (e) {
                 }
@@ -794,29 +795,31 @@ export class DSMDDoc {
 
 
     async isgif(inode: DSInode): Promise<boolean> {
-        return inode.filetype().then((filetype) => {console.log(filetype);return filetype == 'image/gif'})
+        return inode.filetype().then((filetype) => { console.log(filetype); return filetype == 'image/gif' })
     }
 
 
-    async get_images(url: string): Promise<DSTexture[]> {
+    async getGifFrames(url: string): Promise<DSTexture[]> {
         const frames: DSTexture[] = [];
-        fetch(url).then(
-            (response) => {
-                console.log(isSecureContext);
-                let imagedecoder = new ImageDecoder({ data: response.body, type: "image/gif" })
-                let k = 0
-                console.log(imagedecoder);
-                while (!imagedecoder.complete) {
-                    imagedecoder.decode({ frameIndex: k }).then((result) => {
-                        (frames.push({ image: result.image, width: result.image.codedWidth, height: result.image.codedHeight }))
-                    })
-                    console.log(k);
-                    k++;
-                }
-                return frames;
+        let response = await fetch(url)
+
+        const imagedecoder = new ImageDecoder({ data: response.body, type: "image/gif" })
+        let k = 0
+        while (true) {
+            try {
+                let result = await imagedecoder.decode({ frameIndex: k })
+                frames.push({ image: result.image, width: result.image.codedWidth, height: result.image.codedHeight })
+
+                k++;
             }
-        )
-        return frames;
+            catch (e) {
+                if (e instanceof RangeError) { //Thrown when reaching end of file 
+                    return frames;
+                }
+            }
+        }
+
+
     }
 
     render(width: number, cellwidth: number, cellheight: number) {

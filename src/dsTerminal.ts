@@ -147,16 +147,15 @@ export class DSTerminal {
                 const sprite = this._sprites[i];
                 if (sprite.enabled)
                     this._spriterenderer.render(sprite.texture.glid, sprite.i, sprite.x, sprite.y);
-     //           const update = () => {
-       //             requestAnimationFrame(update);
-         //           const now = performance.now();
-           //         console.log('updating');
-             //       sprite.i = (now/200) % sprite.texture.length;
-               //     this.refresh();
-//                }
-  //              if (sprite.texture.length > 1) {
-    //                requestAnimationFrame(update);
-      //          }
+                const update = () => {
+                    requestAnimationFrame(update);
+                    const now = performance.now();
+                    sprite.i = (now/200) % sprite.texture.length;
+                    this.refresh();
+                }
+                if (sprite.texture.length > 1) {
+                    requestAnimationFrame(update);
+                }
                 
             }
             this._scanlinerenderer.render(texture);
@@ -406,7 +405,7 @@ export class DSTerminal {
             i: 0,
             enabled: true
         };
-        console.log(images);
+        console.log(sprite);
         this._sprites.push(sprite);
         return sprite;
     }
