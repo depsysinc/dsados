@@ -33,7 +33,7 @@ export class PRTestAnim extends DSProcess {
                 images.push(img);
             }
         };
-        let texturearray: DSTexture[]; 
+        let texturearray: DSTexture[] = [];
         images.forEach((i)=>{texturearray.push({image:i,width:i.width,height:i.height})})
         // Create the sprite
         const sprite = DSKernel.terminal.newSprite(texturearray);
