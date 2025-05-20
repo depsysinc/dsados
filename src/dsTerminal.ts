@@ -12,6 +12,7 @@ import { DSVertHorizRenderer } from "./renderer/dsVertHorizRenderer";
 import { DSSpriteRenderer } from "./renderer/dsSpriteRenderer";
 
 import { TextureArray, createTexture, deleteTexture } from './renderer/renderUtils';
+import { sleep } from './lib/dsLib';
 
 function isMobileDevice(): boolean {
     const userAgent = navigator.userAgent;
@@ -19,11 +20,6 @@ function isMobileDevice(): boolean {
     // Check for Android or iOS
     return /android/i.test(userAgent) || /iPad|iPhone|iPod/.test(userAgent);
 }
-
-async function timeout(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 
 export type DSSprite = {
     texture: TextureArray,
@@ -406,14 +402,14 @@ export class DSTerminal {
             x: 0,
             y: 0,
             i: 0,
-            enabled: true
+            enabled: false
         };
         this._sprites.push(sprite);
 
 
         const update = async () => {
             sprite.i = (sprite.i + 1) % sprite.texture.length;
-            await timeout(sprite.framedurations[sprite.i] / 1000);
+            await sleep(sprite.framedurations[sprite.i] / 1000);
             requestAnimationFrame(update)
             this.refresh();
         }

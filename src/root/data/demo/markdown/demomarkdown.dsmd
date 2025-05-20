@@ -6,7 +6,7 @@ This is text to the right of the image less than the height of the image
 This demonstrates that handling of overflow wrapping works, where sufficient
 text exists that wrapping continues past the end of the image.
 
-![demo gif](/data/test/image/gif.gif) A gif
+![demo gif](/data/test/image/worldturning.gif) A gif
 
 ![demo alt text](/an/invalid/image/url)
 
