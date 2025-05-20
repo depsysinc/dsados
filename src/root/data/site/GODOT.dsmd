@@ -1,8 +1,5 @@
 ![godot](/data/site/181x64_godot.png)(https://godotengine.org/)
 
-![gif](/data/test/image/gif.gif)
-
-
 Our client side game interfaces are built with the exceptional opensource [GODOT Game Engine](https://godotengine.org/).
 
 While the server side gameworld simulation, persistance, and networking layer are implemented in our custom
