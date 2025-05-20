@@ -22,6 +22,7 @@ function isMobileDevice(): boolean {
 
 export type DSSprite = {
     texture: TextureArray,
+    framedurations: number[],
     x: number,
     y: number,
     i: number,
@@ -32,6 +33,7 @@ export type DSTexture = {
     image: HTMLImageElement | VideoFrame;
     width: number;
     height: number;
+    duration?: number;
 }
 
 
@@ -147,15 +149,6 @@ export class DSTerminal {
                 const sprite = this._sprites[i];
                 if (sprite.enabled)
                     this._spriterenderer.render(sprite.texture.glid, sprite.i, sprite.x, sprite.y);
-                const update = () => {
-                    requestAnimationFrame(update);
-                    const now = performance.now();
-                    sprite.i = (now/200) % sprite.texture.length;
-                    this.refresh();
-                }
-                if (sprite.texture.length > 1) {
-                    requestAnimationFrame(update);
-                }
                 
             }
             this._scanlinerenderer.render(texture);
@@ -398,8 +391,12 @@ export class DSTerminal {
 
     public newSprite(images: DSTexture[]): DSSprite {
         console.log(images);
+        let durations:number[] = []
+        if (images.length > 1) {
+        images.forEach((x)=>{durations.push(x.duration)})}
         const sprite: DSSprite = {
             texture: createTexture(this._gl, images),
+            framedurations:durations,
             x: 0,
             y: 0,
             i: 0,
@@ -407,6 +404,32 @@ export class DSTerminal {
         };
         console.log(sprite);
         this._sprites.push(sprite);
+        async function timeout(ms:number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+        const update = async () => {
+                    //const now = performance.now();
+                    //sprite.i = (now/100) % sprite.texture.length;
+                    console.log(sprite.framedurations[sprite.i]);
+                    sprite.i = (sprite.i+1) % sprite.texture.length;
+                    let aaa = await timeout(sprite.framedurations[sprite.i]/1000);
+                    console.log(aaa);
+                    requestAnimationFrame(update)
+
+                    this.refresh();
+
+                    //setTimeout(() => {
+                    //    requestAnimationFrame(update)
+
+//                    },sprite.framedurations[sprite.i]);
+
+                    
+                }
+        if (sprite.texture.length > 1) {
+                    requestAnimationFrame(update);
+                }
+
         return sprite;
     }
 

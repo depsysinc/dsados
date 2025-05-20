@@ -808,7 +808,7 @@ export class DSMDDoc {
         while (true) {
             try {
                 let result = await imagedecoder.decode({ frameIndex: k })
-                frames.push({ image: result.image, width: result.image.codedWidth, height: result.image.codedHeight })
+                frames.push({ image: result.image, width: result.image.codedWidth, height: result.image.codedHeight , duration:result.image.duration})
 
                 k++;
             }
