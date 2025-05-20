@@ -3,7 +3,7 @@ import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSPointerEvent } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
 import { gotoxy, reset, setattr, textattrs } from "../lib/dsCurses";
-import { load_image } from "../lib/dsLib";
+import { load_image } from "../lib/dsImg";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
 export class PRDemoMouseTouch extends DSProcess {

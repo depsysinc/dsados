@@ -1,6 +1,6 @@
 import { Terminal } from "@xterm/xterm";
 import { WebglAddon } from '@xterm/addon-webgl';
-import { DSTexture } from "../dsTerminal";
+import { DSTexture } from "../lib/dsImg";
 
 export function throwIfFalsy<T>(value: T | undefined | null): T {
     if (!value) {

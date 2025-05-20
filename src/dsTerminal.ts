@@ -13,6 +13,7 @@ import { DSSpriteRenderer } from "./renderer/dsSpriteRenderer";
 
 import { TextureArray, createTexture, deleteTexture } from './renderer/renderUtils';
 import { sleep } from './lib/dsLib';
+import { DSTexture } from './lib/dsImg';
 
 function isMobileDevice(): boolean {
     const userAgent = navigator.userAgent;
@@ -29,14 +30,6 @@ export type DSSprite = {
     i: number,
     enabled: boolean
 }
-
-export type DSTexture = {
-    image: HTMLImageElement | VideoFrame;
-    width: number;
-    height: number;
-    duration?: number;
-}
-
 
 export type DSPointerEvent = {
     type: string,

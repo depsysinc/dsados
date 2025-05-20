@@ -1,8 +1,7 @@
 import { DSKernel } from "../dsKernel";
 import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSTexture } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
-import { load_image } from "../lib/dsLib";
+import { DSTexture, load_image } from "../lib/dsImg";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
 export class PRTestAnim extends DSProcess {

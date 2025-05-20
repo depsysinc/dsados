@@ -1,9 +1,9 @@
 import { DSIDirectory, DSIFileError, DSInode } from "../dsFileSystem";
 import { DSKernel } from "../dsKernel";
-import { DSSprite, DSTexture } from "../dsTerminal";
+import { DSSprite } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
 import { setattr, textattrs } from "./dsCurses";
-import { load_image } from "./dsLib";
+import { DSTexture, get_image_textures, getGifFrames, isgif, load_image } from "./dsImg";
 
 // TOKENS
 export abstract class DSMDToken {
@@ -299,7 +299,7 @@ export class ImageBlock extends DSMDBlock {
     linkurl: string = undefined;
     linktoken: LinkToken = undefined;
 
-    img: HTMLImageElement = undefined;
+    img: DSTexture = undefined;
     imgcellwidth: number = undefined;
     imgcellheight: number = undefined;
     sprite: DSSprite = undefined;
@@ -770,15 +770,9 @@ export class DSMDDoc {
                     if (!(inode instanceof DSIWebFile))
                         continue;
                     // Do the img load
-                    block.img = await load_image(inode.url);
-                    let isgif = await this.isgif(inode)
-                    if (isgif) {
-                        const images = await this.getGifFrames(inode.url)
-                        block.sprite = DSKernel.terminal.newSprite(images);
-                    }
-                    else {
-                        block.sprite = DSKernel.terminal.newSprite([{ image: block.img, width: block.img.width, height: block.img.height }])
-                    }
+                    const textures = await get_image_textures(inode.url);
+                    block.img = textures[0];
+                    block.sprite = DSKernel.terminal.newSprite(textures);
 
 
                 } catch (e) {
@@ -788,40 +782,6 @@ export class DSMDDoc {
     }
 
 
-    async isgif(inode: DSInode): Promise<boolean> {
-        return inode.filetype().then(
-            (filetype) => { 
-            return filetype == 'image/gif' 
-        })
-    }
-
-
-    async getGifFrames(url: string): Promise<DSTexture[]> {
-        const frames: DSTexture[] = [];
-        let response = await fetch(url)
-
-        const imagedecoder = new ImageDecoder({ data: response.body, type: "image/gif" })
-        let k = 0
-        while (true) {
-            try {
-                let result = await imagedecoder.decode({ frameIndex: k })
-                frames.push({
-                    image: result.image,
-                    width: result.image.codedWidth, 
-                    height: result.image.codedHeight, 
-                    duration: result.image.duration
-                })
-                k++;
-            }
-            catch (e) {
-                if (e instanceof RangeError) { //Thrown when reaching end of file 
-                    return frames;
-                }
-            }
-        }
-
-
-    }
 
     render(width: number, cellwidth: number, cellheight: number) {
         this.cellwidth = cellwidth;

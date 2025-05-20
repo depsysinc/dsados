@@ -1,10 +1,10 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
 import { DSOptionParser } from "../lib/dsOptionParser";
-import { load_image } from "../lib/dsLib";
 import { DSKernel } from "../dsKernel";
 import { DSSprite } from "../dsTerminal";
 import { DSInode } from "../dsFileSystem";
+import { load_image } from "../lib/dsImg";
 
 export class PRImgview extends DSProcess {
 
