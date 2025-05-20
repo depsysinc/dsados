@@ -20,9 +20,14 @@ function isMobileDevice(): boolean {
     return /android/i.test(userAgent) || /iPad|iPhone|iPod/.test(userAgent);
 }
 
+async function timeout(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
 export type DSSprite = {
     texture: TextureArray,
-    framedurations: number[],
+    framedurations?: number[],
     x: number,
     y: number,
     i: number,
@@ -149,7 +154,7 @@ export class DSTerminal {
                 const sprite = this._sprites[i];
                 if (sprite.enabled)
                     this._spriterenderer.render(sprite.texture.glid, sprite.i, sprite.x, sprite.y);
-                
+
             }
             this._scanlinerenderer.render(texture);
             this._bloomrenderer.render(this._scanlinerenderer.texture);
@@ -187,7 +192,7 @@ export class DSTerminal {
 
         // hook up text io
         t.onData((data): void => { this.outputstream.write(data); });
-        
+
         t.onScroll(() => this.scrollSprites(this._sprites, -1))
 
         // hook up mouse
@@ -219,7 +224,7 @@ export class DSTerminal {
         requestAnimationFrame(() => { this._baudFrame() });
 
         t.focus();
-        
+
         this.setCursor("default");
     }
 
@@ -262,10 +267,10 @@ export class DSTerminal {
             button: e.button
         };
         pe.col = Math.ceil(pe.x / this.cellwidth);
-        pe.row = Math.ceil(pe.y / this.cellheight); 
-        if (pe.y == 0) 
+        pe.row = Math.ceil(pe.y / this.cellheight);
+        if (pe.y == 0)
             pe.row = 1; // If the mouse is at the exact top of the page (pe.y = 0), the smallest allowed row is 1, not 0
-        
+
         DSKernel.handlePointer(pe);
     }
 
@@ -389,46 +394,33 @@ export class DSTerminal {
         this._terminal.refresh(0, this._terminal.rows - 1);
     }
 
-    public newSprite(images: DSTexture[]): DSSprite {
-        console.log(images);
-        let durations:number[] = []
-        if (images.length > 1) {
-        images.forEach((x)=>{durations.push(x.duration)})}
+    public newSprite(textures: DSTexture[]): DSSprite {
+        let durations: number[] = []
+        if (textures.length > 1) {
+            textures.forEach((x) => { durations.push(x.duration) })
+        }
+
         const sprite: DSSprite = {
-            texture: createTexture(this._gl, images),
-            framedurations:durations,
+            texture: createTexture(this._gl, textures),
+            framedurations: durations,
             x: 0,
             y: 0,
             i: 0,
             enabled: true
         };
-        console.log(sprite);
         this._sprites.push(sprite);
-        async function timeout(ms:number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+
 
         const update = async () => {
-                    //const now = performance.now();
-                    //sprite.i = (now/100) % sprite.texture.length;
-                    console.log(sprite.framedurations[sprite.i]);
-                    sprite.i = (sprite.i+1) % sprite.texture.length;
-                    let aaa = await timeout(sprite.framedurations[sprite.i]/1000);
-                    console.log(aaa);
-                    requestAnimationFrame(update)
+            sprite.i = (sprite.i + 1) % sprite.texture.length;
+            await timeout(sprite.framedurations[sprite.i] / 1000);
+            requestAnimationFrame(update)
+            this.refresh();
+        }
 
-                    this.refresh();
+        if (sprite.texture.length > 1)
+            requestAnimationFrame(update);
 
-                    //setTimeout(() => {
-                    //    requestAnimationFrame(update)
-
-//                    },sprite.framedurations[sprite.i]);
-
-                    
-                }
-        if (sprite.texture.length > 1) {
-                    requestAnimationFrame(update);
-                }
 
         return sprite;
     }
@@ -440,7 +432,7 @@ export class DSTerminal {
         this._sprites = [];
     }
 
-    public scrollSprites(sprites: DSSprite[], amount:number) {
+    public scrollSprites(sprites: DSSprite[], amount: number) {
         sprites.forEach(element => {
             element.y += amount * this.cellheight;
         });
@@ -451,7 +443,7 @@ export class DSTerminal {
     }
 
     getRow(row: number) {
-        return this._terminal.buffer.active.getLine(row-1).translateToString();
+        return this._terminal.buffer.active.getLine(row - 1).translateToString();
     }
 }
 

@@ -773,17 +773,11 @@ export class DSMDDoc {
                     block.img = await load_image(inode.url);
                     let isgif = await this.isgif(inode)
                     if (isgif) {
-                        console.log('special)');
                         const images = await this.getGifFrames(inode.url)
-
-                        console.log(images);
                         block.sprite = DSKernel.terminal.newSprite(images);
-
                     }
                     else {
-                        console.log('normal');
                         block.sprite = DSKernel.terminal.newSprite([{ image: block.img, width: block.img.width, height: block.img.height }])
-
                     }
 
 
@@ -795,7 +789,10 @@ export class DSMDDoc {
 
 
     async isgif(inode: DSInode): Promise<boolean> {
-        return inode.filetype().then((filetype) => { console.log(filetype); return filetype == 'image/gif' })
+        return inode.filetype().then(
+            (filetype) => { 
+            return filetype == 'image/gif' 
+        })
     }
 
 
@@ -808,8 +805,12 @@ export class DSMDDoc {
         while (true) {
             try {
                 let result = await imagedecoder.decode({ frameIndex: k })
-                frames.push({ image: result.image, width: result.image.codedWidth, height: result.image.codedHeight , duration:result.image.duration})
-
+                frames.push({
+                    image: result.image,
+                    width: result.image.codedWidth, 
+                    height: result.image.codedHeight, 
+                    duration: result.image.duration
+                })
                 k++;
             }
             catch (e) {
