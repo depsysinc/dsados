@@ -1,9 +1,9 @@
-import { DSIDirectory } from "../dsFileSystem";
+import { DSIDirectory, DSIFileError, DSInode } from "../dsFileSystem";
 import { DSKernel } from "../dsKernel";
 import { DSSprite } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
 import { setattr, textattrs } from "./dsCurses";
-import { load_image } from "./dsLib";
+import { DSTexture, get_image_textures, getGifFrames, isgif, load_image } from "./dsImg";
 
 // TOKENS
 export abstract class DSMDToken {
@@ -299,7 +299,7 @@ export class ImageBlock extends DSMDBlock {
     linkurl: string = undefined;
     linktoken: LinkToken = undefined;
 
-    img: HTMLImageElement = undefined;
+    img: DSTexture = undefined;
     imgcellwidth: number = undefined;
     imgcellheight: number = undefined;
     sprite: DSSprite = undefined;
@@ -325,9 +325,9 @@ export class ImageBlock extends DSMDBlock {
     }
 
     addlinktokens(): void {
-        this.linktoken = new LinkToken('',this.linkurl)
+        this.linktoken = new LinkToken('', this.linkurl)
         this.tokens.push(this.linktoken);
-        this.tokens.push(new LinkToken('',this.linkurl));
+        this.tokens.push(new LinkToken('', this.linkurl));
 
     }
 
@@ -770,14 +770,18 @@ export class DSMDDoc {
                     if (!(inode instanceof DSIWebFile))
                         continue;
                     // Do the img load
-                    block.img = await load_image(inode.url);
-                    // Create the sprite
-                    block.sprite = DSKernel.terminal.newSprite([block.img]);
+                    const textures = await get_image_textures(inode.url);
+                    block.img = textures[0];
+                    block.sprite = DSKernel.terminal.newSprite(textures);
+
+
                 } catch (e) {
                 }
             }
         };
     }
+
+
 
     render(width: number, cellwidth: number, cellheight: number) {
         this.cellwidth = cellwidth;
@@ -819,10 +823,10 @@ export class DSMDDoc {
                     // the closing token 
                     if (!(((rowidx == startidx) &&
                         (col < opentoken.startlen + 1)) ||
-                     ((rowidx == endidx) &&
-                        (col > closetoken.startlen))))
-                    // Return the token
-                    return opentoken;
+                        ((rowidx == endidx) &&
+                            (col > closetoken.startlen))))
+                        // Return the token
+                        return opentoken;
                 }
             }
         }
