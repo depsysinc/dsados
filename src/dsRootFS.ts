@@ -66,6 +66,7 @@ import root_data_site_index_dsmd from "./root/data/site/index.dsmd";
 import root_data_site_tech_dsmd from "./root/data/site/tech.dsmd";
 import root_data_test_bazisa_txt from "./root/data/test/bazisa.txt";
 import root_data_test_image_gorzocrop_png from "./root/data/test/image/gorzocrop.png";
+import root_data_test_image_worldturning_gif from "./root/data/test/image/worldturning.gif";
 import root_etc_autoexec_dssh from "./root/etc/autoexec.dssh";
 import root_etc_dsos_conf from "./root/etc/dsos.conf";
 
@@ -446,6 +447,11 @@ export function buildrootfs(): DSFileSystem {
     // Creating root/data/test/image/gorzocrop.png
     curfile = new DSIWebFile(fs, root_data_test_image_gorzocrop_png);
     curdir.addfile("gorzocrop.png", curfile);
+    
+    
+    // Creating root/data/test/image/worldturning.gif
+    curfile = new DSIWebFile(fs, root_data_test_image_worldturning_gif);
+    curdir.addfile("worldturning.gif", curfile);
     
     
     curdir.chmod(DSFilePerms.rx());

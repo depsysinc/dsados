@@ -3,7 +3,7 @@ import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSPointerEvent } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
 import { gotoxy, reset, setattr, textattrs } from "../lib/dsCurses";
-import { load_image } from "../lib/dsLib";
+import { load_image } from "../lib/dsImg";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
 export class PRDemoMouseTouch extends DSProcess {
@@ -27,7 +27,7 @@ export class PRDemoMouseTouch extends DSProcess {
         const img = await load_image(webnode.url);
 
         // Create the sprite
-        this.sprite = DSKernel.terminal.newSprite([img]);
+        this.sprite = DSKernel.terminal.newSprite([{image:img,height:img.height,width:img.width}]);
         w(reset());
 
         // Draw border
