@@ -12,6 +12,8 @@ import { DSVertHorizRenderer } from "./renderer/dsVertHorizRenderer";
 import { DSSpriteRenderer } from "./renderer/dsSpriteRenderer";
 
 import { TextureArray, createTexture, deleteTexture } from './renderer/renderUtils';
+import { sleep } from './lib/dsLib';
+import { DSTexture } from './lib/dsImg';
 
 function isMobileDevice(): boolean {
     const userAgent = navigator.userAgent;
@@ -22,6 +24,7 @@ function isMobileDevice(): boolean {
 
 export type DSSprite = {
     texture: TextureArray,
+    framedurations?: number[],
     x: number,
     y: number,
     i: number,
@@ -141,6 +144,7 @@ export class DSTerminal {
                 const sprite = this._sprites[i];
                 if (sprite.enabled)
                     this._spriterenderer.render(sprite.texture.glid, sprite.i, sprite.x, sprite.y);
+
             }
             this._scanlinerenderer.render(texture);
             this._bloomrenderer.render(this._scanlinerenderer.texture);
@@ -177,9 +181,7 @@ export class DSTerminal {
         window.addEventListener('resize', () => { this.handleResize() });
 
         // hook up text io
-        t.onData((data): void => {
-            this.outputstream.write(data);
-        });
+        t.onData((data): void => { this.outputstream.write(data); });
 
         t.onScroll(() => this.scrollSprites(this._sprites, -1))
 
@@ -395,15 +397,34 @@ export class DSTerminal {
         this._terminal.refresh(0, this._terminal.rows - 1);
     }
 
-    public newSprite(images: HTMLImageElement[]): DSSprite {
+    public newSprite(textures: DSTexture[]): DSSprite {
+        let durations: number[] = []
+        if (textures.length > 1) {
+            textures.forEach((x) => { durations.push(x.duration) })
+        }
+
         const sprite: DSSprite = {
-            texture: createTexture(this._gl, images),
+            texture: createTexture(this._gl, textures),
+            framedurations: durations,
             x: 0,
             y: 0,
             i: 0,
             enabled: false
         };
         this._sprites.push(sprite);
+
+
+        const update = async () => {
+            sprite.i = (sprite.i + 1) % sprite.texture.length;
+            await sleep(sprite.framedurations[sprite.i] / 1000);
+            requestAnimationFrame(update)
+            this.refresh();
+        }
+
+        if (sprite.texture.length > 1)
+            requestAnimationFrame(update);
+
+
         return sprite;
     }
 
