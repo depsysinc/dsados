@@ -503,7 +503,7 @@ class CommandLinePrompt {
 
         if (data == '') { //CTRL-V
             navigator.clipboard.readText().then((clipboardcontents) => {
-                let text = clipboardcontents.replace('\r','\n');
+                let text = clipboardcontents.replace('\r','\n'); //Clipboard stores linebreaks as \r, when \n should be displayed
                 let newuserinput = this._userinput.slice(0, this._cursor) +
                     text +
                     this._userinput.slice(this._cursor);
@@ -513,9 +513,8 @@ class CommandLinePrompt {
             return false;
         }
 
-        if (data == '') { //CTRL-C
+        if (data == '') { //CTRL-C; handled in DSTerminal but needs to be screened from the input
             return false;
-            
         }
 
         // If LF we're done
