@@ -82,6 +82,7 @@ export class DSTerminal {
     get width(): number { return this._width; }
     get height(): number { return this._height; }
 
+
     constructor(terminalContainer: HTMLDivElement) {
 
         const t = this._terminal = new Terminal(
@@ -194,6 +195,10 @@ export class DSTerminal {
         t.element.ontouchmove = (e) => { this._handleTouchEvents(e); }
         t.element.ontouchcancel = (e) => { this._handleTouchEvents(e); }
 
+
+        // Note - this is called after onData on every keypress, so the command is propagated before the selection is cleared
+        t.attachCustomKeyEventHandler((arg) => { this._checkKeypressForCopy(arg); return true });
+
         // Hook up browser actions
         window.onpopstate = (e) => { this._handleHistoryEvents(e); }
 
@@ -282,6 +287,15 @@ export class DSTerminal {
         pe.row = Math.ceil(pe.y / this.cellheight);
         DSKernel.handlePointer(pe);
     }
+
+    private _checkKeypressForCopy(e: KeyboardEvent) {
+        if (e.key == 'c' && e.ctrlKey) {
+            if (this.xterm.getSelection()) {
+                navigator.clipboard.writeText(this.xterm.getSelection());
+            }
+        }
+    }
+
 
     private async _handleInput() {
         while (true) {

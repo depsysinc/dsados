@@ -427,7 +427,7 @@ class CommandLinePrompt {
 
     }
 
-    private _processInput(data: string): boolean {        
+    private _processInput(data: string): boolean {
         //Handle [tab] and autocomplete
         if (data.charAt(0) == '\t') {
             this._shell.stdout.write("\x07");
@@ -450,7 +450,7 @@ class CommandLinePrompt {
             }
             return false;
         }
-        else { 
+        else {
             this._waitingForDoubleTab = false;
         }
 
@@ -498,6 +498,22 @@ class CommandLinePrompt {
                 default:
                     console.log(`unknown escape sequence ${data}`);
             }
+            return false;
+        }
+
+        if (data == '') { //CTRL-V
+            navigator.clipboard.readText().then((clipboardcontents) => {
+                let text = clipboardcontents.replace('\r','\n'); //Clipboard stores linebreaks as \r, when \n should be displayed
+                let newuserinput = this._userinput.slice(0, this._cursor) +
+                    text +
+                    this._userinput.slice(this._cursor);
+
+                this._updateUserInput(newuserinput);
+            })
+            return false;
+        }
+
+        if (data == '') { //CTRL-C; handled in DSTerminal but needs to be screened from the input
             return false;
         }
 
