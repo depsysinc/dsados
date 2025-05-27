@@ -1,6 +1,7 @@
 export class DSOptionParserError extends Error {
     constructor(message: string) {
         super(message);
+        Object.setPrototypeOf(this, DSOptionParserError.prototype); 
         this.name = this.constructor.name;
     }
 }
