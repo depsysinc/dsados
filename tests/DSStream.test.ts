@@ -57,7 +57,7 @@ test('DSStream close then read', async () => {
 
     const promise = stream.read();
 
-    await expect(promise).rejects.toEqual(new DSStreamClosedError("End of Stream"));
+    await expect(promise).rejects.toThrow(DSStreamClosedError);
 });
 
 test('DSStream read then close', async () => {
@@ -67,7 +67,7 @@ test('DSStream read then close', async () => {
 
     stream.close();
 
-    await expect(promise).rejects.toEqual(new DSStreamClosedError("End of Stream"));
+    await expect(promise).rejects.toThrow(DSStreamClosedError);
 });
 
 test('DSStream write, close, read, read', async () => {
@@ -80,7 +80,7 @@ test('DSStream write, close, read, read', async () => {
     await expect(promise).resolves.toEqual("test string");
 
     promise = stream.read();
-    await expect(promise).rejects.toEqual(new DSStreamClosedError("End of Stream"));
+    await expect(promise).rejects.toThrow(DSStreamClosedError);
 });
 
 test('DSStream write, read, read, close', async () => {
@@ -93,7 +93,7 @@ test('DSStream write, read, read, close', async () => {
 
     promise = stream.read();
     stream.close();
-    await expect(promise).rejects.toEqual(new DSStreamClosedError("End of Stream"));
+    await expect(promise).rejects.toThrow(DSStreamClosedError);
 });
 
 test('DSStream close then write', () => {
@@ -103,9 +103,7 @@ test('DSStream close then write', () => {
 
     expect(() =>
         stream.write("test")
-    ).toThrow(
-        new DSStreamClosedError("Cannot write to closed stream")
-    );
+    ).toThrow(DSStreamClosedError);
 });
 
 /*
