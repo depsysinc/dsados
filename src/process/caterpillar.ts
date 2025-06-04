@@ -8,18 +8,22 @@ import { DSOptionParser } from "../lib/dsOptionParser";
 
 export class PRCaterpillar extends DSProcess {
 
-    private framerefreshtime: number = 100;
+    private framerefreshtime: number = 300;
     private rock: string = 'Θ';
     private player: string = 'Δ'
     private centipedebody: string = '∥'; //alternatives: ◘
-    private centipedeleft: string = 'ʕ'; // <
-    private centipederight: string = 'ʔ'; // >
+    private centipedeheadleft: string = 'ʕ'; // <
+    private centipedeheadright: string = 'ʔ'; // >
+    private centipedetailleft: string = '(';
+    private centipedetailright: string = ')';
+
     private centipedelength: number = 10;
 
     private rockcount: number = 0.05 * DSKernel.terminal.rows * DSKernel.terminal.cols;
     private playerx: number = Math.floor(DSKernel.terminal.cols / 2)
 
     private framespassed: number = 0;
+    private exit: boolean = false;
 
     protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
@@ -37,66 +41,118 @@ export class PRCaterpillar extends DSProcess {
         }
 
         //Draw centipede
-        this.replacechar(0, 0, this.centipedebody);
+        this.replacechar(0, 0, this.centipedetailleft);
         for (let i = 1; i < this.centipedelength; i++) {
             this.stdout.write(this.centipedebody);
         }
-        this.stdout.write(this.centipederight);
+        this.stdout.write(this.centipedeheadright);
 
         //Player
         this.replacechar(DSKernel.terminal.rows - 1, this.playerx, this.player);
 
+        await sleep(1000);
         this.mainloop();
         await this.inputloop();
 
     }
 
     private async inputloop() {
-        while (true) {
-            console.log(this.stdin.closed);
+        while (!this.exit) {
             let char = await this.stdin.read();
             if (char == '\x1b[C' && this.playerx < DSKernel.terminal.cols - 1) {
-                this.replacechar(DSKernel.terminal.rows - 1, this.playerx, ' ');//Possible optimization - instead of replacechar, 
-                this.playerx++;                                                 //use control sequences manually
-                this.replacechar(DSKernel.terminal.rows - 1, this.playerx, this.player);
+                this.replacechar(DSKernel.terminal.rows - 1, this.playerx, ' ');
+                this.playerx++;
+                this.stdout.write(this.player);
                 this.stdout.write('\x1b[1000C');
             }
             if (char == '\x1b[D' && this.playerx > 0) {
-                this.replacechar(DSKernel.terminal.rows - 1, this.playerx, ' ');
+                this.replacechar(DSKernel.terminal.rows - 1, this.playerx - 1, this.player);
                 this.playerx--;
-                this.replacechar(DSKernel.terminal.rows - 1, this.playerx, this.player);
+                this.stdout.write(' ');
                 this.stdout.write('\x1b[1000C');
             }
             if (char == 'q') {
-                return;
+                this.exit = true;
             }
         }
 
     }
 
     private async mainloop() {
-        while (true) {
-            let a = (performance.now())
-            this.update();
-            //console.log(performance.now()-a)
+        while (!this.exit) {
+            let a = performance.now()
+            await this.update();
+            console.log('frame, time =', performance.now() - a)
             this.framespassed++;
             await sleep(this.framerefreshtime);
         }
 
     }
 
-    private update() {
+    private async update() {
+
         //this.replacechar(0, this.framespassed, this.centipedebody);
         //this.replacechar(0, this.framespassed + 1, this.centipederight);
-        for (let i = 0; i < DSKernel.terminal.rows; i++) {
-            this.centipedemove(this.getline(i));
+        this.stdout.write('\x1b[1000F');
+        for (let i = 0; i < DSKernel.terminal.rows-1; i++) {
+            await this.centipedemove(this.getline(i),this.getline(i+1));
+            this.stdout.write('\x1b[E')
         }
         this.stdout.write('\x1b[1000B\x1b[1000C')
     }
 
-    private centipedemove(line: string) {
+    private async centipedemove(line: string, nextline:string) {
         line = this.rock + line + this.rock;
+        nextline = this.rock+nextline+this.rock;
+        for (let i = 1; i < line.length - 1; i++) {
+            let tiles = line.slice(i - 1, i + 2);
+            if (tiles[1] == this.centipedeheadright) {
+                this.stdout.write(this.centipedebody);
+                if (tiles[2] == ' ') {
+                    this.stdout.write(this.centipedeheadright+'\x1b[D')
+                }
+                else if (nextline[i] == ' ') {
+                    this.stdout.write('\x1b[B\x1b[D'+this.centipedeheadleft+'\x1b[A')
+                }
+                continue;
+            }
+            if (tiles[1] == this.centipedeheadleft) {
+                this.stdout.write(this.centipedebody);
+                if (tiles[0] == ' ') {
+                    this.stdout.write('\x1b[D\x1b[D'+this.centipedeheadleft)
+                }
+                else if (nextline[i] == ' ') {
+                    this.stdout.write('\x1b[B\x1b[D'+this.centipedeheadright+'\x1b[A')
+                }
+                continue;
+            }
+            if (tiles[1] == this.centipedetailleft) {
+                this.stdout.write(' ');
+                if (tiles[2] == this.centipedebody) {
+                    this.stdout.write(this.centipedetailleft+'\x1b[D')
+
+                }
+                else if (nextline[i] == this.centipedebody) {
+                    this.stdout.write('\x1b[B\x1b[D'+this.centipedetailright+'\x1b[A')
+                }
+                continue
+            }
+             if (tiles[1] == this.centipedetailright) {
+                this.stdout.write(' ');
+                if (tiles[0] == this.centipedebody) {
+                    this.stdout.write('\x1b[D\x1b[D'+this.centipedetailright)
+                }
+                else if (nextline[i] == this.centipedebody) {
+                    this.stdout.write('\x1b[B\x1b[D'+this.centipedetailleft+'\x1b[A')
+                }
+                continue;
+            }
+            this.stdout.write('\x1b[C')
+
+        }
+        //await sleep(30);
     }
+
 
     private getline(index: number): string {
         return DSKernel.terminal.xterm.buffer.active.getLine(index).translateToString()
