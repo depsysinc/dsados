@@ -104,7 +104,7 @@ export class PRCaterpillar extends DSProcess {
     private async centipedemove(line: string, nextline:string) {
         line = this.rock + line + this.rock;
         nextline = this.rock+nextline+this.rock;
-        for (let i = 1; i < line.length - 1; i++) {
+        for (let i = 1; i < line.length-1; i++) {
             let tiles = line.slice(i - 1, i + 2);
             if (tiles[1] == this.centipedeheadright) {
                 this.stdout.write(this.centipedebody);
@@ -112,17 +112,27 @@ export class PRCaterpillar extends DSProcess {
                     this.stdout.write(this.centipedeheadright+'\x1b[D')
                 }
                 else if (nextline[i] == ' ') {
-                    this.stdout.write('\x1b[B\x1b[D'+this.centipedeheadleft+'\x1b[A')
+                    let leftacol = ''
+                    if (i < DSKernel.terminal.cols) {
+                     leftacol = '\x1b[D'
+                    }
+
+                    this.stdout.write('\x1b[B'+leftacol+this.centipedeheadleft+'\x1b[A')
                 }
                 continue;
             }
             if (tiles[1] == this.centipedeheadleft) {
                 this.stdout.write(this.centipedebody);
                 if (tiles[0] == ' ') {
-                    this.stdout.write('\x1b[D\x1b[D'+this.centipedeheadleft)
+                    let leftacol = ''
+                    if (i < DSKernel.terminal.cols) {
+                     leftacol = '\x1b[D'
+                    }
+
+                    this.stdout.write('\x1b[D'+leftacol+this.centipedeheadleft+'\x1b[C')
                 }
                 else if (nextline[i] == ' ') {
-                    this.stdout.write('\x1b[B\x1b[D'+this.centipedeheadright+'\x1b[A')
+                    this.stdout.write('\x1b[B'+'\x1b[D'+this.centipedeheadright+'\x1b[A')
                 }
                 continue;
             }
@@ -133,14 +143,24 @@ export class PRCaterpillar extends DSProcess {
 
                 }
                 else if (nextline[i] == this.centipedebody) {
-                    this.stdout.write('\x1b[B\x1b[D'+this.centipedetailright+'\x1b[A')
+                    let leftacol = ''
+                    if (i < DSKernel.terminal.cols) {
+                     leftacol = '\x1b[D'
+                    }
+                    this.stdout.write('\x1b[B'+leftacol+this.centipedetailright+'\x1b[A')
                 }
-                continue
+                continue;
             }
              if (tiles[1] == this.centipedetailright) {
                 this.stdout.write(' ');
                 if (tiles[0] == this.centipedebody) {
-                    this.stdout.write('\x1b[D\x1b[D'+this.centipedetailright)
+                    let leftacol = ''
+                    if (i < DSKernel.terminal.cols) {
+                     leftacol = '\x1b[D'
+                    }
+
+
+                    this.stdout.write('\x1b[D'+leftacol+this.centipedetailright)
                 }
                 else if (nextline[i] == this.centipedebody) {
                     this.stdout.write('\x1b[B\x1b[D'+this.centipedetailleft+'\x1b[A')
