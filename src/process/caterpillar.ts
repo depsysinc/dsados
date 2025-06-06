@@ -14,10 +14,12 @@ export class PRCaterpillar extends DSProcess {
 
     private framerefreshtime: number = 300;
     private rock: string = 'Θ';
-    private player: string = 'Δ'
-    private centipedebody: string = '∥'; //alternatives: ◘
+    private player: string = 'Δ';
+    private bullet: string = '.';
+    private centipedebodyleft: string = 'Ε'; //alternatives: ◘ Ǝ E
+    private centipedebodyright: string = 'Ǝ'; //∥
     private centipedeheadleft: string = 'ʕ'; // <
-    private centipedeheadright: string = 'ʔ'; // >
+    private centipedeheadright: string = 'ʔ'; // > »
     private centipedetailleft: string = '(';
     private centipedetailright: string = ')';
 
@@ -30,19 +32,27 @@ export class PRCaterpillar extends DSProcess {
     private propagatesthrough: Map<string, string> = new Map([
         [this.centipedeheadright, ' '],
         [this.centipedeheadleft, ' '],
-        [this.centipedetailleft, this.centipedebody],
-        [this.centipedetailright, this.centipedebody]
+        [this.centipedetailleft, this.centipedebodyright],
+        [this.centipedetailright, this.centipedebodyleft]
     ]);
 
     private inverses: Map<string, string> = new Map([
         [this.centipedeheadright, this.centipedeheadleft],
         [this.centipedeheadleft, this.centipedeheadright],
         [this.centipedetailleft, this.centipedetailright],
-        [this.centipedetailright, this.centipedetailleft],
-        [this.centipedebody, ' '],
-        [' ', this.centipedebody]
-
+        [this.centipedetailright, this.centipedetailleft]
+    ]);
+    private trails: Map<string, string> = new Map([
+        [this.centipedeheadright, this.centipedebodyright],
+        [this.centipedeheadleft, this.centipedebodyleft],
+        [this.centipedetailleft, ' '],
+        [this.centipedetailright, ' ']
     ])
+
+
+
+
+
 
     private centipedelength: number = 30;
 
@@ -70,7 +80,7 @@ export class PRCaterpillar extends DSProcess {
         //Draw centipede
         this.replacechar(0, 0, this.centipedetailleft);
         for (let i = 1; i < this.centipedelength; i++) {
-            this.stdout.write(this.centipedebody);
+            this.stdout.write(this.centipedebodyright);
         }
         this.stdout.write(this.centipedeheadright);
 
@@ -97,6 +107,9 @@ export class PRCaterpillar extends DSProcess {
                 this.playerx--;
                 this.stdout.write(' ');
                 this.stdout.write('\x1b[1000C');
+            }
+            if (char == ' ') {
+                this.replacechar(DSKernel.terminal.rows - 2, this.playerx, this.bullet);
             }
             if (char == 'q') {
                 this.exit = true;
@@ -132,15 +145,30 @@ export class PRCaterpillar extends DSProcess {
         line = this.rock + line + this.rock;
         nextline = this.rock + nextline + this.rock;
         for (let i = 1; i < line.length - 1; i++) {
-            if (this.centipededirections.has(line[i])){
+            if (this.centipededirections.has(line[i])) {
                 let tiles = line.slice(i - 1, i + 2);
                 this.propagate(tiles, i == DSKernel.terminal.cols)
 
             }
+            else if (nextline[i] == this.bullet) {
+                this.stdout.write(down + ' '+ up + left)
+                if (line[i] == this.rock) {
+                    this.stdout.write(' ')
+                }
+                else if (line[i] == this.centipedebodyleft) {
+                    this.stdout.write(left + this.centipedetailright +this.rock+this.centipedeheadleft)
+                }
+                else if (line[i] == this.centipedebodyright) {
+                    this.stdout.write(left + this.centipedeheadright+this.rock+this.centipedetailleft)
+                }
+                else {
+                    this.stdout.write(this.bullet)
+                }
+            }
             else {
                 this.stdout.write(right)
             }
-        //await sleep(90);
+            //await sleep(90);
 
         }
     }
@@ -152,8 +180,8 @@ export class PRCaterpillar extends DSProcess {
         let direction = this.centipededirections.get(topropagate);
         let through = this.propagatesthrough.get(topropagate)
 
-        this.stdout.write(this.inverses.get(through));
-        
+        this.stdout.write(this.trails.get(topropagate));
+
         if (tiles[1 + direction] == through) { //Travelling horizontally
             if (direction == -1) {
                 this.stdout.write(left)
@@ -180,6 +208,9 @@ export class PRCaterpillar extends DSProcess {
             this.stdout.write(up)
 
         }
+    }
+
+    private writeOnLineAbove(char: string) {
     }
 
 
