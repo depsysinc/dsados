@@ -100,6 +100,8 @@ export class PRCaterpillar extends DSProcess {
     private centipedemover: CentipedeMover;
 
     private framerefreshtime: number = 300;
+    private bulletrefreshtime: number = 121;
+
     private centipedelength: number = 30;
 
     private rockcount: number = 0.05 * DSKernel.terminal.rows * DSKernel.terminal.cols;
@@ -130,13 +132,12 @@ export class PRCaterpillar extends DSProcess {
         for (let i = 1; i < this.centipedelength; i++) {
             this.stdout.write(CGameData.directions.get(left + left));
         }
-        //this.stdout.write(CGameData.centipedeheadright);
 
         //Player
         this.replacechar(DSKernel.terminal.rows - 1, this.playerx, CGameData.player);
-
-        await sleep(1000);
-        this.mainloop();
+        await sleep(50);
+        this.centipedeloop();
+        this.bulletloop();
         await this.inputloop();
 
     }
@@ -166,36 +167,37 @@ export class PRCaterpillar extends DSProcess {
 
     }
 
-    private async mainloop() {
+    private async centipedeloop() {
+        await sleep(1000);
         while (!this.exit) {
-            let a = performance.now()
-            await this.update();
-            console.log('frame, time =', performance.now() - a)
+            this.centipedemover.reset()
+            this.stdout.write('\x1b[1000F');
+            for (let i = 0; i < DSKernel.terminal.rows - 1; i++) {
+                this.centipedemover.processnextline();
+                this.stdout.write('\x1b[E')
+            }
+            this.stdout.write('\x1b[1000B\x1b[1000C')
+
             this.framespassed++;
             await sleep(this.framerefreshtime);
-        }
 
+        }
     }
 
-    private async update() {
-        this.centipedemover.reset()
-        //this.replacechar(0, this.framespassed, this.centipedebody);
-        //this.replacechar(0, this.framespassed + 1, this.centipederight);
-        this.stdout.write('\x1b[1000F');
-        for (let i = 0; i < DSKernel.terminal.rows - 1; i++) {
-            this.centipedemover.processnextline();
-            this.stdout.write('\x1b[E')
+    private async bulletloop() {
+        while (!this.exit) {
+            this.stdout.write('\x1b[1000F');
+            for (let i = 0; i < DSKernel.terminal.rows; i++) {
+                this.bulletmove(this.getline(i), this.getline(i - 1));
+                this.stdout.write('\x1b[E')
+            }
+
+            this.stdout.write('\x1b[1000B\x1b[1000C')
+            await sleep(this.bulletrefreshtime);
         }
-
-        this.stdout.write('\x1b[1000F');
-        for (let i = 0; i < DSKernel.terminal.rows; i++) {
-            this.bulletmove(this.getline(i), this.getline(i - 1));
-            this.stdout.write('\x1b[E')
-        }
-        this.stdout.write('\x1b[1000B\x1b[1000C')
-
-
     }
+
+
 
     private bulletmove(line: string, lineabove: string) {
         if (lineabove == '') {
@@ -207,19 +209,19 @@ export class PRCaterpillar extends DSProcess {
             return;
         }
 
-
         lineabove = lineabove;
         line = line;
         for (let i = 0; i < lineabove.length; i++) {
             if (line[i] == CGameData.bullet) {
                 this.stdout.write(' ' + up + left)
-                if (i == DSKernel.terminal.cols-1) {
+                if (i == DSKernel.terminal.cols - 1) {
                     this.stdout.write(right);
                 }
                 if (lineabove[i] == CGameData.rock) {
                     this.stdout.write(' ')
                 }
                 else if (CGameData.bodytypes.includes(lineabove[i])) {
+                    console.log('rockin')
                     this.stdout.write(CGameData.rock);
                 }
                 else {
@@ -231,87 +233,6 @@ export class PRCaterpillar extends DSProcess {
                 this.stdout.write(right);
             }
         }
-    }
-
-    // // private async centipedemove(row: number) {
-    //     let line = CGameData.rock + this.getline(row) + CGameData.rock;
-    //     let nextline = CGameData.rock + this.getline(row + 1) + CGameData.rock;
-    //     let lineabove = CGameData.rock + this.getline(row - 1) + CGameData.rock;
-    //     if (lineabove == undefined) {
-    //         lineabove = CGameData.rock.repeat(line.length);
-    //     }
-    //     else {
-    //         lineabove = CGameData.rock + lineabove + CGameData.rock;
-    //     }
-    //     for (let i = 1; i < line.length - 1; i++) {
-
-    //         if (CGameData.bodytypes.includes(line[i])) {
-    //             let from = this.getprevious(line, lineabove, i);
-
-
-    //             let to = [left, right][row % 2];
-    //             let charahead = line[i + CGameData.numberdirections.get(to)]
-    //             if (CGameData.bodytypes.includes(charahead)) {
-    //                 this.stdout.write(right);
-    //                 continue;
-    //             }
-    //             else if (!CGameData.cantravelthrough.includes(charahead)) {
-    //                 to = down;
-    //             }
-    //             let chartoplace = CGameData.directions.get(from + to);
-
-
-    //         }
-    //         else {
-    //             this.stdout.write(right)
-    //         }
-    //         //await sleep(90);
-
-    //     }
-    // }
-
-
-    // private propagate(tiles: string, isrightedge: boolean) {
-    //     let topropagate = tiles[1];
-    //     let direction = this.centipededirections.get(topropagate);
-    //     let through = this.propagatesthrough.get(topropagate)
-
-    //     if ((this.trails.get(topropagate) + CGameData.rock).includes(tiles[1 - direction])) {
-    //         this.stdout.write(this.trails.get(topropagate));
-    //     }
-    //     else {
-    //         this.stdout.write(this.trails.get(topropagate));
-    //     }
-
-    //     if (through.includes(tiles[1 + direction])) { //If next tile in your travelling direction is traversable
-    //         if (direction == -1) {
-    //             this.stdout.write(left)
-    //             if (!isrightedge) {
-    //                 this.stdout.write(left)
-    //             }
-    //         }
-
-    //         this.stdout.write(topropagate);
-
-    //         if (direction == -1) {
-    //             this.stdout.write(right)
-    //         }
-    //         else {
-    //             this.stdout.write(left)
-    //         }
-    //     }
-    //     else { //Travelling down
-    //         this.stdout.write(down)
-    //         if (!isrightedge) {
-    //             this.stdout.write(left);
-    //         }
-    //         this.stdout.write(this.inverses.get(topropagate));
-    //         this.stdout.write(up)
-
-    //     }
-    // }
-
-    private writeOnLineAbove(char: string) {
     }
 
 
@@ -368,6 +289,7 @@ export class PRCaterpillar extends DSProcess {
 
 class CentipedeMover {
     private rownum: number = -1;
+    private currentcol: number = 0
     private prevline: string;
     private line: string;
     private nextline: string;
@@ -394,71 +316,86 @@ class CentipedeMover {
         this.line = this.nextline;
         this.nextline = this.getpaddedline(this.rownum + 1);
 
-        for (let i = 1; i < this.length - 1; i++) {
-            if (CGameData.bodytypes.includes(this.line[i])) {
-                if (this.isendofsnake(i)) {
-                    console.log(this.rownum, i, 'is the end')
-                    this.outstream.write(' ' + left)
-                }
-                if (this.isheadofsnake(i)) {
-                    if (CGameData.cantravelthrough.includes(this.gettileahead(i))) {
-                        if (this.line[i] == CGameData.directions.get(down + down))
-                            this.outstream.write(CGameData.directions.get(down + this.horizdirection()) + left)
-                        else
-                            this.outstream.write(CGameData.directions.get(this.horizdirection() + this.horizdirection()) + left)
+        for (this.currentcol = 1; this.currentcol < this.length - 1; this.currentcol++) {
+            if (CGameData.bodytypes.includes(this.line[this.currentcol])) {
 
-                        this.outstream.write(this.horizdirection())
-                        this.outstream.write(CGameData.directions.get(this.horizdirection() + this.horizdirection()))
-                        this.outstream.write(opposites.get(this.horizdirection()) + left)
+                if (this.isheadofsnake()) {
+                    let newdirection;
+                    if (CGameData.cantravelthrough.includes(this.gettileahead())) {
+                        newdirection = this.horizdirection();
                     }
                     else {
-                        if (this.line[i] == CGameData.directions.get(down + down))
-                            this.outstream.write(CGameData.directions.get(down + down) + left)
-                        else
-                            this.outstream.write(CGameData.directions.get(opposites.get(this.horizdirection()) + down) + left)
-                        this.outstream.write(down);
-                        this.outstream.write(CGameData.directions.get(down + down));
-                        this.outstream.write(up + left)
-
+                        newdirection = down;
                     }
-                    console.log(this.rownum, i, 'is the start')
+
+                    if (this.line[this.currentcol] == CGameData.directions.get(down + down))
+                        this.replacechar(CGameData.directions.get(down + newdirection))
+                    else if (newdirection == down) {
+                        this.replacechar(CGameData.directions.get(opposites.get(this.horizdirection()) + down))
+                    }
+
+                    this.movecursor(newdirection);
+                    this.replacechar(CGameData.directions.get(newdirection + newdirection))
+                    this.movecursor(opposites.get(newdirection))
+                    console.log(this.rownum, this.currentcol, 'is the start')
                 }
+                if (this.isendofsnake()) {
+                    console.log(this.rownum, this.currentcol, 'is the end')
+                    this.replacechar(' ')
+                }
+
             }
             this.outstream.write(right);
 
         }
     }
 
+    private movecursor(direction: string) {
+        this.outstream.write(direction);
+        if ((direction == down || direction == up) && this.currentcol == DSKernel.terminal.cols) {
+            this.outstream.write(right);
+        }
+    }
+
+    private replacechar(replacement: string) {
+        if (replacement.length > 1) {
+            throw new Error("Attempt to use a multi-character sprite")
+        }
+        this.outstream.write(replacement)
+        if (this.currentcol < DSKernel.terminal.cols)
+            this.outstream.write(left);
+    }
+
     private getpaddedline(index: number) {
         return CGameData.rock + this.parent.getline(index) + CGameData.rock;
     }
 
-    private isendofsnake(index: number): boolean {
-        if (CGameData.lastdirections.get(this.horizdirection()).includes(this.gettilebehind(index))) {
+    private isendofsnake(): boolean {
+        if (CGameData.lastdirections.get(this.horizdirection()).includes(this.gettilebehind())) {
             return false
         }
-        if (CGameData.lastdirections.get(down).includes(this.prevline[index])) {
+        if (CGameData.lastdirections.get(down).includes(this.prevline[this.currentcol])) {
             return false
         }
         return true;
     }
 
-    private isheadofsnake(index: number): boolean {
-        if (CGameData.firstdirections.get(opposites.get(this.horizdirection())).includes(this.gettileahead(index))) {
+    private isheadofsnake(): boolean {
+        if (CGameData.firstdirections.get(opposites.get(this.horizdirection())).includes(this.gettileahead())) {
             return false;
         }
-        if (CGameData.firstdirections.get(down).includes(this.nextline[index])) {
+        if (CGameData.firstdirections.get(down).includes(this.nextline[this.currentcol])) {
             return false
         }
         return true
     }
 
-    private gettileahead(index: number): string {
-        return this.line[index + CGameData.numberdirections.get(this.horizdirection())]
+    private gettileahead(): string {
+        return this.line[this.currentcol + CGameData.numberdirections.get(this.horizdirection())]
     }
 
-    private gettilebehind(index: number): string {
-        return this.line[index - CGameData.numberdirections.get(this.horizdirection())]
+    private gettilebehind(): string {
+        return this.line[this.currentcol - CGameData.numberdirections.get(this.horizdirection())]
 
     }
 
