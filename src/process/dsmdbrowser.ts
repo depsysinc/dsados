@@ -20,8 +20,8 @@ export class PRDSMDBrowser extends DSApp {
     private _touchstart: { col: number; row: number; idx: number };
     private _hoverlink: LinkToken;
     private _err404: string;
-    private _history: HistoryState[];
-    private _historyPosition: number;
+    private _currentfilename: string;
+    private _savedrowsbypage: Map<string, number> = new Map<string, number>();
 
     protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
@@ -40,12 +40,9 @@ export class PRDSMDBrowser extends DSApp {
         this.init();
 
         let filename = this.argv[nextarg];
+        history.replaceState({ filepath: filename }, "");
         await this._loadDoc(filename);
-
-        this._history = [{ filepath: filename, row: 0 }];
-        this._historyPosition = 0;
-        history.replaceState({ index: 0 }, "");
-
+        
         const t = DSKernel.terminal;
         while (!this.done) {
             const e = await this.eventQueue.dequeue();
@@ -55,17 +52,18 @@ export class PRDSMDBrowser extends DSApp {
 
             } else if (e instanceof HistoryAppEvent) {
                 if (history.state != null) {
-                    this._history[this._historyPosition].row = this._rowidx;
-
-                    this._historyPosition = history.state.index;
-                    let newPageState = this._history[this._historyPosition]
-
-                    this._rowidx = newPageState.row;
-                    await this._loadDoc(newPageState.filepath);
-                } 
-                else {
-                    console.log("Error: history.state was null. Event: ");
-                    console.log(e.e);
+                    this._savedrowsbypage.set(this._currentfilename, this._rowidx);
+                    this._currentfilename = history.state.filepath;
+                    if (this._savedrowsbypage.has(this._currentfilename)) {
+                        this._rowidx = this._savedrowsbypage.get(this._currentfilename);
+                    }
+                    else {
+                        this._rowidx = 0;
+                    }
+                    await this._loadDoc(history.state.filepath);
+                } else {
+                    console.log("history.state was null. Event: ");
+                    console.log(e);
                 }
 
             } else if (e instanceof TextAppEvent) {
@@ -183,15 +181,10 @@ export class PRDSMDBrowser extends DSApp {
         if (url.startsWith("http")) {
             window.open(url, '_blank');
         } else {
+            this._savedrowsbypage.set(this._currentfilename, this._rowidx);
             this._rowidx = 0;
-
-            this._history[this._historyPosition].row = this._rowidx;
-            this._historyPosition++;
-            history.pushState({ index: this._historyPosition }, '');
-
-            this._history = this._history.slice(0, this._historyPosition);
-            this._history.push({ filepath: url, row: 0 })
-
+            history.pushState({ filepath: url }, '');
+            this._currentfilename = url;
             await this._loadDoc(url);
         }
     }
