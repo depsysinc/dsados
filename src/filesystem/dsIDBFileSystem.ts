@@ -3,6 +3,7 @@ import { DSFileInfo, DSFilePerms, DSFileSystem, DSFileSystemError, DSIDirectory,
 export class DSIDBFileSystemError extends DSFileSystemError {
     constructor(message: string) {
         super(message);
+        Object.setPrototypeOf(this, DSIDBFileSystemError.prototype); 
         this.name = this.constructor.name;
     }
 }

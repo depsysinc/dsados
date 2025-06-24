@@ -319,9 +319,7 @@ test('chmod -r /gamma; ls', () => {
 
     expect(() =>
         gamma.filelist
-    ).toThrow(
-        new DSFilePermsReadError()
-    );
+    ).toThrow(DSFilePermsReadError);
 })
 
 test('chmod -x /gamma getdir /gamma/deep', () => {
@@ -331,9 +329,7 @@ test('chmod -x /gamma getdir /gamma/deep', () => {
 
     expect(() =>
         fs.root.getdir("/gamma/deep")
-    ).toThrow(
-        new DSFilePermsExecError()
-    );
+    ).toThrow(DSFilePermsExecError);
 });
 
 test('chmod -w /gamma; mkdir dirdenied from /gamma', () => {
@@ -345,9 +341,7 @@ test('chmod -w /gamma; mkdir dirdenied from /gamma', () => {
     const dirdenied = "dirdenied";
     expect(() =>
         gamma.mkdir(dirdenied)
-    ).toThrow(
-        new DSFilePermsWriteError()
-    );
+    ).toThrow(DSFilePermsWriteError);
 
 });
 
@@ -358,9 +352,7 @@ test('mkdir readonlyfs', () => {
     fs.readonly = true;
     expect(() =>
         fs.root.mkdir("readonlyfs")
-    ).toThrow(
-        new DSFileSystemReadonlyError('mkdir')
-    )
+    ).toThrow(DSFileSystemReadonlyError)
 });
 
 test('chmod readonlyfs', () => {
@@ -371,9 +363,7 @@ test('chmod readonlyfs', () => {
 
     expect(() =>
         gamma.chmod(DSFilePerms.full())
-    ).toThrow(
-        new DSFileSystemReadonlyError('chmod')
-    )
+    ).toThrow(DSFileSystemReadonlyError)
 });
 
 // filetype tests
@@ -505,9 +495,7 @@ test('contentAsText noreadperms', async () => {
 
     expect(() =>
         newfile.contentAsText()
-    ).toThrow(
-        new DSFilePermsReadError()
-    )
+    ).toThrow(DSFilePermsReadError)
 });
 
 

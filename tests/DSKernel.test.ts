@@ -45,9 +45,7 @@ test('exec /bad/path', async () => {
 
     await expect(
         DSKernel.exec("/bad/path", [], {})
-    ).rejects.toThrow(
-        DSIDirectoryInvalidPathError
-    );
+    ).rejects.toThrow(DSIDirectoryInvalidPathError);
 });
 
 test('exec /noexecperms.txt', async () => {
@@ -62,9 +60,7 @@ test('exec /noexecperms.txt', async () => {
 
     await expect(
         DSKernel.exec("/noexecperms.txt", [], {})
-    ).rejects.toThrow(
-        DSKernelExecError
-    );
+    ).rejects.toThrow(DSKernelExecError);
 });
 
 test('exec /notascript.txt', async () => {
@@ -80,9 +76,7 @@ test('exec /notascript.txt', async () => {
 
     await expect(
         DSKernel.exec("/notascript.txt", [], {})
-    ).rejects.toThrow(
-        DSKernelExecError
-    );
+    ).rejects.toThrow(DSKernelExecError);
 });
 
 test('exec /interpreternotfound.dssh', async () => {
@@ -98,9 +92,7 @@ test('exec /interpreternotfound.dssh', async () => {
 
     await expect(
         DSKernel.exec("/interpreternotfound.dssh", [], {})
-    ).rejects.toThrow(
-        DSIDirectoryInvalidPathError
-    );
+    ).rejects.toThrow(DSIDirectoryInvalidPathError);
 });
 
 test('exec /interpreternotexe.dssh', async () => {
