@@ -6,6 +6,13 @@ import { gotoxy, reset, setattr, textattrs } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
 import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent, MouseMoveAppEvent, MouseButtonDownEvent as MouseButtonDownAppEvent, MouseButtonUpEvent as MouseButtonUpAppEvent, TouchEndAppEvent, LeftArrowAppEvent, HistoryAppEvent } from "../dsApp";
 
+export type HistoryState =
+    {
+        filepath: string;
+        row: number;
+    }
+
+
 export class PRDSMDBrowser extends DSApp {
 
     private _curdoc: DSMDDoc;
@@ -14,6 +21,7 @@ export class PRDSMDBrowser extends DSApp {
     private _hoverlink: LinkToken;
     private _err404: string;
     private _currentfilename: string;
+    private _savedrowsbypage: Map<string, number> = new Map<string, number>();
 
     protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
@@ -31,11 +39,11 @@ export class PRDSMDBrowser extends DSApp {
         // Start up AppEvent processing
         this.init();
 
-        this._currentfilename = this.argv[nextarg];
         let filename = this.argv[nextarg];
-        history.replaceState({ filepath: filename, row: this._rowidx }, "");
+        this._currentfilename = filename;
+        history.replaceState({ filepath: filename }, "");
         await this._loadDoc(filename);
-
+        
         const t = DSKernel.terminal;
         while (!this.done) {
             const e = await this.eventQueue.dequeue();
@@ -45,8 +53,14 @@ export class PRDSMDBrowser extends DSApp {
 
             } else if (e instanceof HistoryAppEvent) {
                 if (history.state != null) {
+                    this._savedrowsbypage.set(this._currentfilename, this._rowidx);
                     this._currentfilename = history.state.filepath;
-                    this._rowidx = history.state.row;
+                    if (this._savedrowsbypage.has(this._currentfilename)) {
+                        this._rowidx = this._savedrowsbypage.get(this._currentfilename);
+                    }
+                    else {
+                        this._rowidx = 0;
+                    }
                     await this._loadDoc(history.state.filepath);
                 } else {
                     console.log("history.state was null. Event: ");
@@ -168,9 +182,9 @@ export class PRDSMDBrowser extends DSApp {
         if (url.startsWith("http")) {
             window.open(url, '_blank');
         } else {
-            history.replaceState({ filepath: this._currentfilename, row: this._rowidx }, '')
+            this._savedrowsbypage.set(this._currentfilename, this._rowidx);
             this._rowidx = 0;
-            history.pushState({ filepath: url, row: 0 }, '');
+            history.pushState({ filepath: url }, '');
             this._currentfilename = url;
             await this._loadDoc(url);
         }
