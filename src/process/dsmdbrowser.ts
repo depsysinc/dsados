@@ -40,6 +40,7 @@ export class PRDSMDBrowser extends DSApp {
         this.init();
 
         let filename = this.argv[nextarg];
+        this._currentfilename = filename;
         history.replaceState({ filepath: filename }, "");
         await this._loadDoc(filename);
         
