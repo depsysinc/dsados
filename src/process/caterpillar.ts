@@ -10,6 +10,9 @@ const up = '\x1b[A'
 const down = '\x1b[B'
 const right = '\x1b[C'
 const left = '\x1b[D'
+const hidecursor = '\x1b[1000B\x1b[1000C'
+const topleft = '\x1b[1000F'
+const nextline = '\x1b[E'
 
 const opposites = new Map([
     [up, down],
@@ -22,13 +25,6 @@ class CGameData {
     public static rock: string = 'Θ';
     public static player: string = 'Δ';
     public static bullet: string = '.';
-    public static centipedebodyleft: string = 'Ε'; //alternatives: ◘ Ǝ Ε
-    public static centipedebodyright: string = 'Ǝ'; //∥ ╔ ┗━┓ ┏┃┛ 
-    public static centipedeheadleft: string = 'ʕ'; // < ʕ
-    public static centipedeheadright: string = 'ʔ'; // > » ʔ
-    public static centipedetailleft: string = '(';
-    public static centipedetailright: string = ')';
-
     public static bodytypes: string = '┗━┓┃┏┛'
     public static cantravelthrough = ' '
 
@@ -54,44 +50,10 @@ class CGameData {
         [right, this.directions.get(right + down) + this.directions.get(right + right)],
     ])
 
-    public static symbolstodirections: Map<string, string> = new Map(Array.from(this.directions, a => a.reverse() as [string, string]))
-    public static rewritecodes: Map<string, string> = new Map([
-        [this.centipedeheadright, right + this.centipedeheadright + left],
-        [this.centipedeheadleft, left + left + this.centipedeheadleft + right + right]
-    ])
     public static numberdirections: Map<string, number> = new Map([
         [left, -1],
         [right, 1]
     ])
-
-    public static centipededirections: Map<string, string> = new Map([
-        [this.centipedeheadright, right],
-        [this.centipedeheadleft, left],
-        [this.centipedetailleft, right],
-        [this.centipedetailright, left]
-    ]);
-    public static propagatesthrough: Map<string, string> = new Map([
-        [this.centipedeheadright, ' '],
-        [this.centipedeheadleft, ' '],
-        [this.centipedetailleft, this.centipedebodyright + this.centipedeheadright],
-        [this.centipedetailright, this.centipedebodyleft + this.centipedeheadleft]
-    ]);
-
-    public static inverses: Map<string, string> = new Map([
-        [this.centipedeheadright, this.centipedeheadleft],
-        [this.centipedeheadleft, this.centipedeheadright],
-        [this.centipedetailleft, this.centipedetailright],
-        [this.centipedetailright, this.centipedetailleft]
-    ]);
-    public static trails: Map<string, string> = new Map([
-        [this.centipedeheadright, this.centipedebodyright],
-        [this.centipedeheadleft, this.centipedebodyleft],
-        [this.centipedetailleft, ' '],
-        [this.centipedetailright, ' ']
-    ])
-
-
-
 }
 
 export class PRCaterpillar extends DSProcess {
@@ -128,14 +90,15 @@ export class PRCaterpillar extends DSProcess {
         }
 
         //Draw centipede
-        this.replacechar(0, 0, CGameData.directions.get(left + left));
-        for (let i = 1; i < this.centipedelength; i++) {
+        this.stdout.write(topleft);
+        for (let i = 0; i < this.centipedelength; i++) {
             this.stdout.write(CGameData.directions.get(left + left));
         }
 
         //Player
         this.replacechar(DSKernel.terminal.rows - 1, this.playerx, CGameData.player);
         await sleep(50);
+
         this.centipedeloop();
         this.bulletloop();
         await this.inputloop();
@@ -149,13 +112,13 @@ export class PRCaterpillar extends DSProcess {
                 this.replacechar(DSKernel.terminal.rows - 1, this.playerx, ' ');
                 this.playerx++;
                 this.stdout.write(CGameData.player);
-                this.stdout.write('\x1b[1000C');
+                this.stdout.write(hidecursor);
             }
             if (char == left && this.playerx > 0) {
                 this.replacechar(DSKernel.terminal.rows - 1, this.playerx - 1, CGameData.player);
                 this.playerx--;
                 this.stdout.write(' ');
-                this.stdout.write('\x1b[1000C');
+                this.stdout.write(hidecursor);
             }
             if (char == ' ') {
                 this.replacechar(DSKernel.terminal.rows - 2, this.playerx, CGameData.bullet);
@@ -171,12 +134,12 @@ export class PRCaterpillar extends DSProcess {
         await sleep(1000);
         while (!this.exit) {
             this.centipedemover.reset()
-            this.stdout.write('\x1b[1000F');
+            this.stdout.write(topleft); 
             for (let i = 0; i < DSKernel.terminal.rows - 1; i++) {
                 this.centipedemover.processnextline();
-                this.stdout.write('\x1b[E')
+                this.stdout.write(nextline)
             }
-            this.stdout.write('\x1b[1000B\x1b[1000C')
+            this.stdout.write(hidecursor)
 
             this.framespassed++;
             await sleep(this.framerefreshtime);
@@ -186,13 +149,23 @@ export class PRCaterpillar extends DSProcess {
 
     private async bulletloop() {
         while (!this.exit) {
-            this.stdout.write('\x1b[1000F');
-            for (let i = 0; i < DSKernel.terminal.rows; i++) {
+
+            //Clear bullets from top of screen
+            const topline = this.getline(0);
+            for (let i = 0; i < DSKernel.terminal.cols; i++) {
+                if (topline[i] == CGameData.bullet) {
+                    this.replacechar(0, i, ' ')
+                }
+            }
+            //Cycle through, moving bullets in each row
+            this.stdout.write(topleft);
+            this.stdout.write(nextline);
+            for (let i = 1; i < DSKernel.terminal.rows; i++) {
                 this.bulletmove(this.getline(i), this.getline(i - 1));
-                this.stdout.write('\x1b[E')
+                this.stdout.write(nextline)
             }
 
-            this.stdout.write('\x1b[1000B\x1b[1000C')
+            this.stdout.write(hidecursor)
             await sleep(this.bulletrefreshtime);
         }
     }
@@ -200,15 +173,6 @@ export class PRCaterpillar extends DSProcess {
 
 
     private bulletmove(line: string, lineabove: string) {
-        if (lineabove == '') {
-            for (let i = 0; i < line.length; i++) {
-                if (line[i] == CGameData.bullet) {
-                    this.replacechar(0, i, ' ')
-                }
-            }
-            return;
-        }
-
         lineabove = lineabove;
         line = line;
         for (let i = 0; i < lineabove.length; i++) {
@@ -221,7 +185,6 @@ export class PRCaterpillar extends DSProcess {
                     this.stdout.write(' ')
                 }
                 else if (CGameData.bodytypes.includes(lineabove[i])) {
-                    console.log('rockin')
                     this.stdout.write(CGameData.rock);
                 }
                 else {
@@ -264,20 +227,7 @@ export class PRCaterpillar extends DSProcess {
         this.stdout.write(char);  //Write the char
 
     }
-    private replacechartests() {
-        this.replacechar(0, 5, '1');
-        this.replacechar(1, 6, '2');
-        this.replacechar(8, 0, '3');
-        this.replacechar(0, 0, '4');
-        this.replacechar(0, 1, '5');
-        this.replacechar(0, 2, '6');
-        this.replacechar(1, 0, '7');
-        this.replacechar(DSKernel.terminal.rows - 2, DSKernel.terminal.cols - 2, '8');
-        this.replacechar(DSKernel.terminal.rows - 1, DSKernel.terminal.cols - 1, '9');
-        //this.replacechar(DSKernel.terminal.rows,DSKernel.terminal.cols-1,'0') //Throws an error
-
-    }
-    //Includes a, doesn't include b (99.999999% of the time)
+    //Includes a, doesn't include b 
     private randInt(a: number, b: number): number {
         let randval = Math.random();
         let mappedval = randval * (b - a) + a;
@@ -310,15 +260,14 @@ class CentipedeMover {
         this.nextline = this.getpaddedline(0);
     }
 
-    public processnextline() {
+    public async processnextline() {
+        this.currentcol = 1;
         this.rownum++;
         this.prevline = this.line;
         this.line = this.nextline;
         this.nextline = this.getpaddedline(this.rownum + 1);
-
         for (this.currentcol = 1; this.currentcol < this.length - 1; this.currentcol++) {
             if (CGameData.bodytypes.includes(this.line[this.currentcol])) {
-
                 if (this.isheadofsnake()) {
                     let newdirection;
                     if (CGameData.cantravelthrough.includes(this.gettileahead())) {
@@ -329,19 +278,18 @@ class CentipedeMover {
                     }
 
                     if (this.line[this.currentcol] == CGameData.directions.get(down + down))
-                        this.replacechar(CGameData.directions.get(down + newdirection))
+                        this.replacecurrentchar(CGameData.directions.get(down + newdirection))
                     else if (newdirection == down) {
-                        this.replacechar(CGameData.directions.get(opposites.get(this.horizdirection()) + down))
+                        this.replacecurrentchar(CGameData.directions.get(opposites.get(this.horizdirection()) + down))
                     }
 
                     this.movecursor(newdirection);
-                    this.replacechar(CGameData.directions.get(newdirection + newdirection))
+                    this.replacecurrentchar(CGameData.directions.get(newdirection + newdirection))
                     this.movecursor(opposites.get(newdirection))
-                    console.log(this.rownum, this.currentcol, 'is the start')
                 }
+
                 if (this.isendofsnake()) {
-                    console.log(this.rownum, this.currentcol, 'is the end')
-                    this.replacechar(' ')
+                    this.replacecurrentchar(' ')
                 }
 
             }
@@ -352,12 +300,15 @@ class CentipedeMover {
 
     private movecursor(direction: string) {
         this.outstream.write(direction);
+        if (direction == left || direction == right) {
+            this.currentcol += CGameData.numberdirections.get(direction);
+        }
         if ((direction == down || direction == up) && this.currentcol == DSKernel.terminal.cols) {
             this.outstream.write(right);
         }
     }
 
-    private replacechar(replacement: string) {
+    private replacecurrentchar(replacement: string) {
         if (replacement.length > 1) {
             throw new Error("Attempt to use a multi-character sprite")
         }
