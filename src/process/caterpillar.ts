@@ -69,12 +69,12 @@ export class PRCaterpillar extends DSProcess {
 
     private centipedelength: number = 20;
 
-    public rows: number = 19;
+    public rows: number = 13;
     public cols: number = 35;
     public leftoffset: number = 1;
     public topoffset: number = 1;
 
-    private score:number = 0;
+    private score: number = 100;
     private rockcount: number = 22;
     private playerx: number = Math.floor(this.cols / 2)
 
@@ -89,31 +89,20 @@ export class PRCaterpillar extends DSProcess {
         const optparser = new DSOptionParser(
             this.procname,
             true,
-            "   Play Shoot the Caterpillar",
+            "Play Shoot the Caterpillar",
         );
-
-        if (DSKernel.terminal.cols < this.cols || DSKernel.terminal.rows < this.rows+2) {
+        while (!this.screencorrectsize()) {
+            //c//onsole.log('resize')
             this.stdout.write('\x1bc')
             this.stdout.write('Please resize your screen');
-            await sleep(1000);
-            return;
+            await sleep(50);
         }
-        this.leftoffset = Math.ceil((DSKernel.terminal.cols - this.cols)/2);
-        this.topoffset = Math.ceil((DSKernel.terminal.rows - this.rows)/2+2)
-        if (this.leftoffset > 0) {
-            let controlcode = `\x1b[${this.leftoffset}C`
-            this.topleft += controlcode;
-            this.nextline += controlcode;
-        }
-        if (this.topoffset > 0) {
-            let controlcode = `\x1b[${this.topoffset}B`
-            this.topleft += controlcode;
-        }
-        //this.rows = DSKernel.terminal.rows-1;
+        this.adjustoffsets();
 
         this.centipedemover = new CentipedeMover(this);
 
         this.drawstartingboard();
+        this.drawdisplay();
 
         await sleep(50);
 
@@ -123,10 +112,29 @@ export class PRCaterpillar extends DSProcess {
 
     }
 
+    private screencorrectsize():boolean {
+        return DSKernel.terminal.cols > this.cols+2 && DSKernel.terminal.rows > this.rows + 2
+    }
+
+    private adjustoffsets() {
+        this.leftoffset = Math.ceil((DSKernel.terminal.cols - this.cols) / 2);
+        this.topoffset = 2//Math.ceil(DSKernel.terminal.rows - this.rows - 1);
+        //console.log(this.topoffset, DSKernel.terminal.rows, this.rows)
+        if (this.leftoffset > 0) {
+            let controlcode = `\x1b[${this.leftoffset}C`
+            this.topleft += controlcode;
+            this.nextline += controlcode;
+        }
+        if (this.topoffset > 0) {
+            let controlcode = `\x1b[${this.topoffset}B`
+            this.topleft += controlcode;
+        }
+
+    }
+
     private drawstartingboard() {
         //Clear terminal
         this.stdout.write("\x1bc");
-        this.stdout.write('hi!');
         //Draw the rocks
         for (let i = 0; i < this.rockcount; i++) {
             this.replacechar(this.randInt(0, this.rows - 1), this.randInt(0, this.cols), CGameData.rock) //Possible to optimize
@@ -143,12 +151,47 @@ export class PRCaterpillar extends DSProcess {
     }
 
     handleResize(): void {
-        this.refresh();
+        if (DSKernel.terminal.cols < this.cols || DSKernel.terminal.rows < this.rows + 2) {
+            this.stdout.write('\x1bc')
+            this.stdout.write('Please resize your screen');
+        }
+        else {
+
+        this.refresh();}
     }
 
     private refresh() {
-        this.score = 0;
-        this.drawstartingboard();
+            this.score = 100;
+            this.drawstartingboard();
+            this.drawdisplay();
+        
+    }
+
+    private drawdisplay() {
+        this.stdout.write(this.topleft);
+        this.stdout.write(up + up);
+        this.stdout.write(' '.repeat((this.cols - 9) / 2) + 'CENTIPEDE  ')
+        this.stdout.write(' '.repeat((this.cols - 9) / 2 - this.score.toString().length - 1));
+        this.stdout.write(this.score.toString())
+        this.stdout.write(this.topleft);
+        this.stdout.write(up + left);
+        let borderchar = 'x'
+        this.stdout.write(borderchar.repeat(this.cols + 2));
+        let crossrow = `\x1b[${this.cols}C`
+        for (let i = 0; i < this.rows; i++) {
+            this.stdout.write(this.nextline + left);
+            this.stdout.write(borderchar)
+            this.stdout.write(crossrow);
+            this.stdout.write(borderchar)
+        }
+        this.stdout.write(this.nextline + left);
+        this.stdout.write(borderchar.repeat(this.cols + 2))
+    }
+
+    private updatedisplay() {
+        this.stdout.write(this.topleft);
+        this.stdout.write(up + up + right.repeat(this.cols - this.score.toString().length + 1));
+        this.stdout.write(this.score.toString());
     }
 
     private async inputloop() {
@@ -177,6 +220,7 @@ export class PRCaterpillar extends DSProcess {
             }
             if (char == ' ') {
                 this.replacechar(this.rows - 2, this.playerx, CGameData.bullet);
+                this.score -= 1;
             }
             if (char == 'q') {
                 this.exit = true;
@@ -211,7 +255,6 @@ export class PRCaterpillar extends DSProcess {
 
     private haslost(): Boolean {
         let lastline = this.getline(this.rows - 1);
-        console.log(lastline);
         for (let i = 0; i < lastline.length; i++) {
             if (CGameData.bodytypes.includes(lastline[i])) {
                 return true;
@@ -237,7 +280,7 @@ export class PRCaterpillar extends DSProcess {
                 this.bulletmove(this.getline(i), this.getline(i - 1));
                 this.stdout.write(this.nextline)
             }
-
+            this.updatedisplay();
             this.stdout.write(this.hidecursor)
             await sleep(this.bulletrefreshtime);
         }
@@ -256,9 +299,12 @@ export class PRCaterpillar extends DSProcess {
                 }
                 if (lineabove[i] == CGameData.rock) {
                     this.stdout.write(' ')
+                    this.score += 2;
                 }
                 else if (CGameData.bodytypes.includes(lineabove[i])) {
                     this.stdout.write(CGameData.rock);
+                    this.score += 10;
+
                 }
                 else {
                     this.stdout.write(CGameData.bullet)
@@ -285,10 +331,10 @@ export class PRCaterpillar extends DSProcess {
     }
 
     public getline(index: number): string {
-        if (index < 0 || index-this.topoffset > this.rows) {
+        if (index < 0 || index - this.topoffset > this.rows) {
             return '';
         }
-        const line = DSKernel.terminal.xterm.buffer.active.getLine(index+this.topoffset).translateToString();
+        const line = DSKernel.terminal.xterm.buffer.active.getLine(index + this.topoffset).translateToString();
         const gamesection = line.slice(this.leftoffset, this.cols + this.leftoffset);
         return gamesection
     }
