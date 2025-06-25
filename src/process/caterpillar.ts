@@ -1,7 +1,7 @@
 import { DSFilePermsError } from "../dsFileSystem";
 import { DSKernel } from "../dsKernel";
 import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSStream } from "../dsStream";
+import { DSStream, DSStreamClosedError } from "../dsStream";
 import { DSTerminal } from "../dsTerminal";
 import { sleep } from "../lib/dsLib";
 import { DSOptionParser } from "../lib/dsOptionParser";
@@ -10,9 +10,6 @@ const up = '\x1b[A'
 const down = '\x1b[B'
 const right = '\x1b[C'
 const left = '\x1b[D'
-const hidecursor = '\x1b[1000B\x1b[1000C'
-const topleft = '\x1b[1000F'
-const nextline = '\x1b[E'
 
 const opposites = new Map([
     [up, down],
@@ -20,6 +17,12 @@ const opposites = new Map([
     [left, right],
     [right, left]
 ])
+
+enum GameStates {
+    Playing,
+    Won,
+    Lost
+}
 
 class CGameData {
     public static rock: string = 'Θ';
@@ -61,13 +64,23 @@ export class PRCaterpillar extends DSProcess {
 
     private centipedemover: CentipedeMover;
 
-    private framerefreshtime: number = 300;
-    private bulletrefreshtime: number = 121;
+    private framerefreshtime: number = 150;
+    private bulletrefreshtime: number = 81;
 
-    private centipedelength: number = 30;
+    private centipedelength: number = 20;
 
-    private rockcount: number = 0.05 * DSKernel.terminal.rows * DSKernel.terminal.cols;
-    private playerx: number = Math.floor(DSKernel.terminal.cols / 2)
+    public rows: number = 19;
+    public cols: number = 35;
+    public leftoffset: number = 1;
+    public topoffset: number = 1;
+
+    private score:number = 0;
+    private rockcount: number = 22;
+    private playerx: number = Math.floor(this.cols / 2)
+
+    public hidecursor = '\x1b[1000B\x1b[1000C'
+    public topleft = '\x1b[1000F';
+    public nextline = '\x1b[E';
 
     private framespassed: number = 0;
     private exit: boolean = false;
@@ -78,55 +91,98 @@ export class PRCaterpillar extends DSProcess {
             true,
             "   Play Shoot the Caterpillar",
         );
+
+        if (DSKernel.terminal.cols < this.cols || DSKernel.terminal.rows < this.rows+2) {
+            this.stdout.write('\x1bc')
+            this.stdout.write('Please resize your screen');
+            await sleep(1000);
+            return;
+        }
+        this.leftoffset = Math.ceil((DSKernel.terminal.cols - this.cols)/2);
+        this.topoffset = Math.ceil((DSKernel.terminal.rows - this.rows)/2+2)
+        if (this.leftoffset > 0) {
+            let controlcode = `\x1b[${this.leftoffset}C`
+            this.topleft += controlcode;
+            this.nextline += controlcode;
+        }
+        if (this.topoffset > 0) {
+            let controlcode = `\x1b[${this.topoffset}B`
+            this.topleft += controlcode;
+        }
+        //this.rows = DSKernel.terminal.rows-1;
+
         this.centipedemover = new CentipedeMover(this);
 
+        this.drawstartingboard();
+
+        await sleep(50);
+
+        this.inputloop();
+        this.bulletloop();
+        await this.centipedeloop();
+
+    }
+
+    private drawstartingboard() {
         //Clear terminal
         this.stdout.write("\x1bc");
-        this.stdout.write(' '.repeat(DSKernel.terminal.rows * DSKernel.terminal.cols));
-
+        this.stdout.write('hi!');
         //Draw the rocks
         for (let i = 0; i < this.rockcount; i++) {
-            this.replacechar(this.randInt(0, DSKernel.terminal.rows - 1), this.randInt(0, DSKernel.terminal.cols), CGameData.rock) //Possible to optimize
+            this.replacechar(this.randInt(0, this.rows - 1), this.randInt(0, this.cols), CGameData.rock) //Possible to optimize
         }
 
         //Draw centipede
-        this.stdout.write(topleft);
+        this.stdout.write(this.topleft);
         for (let i = 0; i < this.centipedelength; i++) {
             this.stdout.write(CGameData.directions.get(left + left));
         }
 
         //Player
-        this.replacechar(DSKernel.terminal.rows - 1, this.playerx, CGameData.player);
-        await sleep(50);
+        this.replacechar(this.rows - 1, this.playerx, CGameData.player);
+    }
 
-        this.centipedeloop();
-        this.bulletloop();
-        await this.inputloop();
+    handleResize(): void {
+        this.refresh();
+    }
 
+    private refresh() {
+        this.score = 0;
+        this.drawstartingboard();
     }
 
     private async inputloop() {
+        let char;
         while (!this.exit) {
-            let char = await this.stdin.read();
-            if (char == right && this.playerx < DSKernel.terminal.cols - 1) {
-                this.replacechar(DSKernel.terminal.rows - 1, this.playerx, ' ');
+            try {
+                char = await this.stdin.read();
+            }
+            catch (DSStreamClosedError) {
+                break;
+            }
+            if (this.exit) {
+                break;
+            }
+            if (char == right && this.playerx < this.cols - 1) {
+                this.replacechar(this.rows - 1, this.playerx, ' ');
                 this.playerx++;
                 this.stdout.write(CGameData.player);
-                this.stdout.write(hidecursor);
+                this.stdout.write(this.hidecursor);
             }
             if (char == left && this.playerx > 0) {
-                this.replacechar(DSKernel.terminal.rows - 1, this.playerx - 1, CGameData.player);
+                this.replacechar(this.rows - 1, this.playerx - 1, CGameData.player);
                 this.playerx--;
                 this.stdout.write(' ');
-                this.stdout.write(hidecursor);
+                this.stdout.write(this.hidecursor);
             }
             if (char == ' ') {
-                this.replacechar(DSKernel.terminal.rows - 2, this.playerx, CGameData.bullet);
+                this.replacechar(this.rows - 2, this.playerx, CGameData.bullet);
             }
             if (char == 'q') {
                 this.exit = true;
             }
         }
+
 
     }
 
@@ -134,17 +190,34 @@ export class PRCaterpillar extends DSProcess {
         await sleep(1000);
         while (!this.exit) {
             this.centipedemover.reset()
-            this.stdout.write(topleft); 
-            for (let i = 0; i < DSKernel.terminal.rows - 1; i++) {
+            this.stdout.write(this.topleft);
+            for (let i = 0; i < this.rows - 1; i++) {
                 this.centipedemover.processnextline();
-                this.stdout.write(nextline)
+                this.stdout.write(this.nextline)
             }
-            this.stdout.write(hidecursor)
-
+            this.stdout.write(this.hidecursor)
+            if (!this.centipedemover.hasmoved) {
+                this.winGame();
+            }
+            if (this.haslost()) {
+                this.loseGame();
+            }
             this.framespassed++;
             await sleep(this.framerefreshtime);
 
         }
+        await sleep(1000);
+    }
+
+    private haslost(): Boolean {
+        let lastline = this.getline(this.rows - 1);
+        console.log(lastline);
+        for (let i = 0; i < lastline.length; i++) {
+            if (CGameData.bodytypes.includes(lastline[i])) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private async bulletloop() {
@@ -152,20 +225,20 @@ export class PRCaterpillar extends DSProcess {
 
             //Clear bullets from top of screen
             const topline = this.getline(0);
-            for (let i = 0; i < DSKernel.terminal.cols; i++) {
+            for (let i = 0; i < this.cols; i++) {
                 if (topline[i] == CGameData.bullet) {
                     this.replacechar(0, i, ' ')
                 }
             }
             //Cycle through, moving bullets in each row
-            this.stdout.write(topleft);
-            this.stdout.write(nextline);
-            for (let i = 1; i < DSKernel.terminal.rows; i++) {
+            this.stdout.write(this.topleft);
+            this.stdout.write(this.nextline);
+            for (let i = 1; i < this.rows; i++) {
                 this.bulletmove(this.getline(i), this.getline(i - 1));
-                this.stdout.write(nextline)
+                this.stdout.write(this.nextline)
             }
 
-            this.stdout.write(hidecursor)
+            this.stdout.write(this.hidecursor)
             await sleep(this.bulletrefreshtime);
         }
     }
@@ -175,7 +248,7 @@ export class PRCaterpillar extends DSProcess {
     private bulletmove(line: string, lineabove: string) {
         lineabove = lineabove;
         line = line;
-        for (let i = 0; i < lineabove.length; i++) {
+        for (let i = 0; i < this.cols; i++) {
             if (line[i] == CGameData.bullet) {
                 this.stdout.write(' ' + up + left)
                 if (i == DSKernel.terminal.cols - 1) {
@@ -198,33 +271,46 @@ export class PRCaterpillar extends DSProcess {
         }
     }
 
+    public async loseGame() {
+        this.exit = true;
+        this.stdout.write('\x1bc');
+        this.stdout.write('you lose');
+    }
+
+    public async winGame() {
+        this.exit = true;
+        this.stdout.write('\x1bc');
+        this.stdout.write('you win');
+
+    }
 
     public getline(index: number): string {
-        if (index < 0 || index > DSKernel.terminal.rows) {
+        if (index < 0 || index-this.topoffset > this.rows) {
             return '';
         }
-        return DSKernel.terminal.xterm.buffer.active.getLine(index).translateToString()
+        const line = DSKernel.terminal.xterm.buffer.active.getLine(index+this.topoffset).translateToString();
+        const gamesection = line.slice(this.leftoffset, this.cols + this.leftoffset);
+        return gamesection
     }
 
     private replacechar(row: number, column: number, char: string) {
-        if (column >= DSKernel.terminal.cols ||
+        if (column >= this.cols ||
             row < 0 || column < 0 ||
-            row >= DSKernel.terminal.rows) {
+            row >= this.rows) {
 
             throw new RangeError("Indices out of range")
         }
 
-        this.stdout.write('\x1b[1000A'); //Up 1000 rows
+        this.stdout.write(this.topleft);
         if (row > 0) {
             this.stdout.write('\x1b[' + row + 'B'); //Down to the correct row
         }
 
-        this.stdout.write('\x1b[1000D'); //Left 1000 columns
         if (column > 0) {
             this.stdout.write('\x1b[' + column + 'C'); //Right to the correct column
         }
 
-        this.stdout.write(char);  //Write the char
+        this.stdout.write(char);
 
     }
     //Includes a, doesn't include b 
@@ -238,22 +324,27 @@ export class PRCaterpillar extends DSProcess {
 
 
 class CentipedeMover {
+
+    public hasmoved: boolean;
+
     private rownum: number = -1;
     private currentcol: number = 0
     private prevline: string;
     private line: string;
     private nextline: string;
 
-    private length: number = DSKernel.terminal.cols + 2;
+    private length: number;
 
     private outstream: DSStream;
     private parent: PRCaterpillar;
     constructor(main: PRCaterpillar) {
         this.parent = main;
         this.outstream = this.parent.stdout;
+        this.length = this.parent.cols + 2
     }
 
     public reset() {
+        this.hasmoved = false;
         this.rownum = -1;
         this.prevline = '';
         this.line = CGameData.rock.repeat(this.length);
@@ -268,6 +359,7 @@ class CentipedeMover {
         this.nextline = this.getpaddedline(this.rownum + 1);
         for (this.currentcol = 1; this.currentcol < this.length - 1; this.currentcol++) {
             if (CGameData.bodytypes.includes(this.line[this.currentcol])) {
+                this.hasmoved = true;
                 if (this.isheadofsnake()) {
                     let newdirection;
                     if (CGameData.cantravelthrough.includes(this.gettileahead())) {
