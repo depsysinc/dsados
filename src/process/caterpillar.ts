@@ -112,8 +112,8 @@ export class PRCaterpillar extends DSProcess {
 
     }
 
-    private screencorrectsize():boolean {
-        return DSKernel.terminal.cols > this.cols+2 && DSKernel.terminal.rows > this.rows + 2
+    private screencorrectsize(): boolean {
+        return DSKernel.terminal.cols > this.cols + 2 && DSKernel.terminal.rows > this.rows + 2
     }
 
     private adjustoffsets() {
@@ -157,14 +157,15 @@ export class PRCaterpillar extends DSProcess {
         }
         else {
 
-        this.refresh();}
+            this.refresh();
+        }
     }
 
     private refresh() {
-            this.score = 100;
-            this.drawstartingboard();
-            this.drawdisplay();
-        
+        this.score = 100;
+        this.drawstartingboard();
+        this.drawdisplay();
+
     }
 
     private drawdisplay() {
@@ -219,7 +220,16 @@ export class PRCaterpillar extends DSProcess {
                 this.stdout.write(this.hidecursor);
             }
             if (char == ' ') {
-                this.replacechar(this.rows - 2, this.playerx, CGameData.bullet);
+                let prevline = this.getline(this.rows - 2);
+                if (prevline[this.playerx] == ' ') {
+                    this.replacechar(this.rows - 2, this.playerx, CGameData.bullet);
+                }
+                else if (CGameData.bodytypes.includes(prevline[this.playerx])) {
+                    this.replacechar(this.rows - 2, this.playerx, CGameData.rock);
+                }
+                else if (prevline[this.playerx] == CGameData.rock) {
+                    this.replacechar(this.rows - 2, this.playerx,' ')
+                }
                 this.score -= 1;
             }
             if (char == 'q') {
@@ -250,7 +260,7 @@ export class PRCaterpillar extends DSProcess {
             await sleep(this.framerefreshtime);
 
         }
-        await sleep(1000);
+        await sleep(3000);
     }
 
     private haslost(): Boolean {
@@ -319,14 +329,15 @@ export class PRCaterpillar extends DSProcess {
 
     public async loseGame() {
         this.exit = true;
-        this.stdout.write('\x1bc');
-        this.stdout.write('you lose');
+        console.log(this.cols, this.cols - 10, (this.cols - 10) / 2)
+        this.replacechar(2, Math.floor((this.cols - 10) / 2), 'Y')
+        this.stdout.write('OU LOSE');
     }
 
     public async winGame() {
         this.exit = true;
-        this.stdout.write('\x1bc');
-        this.stdout.write('you win');
+        this.replacechar(2, Math.floor((this.cols - 10) / 2), 'Y')
+        this.stdout.write('OU WIN');
 
     }
 
