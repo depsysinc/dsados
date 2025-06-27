@@ -64,10 +64,10 @@ export class PRCaterpillar extends DSProcess {
 
     private centipedemover: CentipedeMover;
 
-    private framerefreshtime: number = 150;
+    private framerefreshtime: number = 200;
     private bulletrefreshtime: number = 81;
 
-    private centipedelength: number = 20;
+    private centipedelength: number = 10;
 
     public rows: number = 13;
     public cols: number = 35;
@@ -75,6 +75,7 @@ export class PRCaterpillar extends DSProcess {
     public topoffset: number = 1;
 
     private score: number = 100;
+    private level: number = 1;
     private rockcount: number = 22;
     private playerx: number = Math.floor(this.cols / 2)
 
@@ -109,11 +110,18 @@ export class PRCaterpillar extends DSProcess {
         this.inputloop();
         this.bulletloop();
         await this.centipedeloop();
-
+        console.log('done');
     }
 
     private screencorrectsize(): boolean {
         return DSKernel.terminal.cols > this.cols + 2 && DSKernel.terminal.rows > this.rows + 2
+    }
+
+    private setlevel(newval:number) {
+        this.level = newval
+        this.centipedelength = 8+2*this.level;
+        this.framerefreshtime = 200*0.95^this.level;
+        this.rockcount = Math.min(this.rows*this.cols*0.3, 22+this.level)
     }
 
     private adjustoffsets() {
@@ -135,6 +143,7 @@ export class PRCaterpillar extends DSProcess {
     private drawstartingboard() {
         //Clear terminal
         this.stdout.write("\x1bc");
+
         //Draw the rocks
         for (let i = 0; i < this.rockcount; i++) {
             this.replacechar(this.randInt(0, this.rows - 1), this.randInt(0, this.cols), CGameData.rock) //Possible to optimize
@@ -144,6 +153,10 @@ export class PRCaterpillar extends DSProcess {
         this.stdout.write(this.topleft);
         for (let i = 0; i < this.centipedelength; i++) {
             this.stdout.write(CGameData.directions.get(left + left));
+            if (i%this.cols == this.cols-1) {
+                this.stdout.write(this.topleft);
+                this.stdout.write(this.nextline.repeat(Math.floor(i/this.cols)+1))
+            }
         }
 
         //Player
@@ -171,7 +184,8 @@ export class PRCaterpillar extends DSProcess {
     private drawdisplay() {
         this.stdout.write(this.topleft);
         this.stdout.write(up + up);
-        this.stdout.write(' '.repeat((this.cols - 9) / 2) + 'CENTIPEDE  ')
+        this.stdout.write('LVL ' + this.level.toString())
+        this.stdout.write(' '.repeat((this.cols - 9) / 2 - 4 - this.level.toString().length) + 'CENTIPEDE  ')
         this.stdout.write(' '.repeat((this.cols - 9) / 2 - this.score.toString().length - 1));
         this.stdout.write(this.score.toString())
         this.stdout.write(this.topleft);
@@ -205,7 +219,7 @@ export class PRCaterpillar extends DSProcess {
                 break;
             }
             if (this.exit) {
-                break;
+                break
             }
             if (char == right && this.playerx < this.cols - 1) {
                 this.replacechar(this.rows - 1, this.playerx, ' ');
@@ -228,7 +242,7 @@ export class PRCaterpillar extends DSProcess {
                     this.replacechar(this.rows - 2, this.playerx, CGameData.rock);
                 }
                 else if (prevline[this.playerx] == CGameData.rock) {
-                    this.replacechar(this.rows - 2, this.playerx,' ')
+                    this.replacechar(this.rows - 2, this.playerx, ' ')
                 }
                 this.score -= 1;
             }
@@ -250,17 +264,53 @@ export class PRCaterpillar extends DSProcess {
                 this.stdout.write(this.nextline)
             }
             this.stdout.write(this.hidecursor)
-            if (!this.centipedemover.hasmoved) {
-                this.winGame();
-            }
             if (this.haslost()) {
                 this.loseGame();
+            }
+            else if (!this.centipedemover.hasmoved) {
+                this.winGame();
             }
             this.framespassed++;
             await sleep(this.framerefreshtime);
 
         }
-        await sleep(3000);
+        await this.exitorrestart();
+        console.log('byeeeee')
+    }
+
+
+    private async exitorrestart() {
+        console.log('called)')
+        this.stdin.write('~'); //Get rid of listener in inputloop()
+        let key = ''
+        while (key != 'y' && key != 'n') {
+            console.log('loop')
+            try {
+                key = await this.stdin.read();
+            }
+            catch (e) {
+                console.log(e);
+                await sleep(50);
+            }
+            console.log('waiting"', key);
+        }
+        if (key == 'y') {
+            this.drawstartingboard();
+            this.drawdisplay();
+            this.exit = false;
+            await sleep(50);
+            this.bulletloop();
+            this.inputloop();
+            await this.centipedeloop();
+
+        }
+        else {
+            console.log("okay, key gave up")
+            return
+        }
+        console.log('???')
+
+
     }
 
     private haslost(): Boolean {
@@ -329,16 +379,20 @@ export class PRCaterpillar extends DSProcess {
 
     public async loseGame() {
         this.exit = true;
-        console.log(this.cols, this.cols - 10, (this.cols - 10) / 2)
+        this.score = 100;
         this.replacechar(2, Math.floor((this.cols - 10) / 2), 'Y')
         this.stdout.write('OU LOSE');
+        this.replacechar(3, Math.floor((this.cols - 15) / 2), 'r');
+        this.stdout.write('eplay? (y/n)')
     }
 
     public async winGame() {
         this.exit = true;
+        this.setlevel(this.level+1);
         this.replacechar(2, Math.floor((this.cols - 10) / 2), 'Y')
         this.stdout.write('OU WIN');
-
+        this.replacechar(3, Math.floor((this.cols - 19) / 2), 'n');
+        this.stdout.write('ext lvl? (y/n)')
     }
 
     public getline(index: number): string {
