@@ -428,18 +428,13 @@ export class PRCaterpillar extends DSProcess {
     }
 
     handleResize(): void {
+        this.exit = true;
         if (DSKernel.terminal.cols < this.cols || DSKernel.terminal.rows < this.rows + 2) {
             this.stdout.write('\x1bc')
             this.stdout.write('Please resize your screen');
         }
         else {
-            if (!this.paused) {
-                this.paused = false;
-                this.waitthenrestart();
-                this.refreshscreen();
-            }
-            this.paused = true;
-
+            this.stdin.write('y'); //Restart the game (see waitandrestart)
         }
     }
 
