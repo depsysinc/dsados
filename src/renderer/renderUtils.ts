@@ -46,7 +46,6 @@ export type TextureArray = {
 
 
 export function createTexture(gl: WebGL2RenderingContext, images: DSTexture[]): TextureArray {
-    console.log(images);
     const texarray = {
         glid: gl.createTexture(),
         length: images.length,

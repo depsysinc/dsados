@@ -171,7 +171,7 @@ export class PRDSMDBrowser extends DSApp {
         else if (url.startsWith('cmd: ')) {
             let commands = url.split(' ');
             commands.shift(); //remove cmd:
-            let process = commands.shift()
+            let process = commands[0];
             DSKernel.exec(process, commands);
         } 
         else {

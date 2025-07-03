@@ -44,6 +44,8 @@ Demonstrate [multiple](/an/invalid/url) different [links](/an/invalid/url) in th
 [an invalid link
 tag because must all fit on single line](/badfile)
 
+[Link to a process](cmd: bin/splash)
+
 # $$$$ Lists
 
   - An extra long list item to demonstrate multi line wrapping
