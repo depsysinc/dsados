@@ -11,79 +11,82 @@ const down = '\x1b[B'
 const right = '\x1b[C'
 const left = '\x1b[D'
 
-const opposites = new Map([
-    [up, down],
-    [down, up],
-    [left, right],
-    [right, left]
-])
-
-
 class CGameData {
     public static rock: string = 'Θ';
     public static player: string = 'Δ';
     public static bullet: string = '.';
     public static bodytypes: string = '┗━┓┃┏┛'
     public static cantravelthrough = ' '
+    public static defaultframerefreshtime: number = 200;
+    public static defaultcentipedelength: number = 10;
+    public static bulletrefreshtime: number = 81;
+    public static rows: number = 13;
+    public static cols: number = 35;
 
-    public static directions: Map<string, string> = new Map([
-        [down + down, '┃'],
-        [left + left, '━'],
-        [right + right, '━'],
-        [left + down, '┓'],
-        [right + down, '┏'],
-        [down + right, '┗'],
-        [down + left, '┛'],
-    ])
+    public static directions: Record<string, string> = {
+        [down + down]: '┃',
+        [left + left]: '━',
+        [right + right]: '━',
+        [left + down]: '┓',
+        [right + down]: '┏',
+        [down + right]: '┗',
+        [down + left]: '┛'
+    }
 
-    public static lastdirections: Map<string, string> = new Map([
-        [down, this.directions.get(down + down) + this.directions.get(left + down) + this.directions.get(right + down)],
-        [left, this.directions.get(down + left) + this.directions.get(left + left)],
-        [right, this.directions.get(down + right) + this.directions.get(right + right)],
-    ])
+    public static lastdirections: Record<string, string> = {
+        [down]: this.directions[down + down] + this.directions[left + down] + this.directions[right + down],
+        [left]: this.directions[down + left] + this.directions[left + left],
+        [right]: this.directions[down + right] + this.directions[right + right],
+    }
 
-    public static firstdirections: Map<string, string> = new Map([
-        [down, this.directions.get(down + down) + this.directions.get(down + left) + this.directions.get(down + right)],
-        [left, this.directions.get(left + left) + this.directions.get(left + down)],
-        [right, this.directions.get(right + down) + this.directions.get(right + right)],
-    ])
+    public static firstdirections: Record<string, string> = {
+        [down]: this.directions[down + down] + this.directions[down + left] + this.directions[down + right],
+        [left]: this.directions[left + left] + this.directions[left + down],
+        [right]: this.directions[right + down] + this.directions[right + right],
+    }
 
-    public static numberdirections: Map<string, number> = new Map([
-        [left, -1],
-        [right, 1]
-    ])
+    public static numberdirections: Record<string, number> = {
+        [left]: -1,
+        [right]: 1
+    }
+
+    public static opposites: Record<string, string> = {
+        [up]: down,
+        [down]: up,
+        [left]: right,
+        [right]: left
+    }
+
+
 }
 
-export class PRCaterpillar extends DSProcess {
 
+export class PRCentipede extends DSProcess {
 
     private centipedemover: CentipedeMover;
 
-    private framerefreshtime: number = 200;
-    private bulletrefreshtime: number = 81;
-
-    private centipedelength: number = 10;
-
-    public rows: number = 13;
-    public cols: number = 35;
-    public leftoffset: number = 1;
-    public topoffset: number = 1;
+    private leftoffset: number = 1;
+    private topoffset: number = 1;
 
     private score: number = 100;
-    private level: number = 1;
-    private rockcount: number = 22;
-    private playerx: number = Math.floor(this.cols / 2)
 
-    public hidecursor = '\x1b[1000B\x1b[1000C'
-    public topleft: string;
-    public nextline: string;
+    private level: number = 1;
+    private framerefreshtime = CGameData.defaultframerefreshtime;
+    private centipedelength: number = CGameData.defaultcentipedelength;
+    private rockcount: number = 22;
+
+
+    private hidecursor = '\x1b[1000B\x1b[1000C'
+    private topleft: string;
+    private nextline: string;
 
     private framespassed: number = 0;
+    private playerx: number = Math.floor(CGameData.cols / 2)
+
     private exit: boolean = false;
     private paused: boolean = false;
 
     protected async main(): Promise<void> {
-
         while (!this.screencorrectsize()) {
             this.stdout.write('\x1bc')
             this.stdout.write('Please resize your screen');
@@ -100,7 +103,7 @@ export class PRCaterpillar extends DSProcess {
 
     private async startgame() {
         this.functionloop(() => this.inputloop(), 0);
-        this.functionloop(() => this.bulletloop(), this.bulletrefreshtime);
+        this.functionloop(() => this.bulletloop(), CGameData.bulletrefreshtime);
 
         await sleep(1000);
         await this.functionloop(() => this.centipedeloop(), this.framerefreshtime);
@@ -131,31 +134,31 @@ export class PRCaterpillar extends DSProcess {
         if (this.exit) {
             return
         }
-        if (char == right && this.playerx < this.cols - 1) {
-            this.replacechar(this.rows - 1, this.playerx, ' ');
+        if (char == right && this.playerx < CGameData.cols - 1) {
+            this.replacechar(CGameData.rows - 1, this.playerx, ' ');
             this.playerx++;
             this.stdout.write(CGameData.player);
             this.stdout.write(this.hidecursor);
         }
         if (char == left && this.playerx > 0) {
-            this.replacechar(this.rows - 1, this.playerx - 1, CGameData.player);
+            this.replacechar(CGameData.rows - 1, this.playerx - 1, CGameData.player);
             this.playerx--;
             this.stdout.write(' ');
             this.stdout.write(this.hidecursor);
         }
         if (char == ' ') {
-            let prevline = this.getline(this.rows - 2);
+            let prevline = this.getline(CGameData.rows - 2);
             if (prevline[this.playerx] == CGameData.bullet) {
                 return;
             }
             else if (prevline[this.playerx] == ' ') {
-                this.replacechar(this.rows - 2, this.playerx, CGameData.bullet);
+                this.replacechar(CGameData.rows - 2, this.playerx, CGameData.bullet);
             }
             else if (CGameData.bodytypes.includes(prevline[this.playerx])) {
-                this.replacechar(this.rows - 2, this.playerx, CGameData.rock);
+                this.replacechar(CGameData.rows - 2, this.playerx, CGameData.rock);
             }
             else if (prevline[this.playerx] == CGameData.rock) {
-                this.replacechar(this.rows - 2, this.playerx, ' ')
+                this.replacechar(CGameData.rows - 2, this.playerx, ' ')
             }
             this.score -= 1;
         }
@@ -180,9 +183,9 @@ export class PRCaterpillar extends DSProcess {
     }
 
 
-    private async centipedeloop() {
+    private centipedeloop() {
         this.centipedemover.reset()
-        for (let i = 0; i < this.rows - 1; i++) {
+        for (let i = 0; i < CGameData.rows - 1; i++) {
             this.centipedemover.processnextline();
         }
         this.stdout.write(this.hidecursor)
@@ -193,22 +196,21 @@ export class PRCaterpillar extends DSProcess {
             this.winGame();
         }
         this.framespassed++;
-        await sleep(this.framerefreshtime);
     }
 
 
 
 
-    private async bulletloop() {
+    private bulletloop() {
         //Clear bullets from top of screen
         const topline = this.getline(0);
-        for (let i = 0; i < this.cols; i++) {
+        for (let i = 0; i < CGameData.cols; i++) {
             if (topline[i] == CGameData.bullet) {
                 this.replacechar(0, i, ' ')
             }
         }
 
-        for (let i = 1; i < this.rows; i++) {
+        for (let i = 1; i < CGameData.rows; i++) {
             this.bulletmove(i, this.getline(i), this.getline(i - 1));
         }
         this.updatedisplay();
@@ -220,7 +222,7 @@ export class PRCaterpillar extends DSProcess {
     private bulletmove(row: number, line: string, lineabove: string) {
         lineabove = lineabove;
         line = line;
-        for (let col = 0; col < this.cols; col++) {
+        for (let col = 0; col < CGameData.cols; col++) {
             if (line[col] == CGameData.bullet) {
                 this.replacechar(row, col, ' ')
                 if (lineabove[col] == CGameData.rock) {
@@ -241,7 +243,7 @@ export class PRCaterpillar extends DSProcess {
 
 
     private adjustoffsets() {
-        this.leftoffset = Math.ceil((DSKernel.terminal.cols - this.cols) / 2);
+        this.leftoffset = Math.ceil((DSKernel.terminal.cols - CGameData.cols) / 2);
         this.topoffset = 2
         this.topleft = '\x1b[1000F';
         this.nextline = '\x1b[E';
@@ -265,21 +267,21 @@ export class PRCaterpillar extends DSProcess {
 
         //Draw the rocks
         for (let i = 0; i < this.rockcount; i++) {
-            this.replacechar(this.randInt(0, this.rows - 1), this.randInt(0, this.cols), CGameData.rock) //Possible to optimize
+            this.replacechar(this.randInt(0, CGameData.rows - 1), this.randInt(0, CGameData.cols), CGameData.rock) //Possible to optimize
         }
 
         //Draw centipede
         this.stdout.write(this.topleft);
         for (let i = 0; i < this.centipedelength; i++) {
-            this.stdout.write(CGameData.directions.get(left + left));
-            if (i % this.cols == this.cols - 1) {
+            this.stdout.write(CGameData.directions[left + left]);
+            if (i % CGameData.cols == CGameData.cols - 1) {
                 this.stdout.write(this.topleft);
-                this.stdout.write(this.nextline.repeat(Math.floor(i / this.cols) + 1))
+                this.stdout.write(this.nextline.repeat(Math.floor(i / CGameData.cols) + 1))
             }
         }
 
         //Player
-        this.replacechar(this.rows - 1, this.playerx, CGameData.player);
+        this.replacechar(CGameData.rows - 1, this.playerx, CGameData.player);
     }
 
 
@@ -287,34 +289,34 @@ export class PRCaterpillar extends DSProcess {
         this.stdout.write(this.topleft);
         this.stdout.write(up + up);
         this.stdout.write('LVL ' + this.level.toString())
-        this.stdout.write(' '.repeat((this.cols - 9) / 2 - 4 - this.level.toString().length) + 'CENTIPEDE  ')
-        this.stdout.write(' '.repeat((this.cols - 9) / 2 - this.score.toString().length - 1));
+        this.stdout.write(' '.repeat((CGameData.cols - 9) / 2 - 4 - this.level.toString().length) + 'CENTIPEDE  ')
+        this.stdout.write(' '.repeat((CGameData.cols - 9) / 2 - this.score.toString().length - 1));
         this.stdout.write(this.score.toString())
         this.stdout.write(this.topleft);
         this.stdout.write(up + left);
         let borderchar = '#'
-        this.stdout.write(borderchar.repeat(this.cols + 2));
-        let crossrow = `\x1b[${this.cols}C`
-        for (let i = 0; i < this.rows; i++) {
+        this.stdout.write(borderchar.repeat(CGameData.cols + 2));
+        let crossrow = `\x1b[${CGameData.cols}C`
+        for (let i = 0; i < CGameData.rows; i++) {
             this.stdout.write(this.nextline + left);
             this.stdout.write(borderchar)
             this.stdout.write(crossrow);
             this.stdout.write(borderchar)
         }
         this.stdout.write(this.nextline + left);
-        this.stdout.write(borderchar.repeat(this.cols + 2))
+        this.stdout.write(borderchar.repeat(CGameData.cols + 2))
     }
 
 
     private updatedisplay() {
         this.stdout.write(this.topleft);
-        this.stdout.write(up + up + right.repeat(this.cols - this.score.toString().length));
+        this.stdout.write(up + up + right.repeat(CGameData.cols - this.score.toString().length));
         this.stdout.write(' ' + this.score.toString());
     }
 
 
     private haslost(): Boolean {
-        let lastline = this.getline(this.rows - 1);
+        let lastline = this.getline(CGameData.rows - 1);
         for (let i = 0; i < lastline.length; i++) {
             if (CGameData.bodytypes.includes(lastline[i])) {
                 return true;
@@ -324,22 +326,22 @@ export class PRCaterpillar extends DSProcess {
     }
 
 
-    public async loseGame() {
+    private async loseGame() {
         this.exit = true;
         this.score = 100;
-        this.replacechar(2, Math.floor((this.cols - 10) / 2), 'Y')
+        this.replacechar(2, Math.floor((CGameData.cols - 10) / 2), 'Y')
         this.stdout.write('OU LOSE');
-        this.replacechar(3, Math.floor((this.cols - 15) / 2), 'r');
+        this.replacechar(3, Math.floor((CGameData.cols - 15) / 2), 'r');
         this.stdout.write('eplay? (y/n)')
     }
 
 
-    public async winGame() {
+    private async winGame() {
         this.exit = true;
         this.setlevel(this.level + 1);
-        this.replacechar(2, Math.floor((this.cols - 10) / 2), 'Y')
+        this.replacechar(2, Math.floor((CGameData.cols - 10) / 2), 'Y')
         this.stdout.write('OU WIN');
-        this.replacechar(3, Math.floor((this.cols - 19) / 2), 'n');
+        this.replacechar(3, Math.floor((CGameData.cols - 19) / 2), 'n');
         this.stdout.write('ext lvl? (y/n)')
     }
 
@@ -348,7 +350,7 @@ export class PRCaterpillar extends DSProcess {
         this.level = newval
         this.centipedelength = 8 + 2 * this.level;
         this.framerefreshtime = 200 * 0.95 ^ this.level;
-        this.rockcount = Math.min(this.rows * this.cols * 0.3, 22 + this.level)
+        this.rockcount = Math.min(CGameData.rows * CGameData.cols * 0.3, 22 + this.level)
     }
 
 
@@ -387,23 +389,23 @@ export class PRCaterpillar extends DSProcess {
     }
 
     private screencorrectsize(): boolean {
-        return DSKernel.terminal.cols > this.cols + 2 && DSKernel.terminal.rows > this.rows + 2
+        return DSKernel.terminal.cols > CGameData.cols + 2 && DSKernel.terminal.rows > CGameData.rows + 2
     }
 
 
     public getline(index: number): string {
-        if (index < 0 || index - this.topoffset > this.rows) {
+        if (index < 0 || index - this.topoffset > CGameData.rows) {
             return '';
         }
         const line = DSKernel.terminal.xterm.buffer.active.getLine(index + this.topoffset).translateToString();
-        const gamesection = line.slice(this.leftoffset, this.cols + this.leftoffset);
+        const gamesection = line.slice(this.leftoffset, CGameData.cols + this.leftoffset);
         return gamesection
     }
 
     public replacechar(row: number, column: number, char: string) {
-        if (column >= this.cols ||
+        if (column >= CGameData.cols ||
             row < 0 || column < 0 ||
-            row >= this.rows) {
+            row >= CGameData.rows) {
 
             throw new RangeError("Indices " + column + ' ' + row + " out of range in replacechar")
         }
@@ -429,7 +431,7 @@ export class PRCaterpillar extends DSProcess {
 
     handleResize(): void {
         this.exit = true;
-        if (DSKernel.terminal.cols < this.cols || DSKernel.terminal.rows < this.rows + 2) {
+        if (DSKernel.terminal.cols < CGameData.cols || DSKernel.terminal.rows < CGameData.rows + 2) {
             this.stdout.write('\x1bc')
             this.stdout.write('Please resize your screen');
         }
@@ -437,16 +439,6 @@ export class PRCaterpillar extends DSProcess {
             this.stdin.write('y'); //Restart the game (see waitandrestart)
         }
     }
-
-    private async waitthenrestart() {
-        this.paused = false;
-        await sleep(50);
-        if (!this.paused) {
-            this.refreshscreen();
-        }
-    }
-
-
 }
 
 
@@ -462,12 +454,12 @@ class CentipedeMover {
 
     private length: number;
 
-    private parent: PRCaterpillar;
+    private parent: PRCentipede;
 
 
-    constructor(main: PRCaterpillar) {
+    constructor(main: PRCentipede) {
         this.parent = main;
-        this.length = this.parent.cols + 2
+        this.length = CGameData.cols + 2
     }
 
 
@@ -498,14 +490,14 @@ class CentipedeMover {
                         newdirection = down;
                     }
 
-                    if (this.line[this.currentcol] == CGameData.directions.get(down + down))
-                        this.replacecurrentchar(CGameData.directions.get(down + newdirection))
+                    if (this.line[this.currentcol] == CGameData.directions[down + down])
+                        this.replacecurrentchar(CGameData.directions[down + newdirection])
                     else if (newdirection == down) {
-                        this.replacecurrentchar(CGameData.directions.get(opposites.get(this.horizdirection()) + down))
+                        this.replacecurrentchar(CGameData.directions[CGameData.opposites[this.horizdirection()] + down])
                     }
                     this.movecursor(newdirection);
-                    this.replacecurrentchar(CGameData.directions.get(newdirection + newdirection))
-                    this.movecursor(opposites.get(newdirection))
+                    this.replacecurrentchar(CGameData.directions[newdirection + newdirection])
+                    this.movecursor(CGameData.opposites[newdirection])
                 }
 
                 if (this.isendofsnake()) {
@@ -545,10 +537,10 @@ class CentipedeMover {
 
 
     private isendofsnake(): boolean {
-        if (CGameData.lastdirections.get(this.horizdirection()).includes(this.gettilebehind())) {
+        if (CGameData.lastdirections[this.horizdirection()].includes(this.gettilebehind())) {
             return false
         }
-        if (CGameData.lastdirections.get(down).includes(this.prevline[this.currentcol])) {
+        if (CGameData.lastdirections[down].includes(this.prevline[this.currentcol])) {
             return false
         }
         return true;
@@ -556,10 +548,10 @@ class CentipedeMover {
 
 
     private isheadofsnake(): boolean {
-        if (CGameData.firstdirections.get(opposites.get(this.horizdirection())).includes(this.gettileahead())) {
+        if (CGameData.firstdirections[CGameData.opposites[this.horizdirection()]].includes(this.gettileahead())) {
             return false;
         }
-        if (CGameData.firstdirections.get(down).includes(this.nextline[this.currentcol])) {
+        if (CGameData.firstdirections[down].includes(this.nextline[this.currentcol])) {
             return false
         }
         return true
@@ -567,12 +559,12 @@ class CentipedeMover {
 
 
     private gettileahead(): string {
-        return this.line[this.currentcol + CGameData.numberdirections.get(this.horizdirection())]
+        return this.line[this.currentcol + CGameData.numberdirections[this.horizdirection()]]
     }
 
 
     private gettilebehind(): string {
-        return this.line[this.currentcol - CGameData.numberdirections.get(this.horizdirection())]
+        return this.line[this.currentcol - CGameData.numberdirections[this.horizdirection()]]
 
     }
 
