@@ -382,6 +382,8 @@ export class PRCentipede extends DSProcess {
             await this.startgame();
         }
         else {
+            this.replacechar(5, Math.floor((CGameData.cols - 12) / 2), 'E')
+            this.stdout.write('xiting...');
             return
         }
 
