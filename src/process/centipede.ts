@@ -75,10 +75,10 @@ export class PRCentipede extends DSProcess {
     private topleft: string;
     private nextline: string;
 
-    private framespassed: number = 0;
     private playerx: number = Math.floor(CGameData.cols / 2)
 
     private exit: boolean = false;
+    private levelend: boolean = false;
     private paused: boolean = false;
 
     protected async main(): Promise<void> {
@@ -88,27 +88,40 @@ export class PRCentipede extends DSProcess {
             await sleep(50);
         }
         this.stdout.write(set_cursor(false));
-        this.refreshscreen();
         this.centipedemover = new CentipedeMover(this);
 
 
-        await this.startgame();
+        await this.gameloop();
 
     }
 
-    private async startgame() {
-        this.functionloop(() => this.inputloop(), 0);
-        this.functionloop(() => this.bulletloop(), CGameData.bulletrefreshtime);
+    private async gameloop() {
+        while (!this.exit) {
+            this.refreshscreen();
 
-        await sleep(1000);
-        await this.functionloop(() => this.centipedeloop(), this.framerefreshtime);
-        await this.exitorrestart();
+            this.functionloop(() => this.inputloop(), 0);
+            this.functionloop(() => this.bulletloop(), CGameData.bulletrefreshtime);
+            await sleep(1000);
+            this.functionloop(() => this.centipedemover.processscreen(), this.framerefreshtime);
 
+            while (!this.levelend) {
+                if (this.haslost()) {
+                    this.loseGame();
+
+                }
+                else if (this.haswon()) {
+                    this.winGame();
+                }
+                await sleep(50);
+
+            }
+            this.exit = await this.exitorrestart();
+        }
     }
 
 
     private async functionloop(func: () => void, sleeptime: number) {
-        while (!this.exit) {
+        while (!this.levelend) {
             if (!this.paused) {
                 func();
                 await sleep(sleeptime)
@@ -126,7 +139,7 @@ export class PRCentipede extends DSProcess {
         catch (DSStreamClosedError) {
             return;
         }
-        if (this.exit) {
+        if (this.levelend) {
             return
         }
         if (char == right && this.playerx < CGameData.cols - 1) {
@@ -156,7 +169,7 @@ export class PRCentipede extends DSProcess {
             this.score -= 1;
         }
         if (char == 'q') {
-            this.exit = true;
+            this.levelend = true;
             this.stdin.write('n'); //Automatically quit instead of playing again (see exitorrestart)
         }
 
@@ -174,23 +187,6 @@ export class PRCentipede extends DSProcess {
             this.paused = false;
         }
     }
-
-
-    private centipedeloop() {
-        this.centipedemover.reset()
-        for (let i = 0; i < CGameData.rows - 1; i++) {
-            this.centipedemover.processnextline();
-        }
-        if (this.haslost()) {
-            this.loseGame();
-        }
-        else if (!this.centipedemover.hasmoved) {
-            this.winGame();
-        }
-        this.framespassed++;
-    }
-
-
 
 
     private bulletloop() {
@@ -315,9 +311,12 @@ export class PRCentipede extends DSProcess {
         return false;
     }
 
+    private haswon(): Boolean {
+        return !this.centipedemover.iscentipederemaining;
+    }
 
     private async loseGame() {
-        this.exit = true;
+        this.levelend = true;
         this.score = 100;
         this.replacechar(2, Math.floor((CGameData.cols - 10) / 2), 'Y')
         this.stdout.write('OU LOSE');
@@ -327,7 +326,7 @@ export class PRCentipede extends DSProcess {
 
 
     private async winGame() {
-        this.exit = true;
+        this.levelend = true;
         this.setlevel(this.level + 1);
         this.replacechar(2, Math.floor((CGameData.cols - 10) / 2), 'Y')
         this.stdout.write('OU WIN');
@@ -353,29 +352,21 @@ export class PRCentipede extends DSProcess {
     }
 
 
-    private async exitorrestart() {
+    private async exitorrestart(): Promise<boolean> {
         this.stdin.write('~'); //Get rid of listener in inputloop()
         let key = ''
         while (key != 'y' && key != 'n') {
-            try {
-                key = await this.stdin.read();
-            }
-            catch (e) {
-                console.log(e);
-                await sleep(50);
-            }
+            key = await this.stdin.read();
         }
+        
         if (key == 'y') {
-            this.refreshscreen();
-            this.exit = false;
-            await sleep(50);
-            await this.startgame();
+            this.levelend = false;
+            return false;
         }
         else {
             this.stdout.write(reset());
             this.stdout.write('Exiting...');
-
-            return;
+            return true;
         }
 
 
@@ -423,7 +414,7 @@ export class PRCentipede extends DSProcess {
     }
 
     handleResize(): void {
-        this.exit = true;
+        this.levelend = true;
         if (DSKernel.terminal.cols < CGameData.cols || DSKernel.terminal.rows < CGameData.rows + 2) {
             this.stdout.write(reset());
             this.stdout.write('Please resize your screen');
@@ -437,7 +428,8 @@ export class PRCentipede extends DSProcess {
 
 class CentipedeMover {
 
-    public hasmoved: boolean;
+    public iscentipederemaining: boolean = true;
+    private hasmoved: boolean;
 
     private rownum: number = -1;
     private currentcol: number = 0
@@ -465,41 +457,48 @@ class CentipedeMover {
     }
 
 
-    public async processnextline() {
-        this.currentcol = 1;
-        this.rownum++;
-        this.prevline = this.line;
-        this.line = this.nextline;
-        this.nextline = this.getpaddedline(this.rownum + 1);
-        for (this.currentcol = 1; this.currentcol < this.length - 1; this.currentcol++) {
-            if (CGameData.bodytypes.includes(this.line[this.currentcol])) {
-                this.hasmoved = true;
-                if (this.isheadofsnake()) {
-                    let newdirection;
-                    if (CGameData.cantravelthrough.includes(this.gettileahead())) {
-                        newdirection = this.horizdirection();
-                    }
-                    else {
-                        newdirection = down;
+    public async processscreen() {
+        this.reset();
+        for (this.rownum = 0; this.rownum < CGameData.rows - 1; this.rownum++) {
+            this.updatelines();
+            for (this.currentcol = 1; this.currentcol < this.length - 1; this.currentcol++) {
+                if (CGameData.bodytypes.includes(this.line[this.currentcol])) {
+                    this.hasmoved = true;
+                    if (this.isheadofsnake()) {
+                        let newdirection;
+                        if (CGameData.cantravelthrough.includes(this.gettileahead())) {
+                            newdirection = this.horizdirection();
+                        }
+                        else {
+                            newdirection = down;
+                        }
+
+                        if (this.line[this.currentcol] == CGameData.directions[down + down])
+                            this.replacecurrentchar(CGameData.directions[down + newdirection])
+                        else if (newdirection == down) {
+                            this.replacecurrentchar(CGameData.directions[CGameData.opposites[this.horizdirection()] + down])
+                        }
+                        this.movecursor(newdirection);
+                        this.replacecurrentchar(CGameData.directions[newdirection + newdirection])
+                        this.movecursor(CGameData.opposites[newdirection])
                     }
 
-                    if (this.line[this.currentcol] == CGameData.directions[down + down])
-                        this.replacecurrentchar(CGameData.directions[down + newdirection])
-                    else if (newdirection == down) {
-                        this.replacecurrentchar(CGameData.directions[CGameData.opposites[this.horizdirection()] + down])
+                    if (this.isendofsnake()) {
+                        this.replacecurrentchar(' ')
                     }
-                    this.movecursor(newdirection);
-                    this.replacecurrentchar(CGameData.directions[newdirection + newdirection])
-                    this.movecursor(CGameData.opposites[newdirection])
+
                 }
-
-                if (this.isendofsnake()) {
-                    this.replacecurrentchar(' ')
-                }
-
             }
 
         }
+        this.iscentipederemaining = this.hasmoved;
+    }
+
+    private updatelines() {
+        this.prevline = this.line;
+        this.line = this.nextline;
+        this.nextline = this.getpaddedline(this.rownum + 1);
+
     }
 
 
