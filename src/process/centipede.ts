@@ -1,10 +1,7 @@
-import { DSFilePermsError } from "../dsFileSystem";
 import { DSKernel } from "../dsKernel";
-import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSStream, DSStreamClosedError } from "../dsStream";
-import { DSTerminal } from "../dsTerminal";
+import { DSProcess } from "../dsProcess";
+import { cursordown, cursorleft, cursorright, reset, set_cursor } from "../lib/dsCurses";
 import { sleep } from "../lib/dsLib";
-import { DSOptionParser } from "../lib/dsOptionParser";
 
 const up = '\x1b[A'
 const down = '\x1b[B'
@@ -75,8 +72,6 @@ export class PRCentipede extends DSProcess {
     private centipedelength: number = CGameData.defaultcentipedelength;
     private rockcount: number = 22;
 
-
-    private hidecursor = '\x1b[1000B\x1b[1000C'
     private topleft: string;
     private nextline: string;
 
@@ -88,14 +83,14 @@ export class PRCentipede extends DSProcess {
 
     protected async main(): Promise<void> {
         while (!this.screencorrectsize()) {
-            this.stdout.write('\x1bc')
+            this.stdout.write(reset());
             this.stdout.write('Please resize your screen');
             await sleep(50);
         }
+        this.stdout.write(set_cursor(false));
         this.refreshscreen();
         this.centipedemover = new CentipedeMover(this);
 
-        await sleep(50);
 
         await this.startgame();
 
@@ -138,13 +133,11 @@ export class PRCentipede extends DSProcess {
             this.replacechar(CGameData.rows - 1, this.playerx, ' ');
             this.playerx++;
             this.stdout.write(CGameData.player);
-            this.stdout.write(this.hidecursor);
         }
         if (char == left && this.playerx > 0) {
             this.replacechar(CGameData.rows - 1, this.playerx - 1, CGameData.player);
             this.playerx--;
             this.stdout.write(' ');
-            this.stdout.write(this.hidecursor);
         }
         if (char == ' ') {
             let prevline = this.getline(CGameData.rows - 2);
@@ -164,7 +157,7 @@ export class PRCentipede extends DSProcess {
         }
         if (char == 'q') {
             this.exit = true;
-            this.stdin.write('n'); //Automatically quit instead of playing again (see waitorrestart)
+            this.stdin.write('n'); //Automatically quit instead of playing again (see exitorrestart)
         }
 
         if (char == 'p') {
@@ -188,7 +181,6 @@ export class PRCentipede extends DSProcess {
         for (let i = 0; i < CGameData.rows - 1; i++) {
             this.centipedemover.processnextline();
         }
-        this.stdout.write(this.hidecursor)
         if (this.haslost()) {
             this.loseGame();
         }
@@ -214,7 +206,6 @@ export class PRCentipede extends DSProcess {
             this.bulletmove(i, this.getline(i), this.getline(i - 1));
         }
         this.updatedisplay();
-        this.stdout.write(this.hidecursor)
 
     }
 
@@ -248,12 +239,12 @@ export class PRCentipede extends DSProcess {
         this.topleft = '\x1b[1000F';
         this.nextline = '\x1b[E';
         if (this.leftoffset > 0) {
-            let controlcode = `\x1b[${this.leftoffset}C`
+            let controlcode = cursorright(this.leftoffset);
             this.topleft += controlcode;
             this.nextline += controlcode;
         }
         if (this.topoffset > 0) {
-            let controlcode = `\x1b[${this.topoffset}B`
+            let controlcode = cursordown(this.topoffset);
             this.topleft += controlcode;
         }
 
@@ -262,8 +253,7 @@ export class PRCentipede extends DSProcess {
 
     private drawstartingboard() {
 
-        //Clear terminal
-        this.stdout.write("\x1bc");
+        this.stdout.write(reset());
 
         //Draw the rocks
         for (let i = 0; i < this.rockcount; i++) {
@@ -296,7 +286,7 @@ export class PRCentipede extends DSProcess {
         this.stdout.write(up + left);
         let borderchar = '#'
         this.stdout.write(borderchar.repeat(CGameData.cols + 2));
-        let crossrow = `\x1b[${CGameData.cols}C`
+        let crossrow = cursorright(CGameData.cols);
         for (let i = 0; i < CGameData.rows; i++) {
             this.stdout.write(this.nextline + left);
             this.stdout.write(borderchar)
@@ -382,10 +372,8 @@ export class PRCentipede extends DSProcess {
             await this.startgame();
         }
         else {
-            this.stdout.write('\x1bc');
-            this.stdout.write('\x1b[1000F');
+            this.stdout.write(reset());
             this.stdout.write('Exiting...');
-            this.stdout.write('\x1b[1000F');
 
             return;
         }
@@ -417,11 +405,11 @@ export class PRCentipede extends DSProcess {
 
         this.stdout.write(this.topleft);
         if (row > 0) {
-            this.stdout.write('\x1b[' + row + 'B'); //Down to the correct row
+            this.stdout.write(cursordown(row)); //Down to the correct row
         }
 
         if (column > 0) {
-            this.stdout.write('\x1b[' + column + 'C'); //Right to the correct column
+            this.stdout.write(cursorright(column)); //Right to the correct column
         }
 
         this.stdout.write(char);
@@ -437,7 +425,7 @@ export class PRCentipede extends DSProcess {
     handleResize(): void {
         this.exit = true;
         if (DSKernel.terminal.cols < CGameData.cols || DSKernel.terminal.rows < CGameData.rows + 2) {
-            this.stdout.write('\x1bc')
+            this.stdout.write(reset());
             this.stdout.write('Please resize your screen');
         }
         else {
