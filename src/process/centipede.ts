@@ -90,13 +90,26 @@ export class PRCentipede extends DSProcess {
         this.stdout.write(set_cursor(false));
         this.centipedemover = new CentipedeMover(this);
 
+        this.splash();
 
         await this.gameloop();
 
     }
 
+    private splash() {
+        this.stdout.write(reset());
+        this.stdout.write('hi play? (y/n)');
+    }
+
     private async gameloop() {
         while (!this.exit) {
+
+            this.exit = await this.exitorrestart();
+
+            if (this.exit) {
+                continue;
+            }
+
             this.refreshscreen();
 
             this.functionloop(() => this.inputloop(), 0);
@@ -115,7 +128,6 @@ export class PRCentipede extends DSProcess {
                 await sleep(50);
 
             }
-            this.exit = await this.exitorrestart();
         }
     }
 
@@ -170,7 +182,8 @@ export class PRCentipede extends DSProcess {
         }
         if (char == 'q') {
             this.levelend = true;
-            this.stdin.write('n'); //Automatically quit instead of playing again (see exitorrestart)
+            this.exit = true;
+            this.exitscreen();
         }
 
         if (char == 'p') {
@@ -179,6 +192,12 @@ export class PRCentipede extends DSProcess {
             while (unpausechar != 'p') {
                 try {
                     unpausechar = await this.stdin.read();
+                    if (unpausechar == 'q') {
+                        this.levelend = true;
+                        this.exit = true;
+                        this.exitscreen();
+
+                    }
                 }
                 catch (DSStreamClosedError) {
                     return;
@@ -253,7 +272,7 @@ export class PRCentipede extends DSProcess {
 
         //Draw the rocks
         for (let i = 0; i < this.rockcount; i++) {
-            this.replacechar(this.randInt(0, CGameData.rows - 1), this.randInt(0, CGameData.cols), CGameData.rock) //Possible to optimize
+            this.replacechar(this.randInt(0, CGameData.rows - 1), this.randInt(0, CGameData.cols), CGameData.rock)
         }
 
         //Draw centipede
@@ -310,10 +329,12 @@ export class PRCentipede extends DSProcess {
         }
         return false;
     }
+    
 
     private haswon(): Boolean {
         return !this.centipedemover.iscentipederemaining;
     }
+
 
     private async loseGame() {
         this.levelend = true;
@@ -348,7 +369,11 @@ export class PRCentipede extends DSProcess {
         this.adjustoffsets();
         this.drawstartingboard();
         this.drawdisplay();
+    }
 
+    private exitscreen() {
+        this.stdout.write(reset());
+        this.stdout.write('Exiting...');
     }
 
 
@@ -358,18 +383,15 @@ export class PRCentipede extends DSProcess {
         while (key != 'y' && key != 'n') {
             key = await this.stdin.read();
         }
-        
+
         if (key == 'y') {
             this.levelend = false;
             return false;
         }
         else {
-            this.stdout.write(reset());
-            this.stdout.write('Exiting...');
+            this.exitscreen();
             return true;
         }
-
-
     }
 
     private screencorrectsize(): boolean {
