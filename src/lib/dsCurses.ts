@@ -71,3 +71,17 @@ export function scrollup(rows: number): string {
 export function setattr(attr: string): string {
     return (`\x1b[${attr}m`);
 }
+
+export function cursordown(rows: number): string {
+    return (`\x1b[${rows}B`)
+}
+export function cursorup(rows: number): string {
+    return (`\x1b[${rows}A`)
+}
+export function cursorleft(cols: number): string {
+    return (`\x1b[${cols}D`)
+}
+export function cursorright(cols: number): string {
+    return (`\x1b[${cols}C`)
+}
+
