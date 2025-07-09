@@ -24,6 +24,8 @@ class CGameData {
         [down + down]: '┃',
         [left + left]: '━',
         [right + right]: '━',
+        [left + right]: '━',
+        [right + left]: '━',
         [left + down]: '┓',
         [right + down]: '┏',
         [down + right]: '┗',
@@ -60,7 +62,7 @@ class CGameData {
 
 export class PRCentipede extends DSProcess {
 
-    private centipedemover: CentipedeMover;
+    private centipede: Centipede;
 
     private leftoffset: number = 1;
     private topoffset: number = 1;
@@ -88,7 +90,7 @@ export class PRCentipede extends DSProcess {
             await sleep(50);
         }
         this.stdout.write(set_cursor(false));
-        this.centipedemover = new CentipedeMover(this);
+        this.centipede = new Centipede(this);
 
         this.splash();
 
@@ -115,7 +117,7 @@ export class PRCentipede extends DSProcess {
             this.functionloop(() => this.inputloop(), 0);
             this.functionloop(() => this.bulletloop(), CGameData.bulletrefreshtime);
             await sleep(1000);
-            this.functionloop(() => this.centipedemover.processscreen(), this.framerefreshtime);
+            this.functionloop(() => this.centipede.processscreen(), this.framerefreshtime);
 
             while (!this.levelend) {
                 if (this.haslost()) {
@@ -329,10 +331,10 @@ export class PRCentipede extends DSProcess {
         }
         return false;
     }
-    
+
 
     private haswon(): Boolean {
-        return !this.centipedemover.iscentipederemaining;
+        return !this.centipede.iscentipederemaining;
     }
 
 
@@ -365,7 +367,6 @@ export class PRCentipede extends DSProcess {
 
 
     private refreshscreen() {
-        this.score = 100;
         this.adjustoffsets();
         this.drawstartingboard();
         this.drawdisplay();
@@ -442,13 +443,13 @@ export class PRCentipede extends DSProcess {
             this.stdout.write('Please resize your screen');
         }
         else {
-            this.stdin.write('y'); //Restart the game (see waitandrestart)
+            this.splash();
         }
     }
 }
 
 
-class CentipedeMover {
+class Centipede {
 
     public iscentipederemaining: boolean = true;
     private hasmoved: boolean;
@@ -497,8 +498,8 @@ class CentipedeMover {
 
                         if (this.line[this.currentcol] == CGameData.directions[down + down])
                             this.replacecurrentchar(CGameData.directions[down + newdirection])
-                        else if (newdirection == down) {
-                            this.replacecurrentchar(CGameData.directions[CGameData.opposites[this.horizdirection()] + down])
+                        else {
+                            this.replacecurrentchar(CGameData.directions[CGameData.opposites[this.horizdirection()] + newdirection])
                         }
                         this.movecursor(newdirection);
                         this.replacecurrentchar(CGameData.directions[newdirection + newdirection])
