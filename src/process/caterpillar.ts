@@ -1,6 +1,6 @@
 import { DSKernel } from "../dsKernel";
 import { DSProcess } from "../dsProcess";
-import { cursordown, cursorleft, cursorright, reset, set_cursor } from "../lib/dsCurses";
+import { cursordown, cursorleft, cursornextline, cursorright, reset, set_cursor } from "../lib/dsCurses";
 import { sleep } from "../lib/dsLib";
 
 const up = '\x1b[A'
@@ -15,7 +15,7 @@ class CGameData {
     public static bodytypes: string = '┗━┓┃┏┛'
     public static cantravelthrough = ' '
     public static defaultframerefreshtime: number = 200;
-    public static defaultcentipedelength: number = 10;
+    public static defaultcaterpillarlength: number = 10;
     public static bulletrefreshtime: number = 81;
     public static rows: number = 13;
     public static cols: number = 35;
@@ -60,9 +60,9 @@ class CGameData {
 }
 
 
-export class PRCentipede extends DSProcess {
+export class PRCaterpillar extends DSProcess {
 
-    private centipede: Centipede;
+    private caterpillar: Caterpillar;
 
     private leftoffset: number = 1;
     private topoffset: number = 1;
@@ -71,7 +71,7 @@ export class PRCentipede extends DSProcess {
 
     private level: number = 1;
     private framerefreshtime = CGameData.defaultframerefreshtime;
-    private centipedelength: number = CGameData.defaultcentipedelength;
+    private caterpillarlength: number = CGameData.defaultcaterpillarlength;
     private rockcount: number = 22;
 
     private topleft: string;
@@ -90,18 +90,54 @@ export class PRCentipede extends DSProcess {
             await sleep(50);
         }
         this.stdout.write(set_cursor(false));
-        this.centipede = new Centipede(this);
+        this.caterpillar = new Caterpillar(this);
 
         this.splash();
 
         await this.gameloop();
 
     }
-
     private splash() {
         this.stdout.write(reset());
-        this.stdout.write('hi play? (y/n)');
+        this.writelinecentered('#        ┏┓┏┓┏┳┓┏┓┳┓┏┓┳┓ ┓ ┏┓┳┓         #');
+        this.writelinecentered('#        ┃ ┣┫ ┃ ┣ ┣┫┃┃┃┃ ┃ ┣┫┣┫         #');
+        this.writelinecentered('#        ┗┛┛┗ ┻ ┗┛┛┗┣┛┻┗┛┗┛┛┗┛┗╸        #');
+        this.writelinecentered('#                                       #');
+        this.writelinecentered('#         A GAME OF CRAWLY DOOM         #');
+        this.writelinecentered('# Θ                         ┏━━━━━━┛    #');
+        this.writelinecentered('#             Θ             ┗━━━━━━━━━┓ #');
+        this.writelinecentered('#                                 ┏━━━┛ #');
+        this.writelinecentered('#       Θ                Θ        .     #');
+        this.writelinecentered('#                                       #');
+        this.writelinecentered('#                PRESS Y         ≡Δ     #');
+        this.writelinecentered('#               q to exit               #');
+        this.writelinecentered('#                                       #');
+
+        for (let i = 0; i < DSKernel.terminal.rows - 14; i++) {
+            this.stdout.write(cursornextline())
+        }
+        if (DSKernel.terminal.cols < 56) {
+            this.writelinecentered('© 2025 Deprecated Systems')
+        }
+        else {
+            this.writelinecentered('© 2025 Deprecated Systems - Created by Nicholas Waslander');
+        }
+
     }
+
+    private writelinecentered(message: string) {
+        if (message.length > DSKernel.terminal.cols) {
+            console.warn("Message too long, trimming");
+            let trimlength = Math.ceil((message.length - DSKernel.terminal.cols) / 2);
+            message = message.slice(trimlength, message.length - trimlength);
+        }
+        let middlecol = DSKernel.terminal.cols / 2;
+        this.stdout.write(cursornextline());
+        this.stdout.write(' '.repeat(Math.floor(middlecol - message.length / 2)));
+        this.stdout.write(message);
+
+    }
+
 
     private async gameloop() {
         while (!this.exit) {
@@ -117,7 +153,7 @@ export class PRCentipede extends DSProcess {
             this.functionloop(() => this.inputloop(), 0);
             this.functionloop(() => this.bulletloop(), CGameData.bulletrefreshtime);
             await sleep(1000);
-            this.functionloop(() => this.centipede.processscreen(), this.framerefreshtime);
+            this.functionloop(() => this.caterpillar.processscreen(), this.framerefreshtime);
 
             while (!this.levelend) {
                 if (this.haslost()) {
@@ -277,9 +313,9 @@ export class PRCentipede extends DSProcess {
             this.replacechar(this.randInt(0, CGameData.rows - 1), this.randInt(0, CGameData.cols), CGameData.rock)
         }
 
-        //Draw centipede
+        //Draw caterpillar
         this.stdout.write(this.topleft);
-        for (let i = 0; i < this.centipedelength; i++) {
+        for (let i = 0; i < this.caterpillarlength; i++) {
             this.stdout.write(CGameData.directions[left + left]);
             if (i % CGameData.cols == CGameData.cols - 1) {
                 this.stdout.write(this.topleft);
@@ -334,7 +370,7 @@ export class PRCentipede extends DSProcess {
 
 
     private haswon(): Boolean {
-        return !this.centipede.iscentipederemaining;
+        return !this.caterpillar.iscaterpillarremaining;
     }
 
 
@@ -360,8 +396,8 @@ export class PRCentipede extends DSProcess {
 
     private setlevel(newval: number) {
         this.level = newval
-        this.centipedelength = 8 + 2 * this.level;
-        this.framerefreshtime = 200 * 0.95 ^ this.level;
+        this.caterpillarlength = CGameData.defaultcaterpillarlength + 2 * (this.level - 1);
+        this.framerefreshtime = CGameData.defaultframerefreshtime * 0.95 ^ this.level;
         this.rockcount = Math.min(CGameData.rows * CGameData.cols * 0.3, 22 + this.level)
     }
 
@@ -381,7 +417,7 @@ export class PRCentipede extends DSProcess {
     private async exitorrestart(): Promise<boolean> {
         this.stdin.write('~'); //Get rid of listener in inputloop()
         let key = ''
-        while (key != 'y' && key != 'n') {
+        while (key != 'y' && key != 'n' && key != 'q') {
             key = await this.stdin.read();
         }
 
@@ -449,9 +485,9 @@ export class PRCentipede extends DSProcess {
 }
 
 
-class Centipede {
+class Caterpillar {
 
-    public iscentipederemaining: boolean = true;
+    public iscaterpillarremaining: boolean = true;
     private hasmoved: boolean;
 
     private rownum: number = -1;
@@ -462,10 +498,10 @@ class Centipede {
 
     private length: number;
 
-    private parent: PRCentipede;
+    private parent: PRCaterpillar;
 
 
-    constructor(main: PRCentipede) {
+    constructor(main: PRCaterpillar) {
         this.parent = main;
         this.length = CGameData.cols + 2
     }
@@ -514,7 +550,7 @@ class Centipede {
             }
 
         }
-        this.iscentipederemaining = this.hasmoved;
+        this.iscaterpillarremaining = this.hasmoved;
     }
 
     private updatelines() {

@@ -84,4 +84,7 @@ export function cursorleft(cols: number): string {
 export function cursorright(cols: number): string {
     return (`\x1b[${cols}C`)
 }
+export function cursornextline(): string {
+    return (`\x1b[E`)
+}
 

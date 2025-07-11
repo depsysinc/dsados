@@ -11,7 +11,7 @@ import { DSIWebFile } from "./filesystem/dsIWebFile";
 
 // BIN IMPORTS
 import { PRCat } from "./process/cat";
-import { PRCentipede } from "./process/centipede";
+import { PRCaterpillar } from "./process/caterpillar";
 import { PRCHMod } from "./process/chmod";
 import { PRTestAnim } from "./process/demoanim";
 import { PRDemoCurses } from "./process/democurses";
@@ -85,8 +85,8 @@ export function buildrootfs(): DSFileSystem {
     binfile = new DSIProcessFile(fs, PRCat);
     bindir.addfile("cat", binfile);
     
-    binfile = new DSIProcessFile(fs, PRCentipede);
-    bindir.addfile("centipede", binfile);
+    binfile = new DSIProcessFile(fs, PRCaterpillar);
+    bindir.addfile("caterpillar", binfile);
     
     binfile = new DSIProcessFile(fs, PRCHMod);
     bindir.addfile("chmod", binfile);
