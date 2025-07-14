@@ -332,7 +332,7 @@ export class PRCaterpillar extends DSProcess {
         this.stdout.write(this.topleft);
         this.stdout.write(up + up);
         this.stdout.write('LVL ' + this.level.toString())
-        this.stdout.write(' '.repeat((CGameData.cols - 9) / 2 - 4 - this.level.toString().length) + 'CENTIPEDE  ')
+        this.stdout.write(' '.repeat((CGameData.cols - 9) / 2 - 4 - this.level.toString().length) + 'CATERPILLAR  ')
         this.stdout.write(' '.repeat((CGameData.cols - 9) / 2 - this.score.toString().length - 1));
         this.stdout.write(this.score.toString())
         this.stdout.write(this.topleft);
