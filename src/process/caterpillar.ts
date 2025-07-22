@@ -1,12 +1,7 @@
 import { DSKernel } from "../dsKernel";
 import { DSProcess } from "../dsProcess";
-import { cursordown, cursorleft, cursornextline, cursorright, reset, set_cursor } from "../lib/dsCurses";
+import { up, down, left, right, cursordown, cursorleft, cursornextline, cursorright, reset, set_cursor } from "../lib/dsCurses";
 import { sleep } from "../lib/dsLib";
-
-const up = '\x1b[A'
-const down = '\x1b[B'
-const right = '\x1b[C'
-const left = '\x1b[D'
 
 class CGameData {
     public static rock: string = 'Θ';
@@ -18,7 +13,7 @@ class CGameData {
     public static defaultcaterpillarlength: number = 10;
     public static bulletrefreshtime: number = 81;
     public static rows: number = 13;
-    public static cols: number = 35;
+    public static cols: number = 36;
 
     public static directions: Record<string, string> = {
         [down + down]: '┃',
@@ -133,7 +128,7 @@ export class PRCaterpillar extends DSProcess {
         }
         let middlecol = DSKernel.terminal.cols / 2;
         this.stdout.write(cursornextline());
-        this.stdout.write(' '.repeat(Math.floor(middlecol - message.length / 2)));
+        this.stdout.write(right.repeat(Math.floor(middlecol - message.length / 2)));
         this.stdout.write(message);
 
     }
@@ -145,14 +140,14 @@ export class PRCaterpillar extends DSProcess {
             this.exit = await this.exitorrestart();
 
             if (this.exit) {
-                continue;
+                return;
             }
 
             this.refreshscreen();
-
+            await sleep(50); //Make sure the splash screen is cleared before letting the gameplay start
             this.functionloop(() => this.inputloop(), 0);
             this.functionloop(() => this.bulletloop(), CGameData.bulletrefreshtime);
-            await sleep(1000);
+            await sleep(1000); //Give the caterpillar a moment before it starts moving
             this.functionloop(() => this.caterpillar.processscreen(), this.framerefreshtime);
 
             while (!this.levelend) {
@@ -330,10 +325,10 @@ export class PRCaterpillar extends DSProcess {
 
     private drawdisplay() {
         this.stdout.write(this.topleft);
-        this.stdout.write(up + up);
+        this.stdout.write(up + up+left);
         this.stdout.write('LVL ' + this.level.toString())
-        this.stdout.write(' '.repeat((CGameData.cols - 9) / 2 - 4 - this.level.toString().length) + 'CATERPILLAR  ')
-        this.stdout.write(' '.repeat((CGameData.cols - 9) / 2 - this.score.toString().length - 1));
+        this.stdout.write(' '.repeat((CGameData.cols - 11) / 2 - 3 - this.level.toString().length) + 'CATERPILLAR  ')
+        this.stdout.write(' '.repeat((CGameData.cols - 11) / 2 - this.score.toString().length));
         this.stdout.write(this.score.toString())
         this.stdout.write(this.topleft);
         this.stdout.write(up + left);
@@ -377,20 +372,18 @@ export class PRCaterpillar extends DSProcess {
     private async loseGame() {
         this.levelend = true;
         this.score = 100;
-        this.replacechar(2, Math.floor((CGameData.cols - 10) / 2), 'Y')
-        this.stdout.write('OU LOSE');
-        this.replacechar(3, Math.floor((CGameData.cols - 15) / 2), 'r');
-        this.stdout.write('eplay? (y/n)')
+        this.replacechar(1,0,''); //Move cursor to first row
+        this.writelinecentered('YOU LOSE')
+        this.writelinecentered('replay? (y/n)');
     }
 
 
     private async winGame() {
         this.levelend = true;
         this.setlevel(this.level + 1);
-        this.replacechar(2, Math.floor((CGameData.cols - 10) / 2), 'Y')
-        this.stdout.write('OU WIN');
-        this.replacechar(3, Math.floor((CGameData.cols - 19) / 2), 'n');
-        this.stdout.write('ext lvl? (y/n)')
+        this.replacechar(1,0,''); //Move cursor to first row
+        this.writelinecentered('YOU WIN')
+        this.writelinecentered('next lvl? (y/n)');
     }
 
 
@@ -479,6 +472,7 @@ export class PRCaterpillar extends DSProcess {
             this.stdout.write('Please resize your screen');
         }
         else {
+            this.score = 100;
             this.splash();
         }
     }
