@@ -319,4 +319,8 @@ export class PRDSMDBrowser extends DSApp {
 
         this.eventQueue.enqueue(new ResizeAppEvent());
     }
+
+    resume(): void {
+        this._redraw();
+    }
 }

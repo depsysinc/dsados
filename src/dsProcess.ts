@@ -47,4 +47,6 @@ export abstract class DSProcess {
     chdir(dirname: string) {
         this._cwd = this._cwd.getdir(dirname);
     }
+
+    resume() { }
 }
