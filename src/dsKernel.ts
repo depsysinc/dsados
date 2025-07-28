@@ -288,7 +288,6 @@ export class DSKernel {
         } finally {
             this.curproc.stdin.close();
             this.procstack.pop();
-            this.curproc.resume();            
         }
 
         return;

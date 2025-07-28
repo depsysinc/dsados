@@ -186,7 +186,8 @@ export class PRDSMDBrowser extends DSApp {
             let commands = url.split(' ');
             commands.shift(); //remove cmd:
             let process = commands[0];
-            DSKernel.exec(process, commands);
+            await DSKernel.exec(process, commands);
+            this._redraw();
         
         } else {
             this._savedrowsbypage.set(this._currentfilename, this._rowidx);
@@ -318,9 +319,5 @@ export class PRDSMDBrowser extends DSApp {
         }
 
         this.eventQueue.enqueue(new ResizeAppEvent());
-    }
-
-    resume(): void {
-        this._redraw();
     }
 }

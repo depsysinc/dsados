@@ -120,20 +120,6 @@ export class PRCaterpillar extends DSProcess {
 
     }
 
-    private writelinecentered(message: string) {
-        if (message.length > DSKernel.terminal.cols) {
-            console.warn("Message too long, trimming");
-            let trimlength = Math.ceil((message.length - DSKernel.terminal.cols) / 2);
-            message = message.slice(trimlength, message.length - trimlength);
-        }
-        let middlecol = DSKernel.terminal.cols / 2;
-        this.stdout.write(cursornextline());
-        this.stdout.write(right.repeat(Math.floor(middlecol - message.length / 2)));
-        this.stdout.write(message);
-
-    }
-
-
     private async gameloop() {
         while (!this.exit) {
 
@@ -390,7 +376,7 @@ export class PRCaterpillar extends DSProcess {
     private setlevel(newval: number) {
         this.level = newval
         this.caterpillarlength = CGameData.defaultcaterpillarlength + 2 * (this.level - 1);
-        this.framerefreshtime = CGameData.defaultframerefreshtime * 0.95 ^ this.level;
+        this.framerefreshtime = CGameData.defaultframerefreshtime * Math.pow(0.95 , this.level);
         this.rockcount = Math.min(CGameData.rows * CGameData.cols * 0.3, 22 + this.level)
     }
 
@@ -437,6 +423,21 @@ export class PRCaterpillar extends DSProcess {
         const gamesection = line.slice(this.leftoffset, CGameData.cols + this.leftoffset);
         return gamesection
     }
+
+
+    private writelinecentered(message: string) {
+        if (message.length > DSKernel.terminal.cols) {
+            console.warn("Message too long, trimming");
+            let trimlength = Math.ceil((message.length - DSKernel.terminal.cols) / 2);
+            message = message.slice(trimlength, message.length - trimlength);
+        }
+        let middlecol = DSKernel.terminal.cols / 2;
+        this.stdout.write(cursornextline());
+        this.stdout.write(right.repeat(Math.floor(middlecol - message.length / 2)));
+        this.stdout.write(message);
+
+    }
+
 
     public replacechar(row: number, column: number, char: string) {
         if (column >= CGameData.cols ||
