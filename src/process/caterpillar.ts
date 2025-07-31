@@ -9,7 +9,7 @@ class CGameData {
     public static bullet: string = '.';
     public static bodytypes: string = '┗━┓┃┏┛'
     public static cantravelthrough = ' '
-    public static defaultframerefreshtime: number = 200;
+    public static defaultcaterpillartime: number = 200;
     public static defaultcaterpillarlength: number = 10;
     public static bulletrefreshtime: number = 81;
     public static rows: number = 13;
@@ -65,7 +65,7 @@ export class PRCaterpillar extends DSProcess {
     private score: number = 100;
 
     private level: number = 1;
-    private framerefreshtime = CGameData.defaultframerefreshtime;
+    private caterpillartime = CGameData.defaultcaterpillartime;
     private caterpillarlength: number = CGameData.defaultcaterpillarlength;
     private rockcount: number = 22;
 
@@ -131,12 +131,30 @@ export class PRCaterpillar extends DSProcess {
 
             this.refreshscreen();
             await sleep(50); //Make sure the splash screen is cleared before letting the gameplay start
-            this.functionloop(() => this.inputloop(), 0);
-            this.functionloop(() => this.bulletloop(), CGameData.bulletrefreshtime);
-            await sleep(1000); //Give the caterpillar a moment before it starts moving
-            this.functionloop(() => this.caterpillar.processscreen(), this.framerefreshtime);
+
+            let time = performance.now(); 
+            let deltatime;
+            let time_since_caterpillar = -1000; //-1000 so the caterpillar will pause at the start
+            let time_since_bullet = 0;
 
             while (!this.levelend) {
+                deltatime = performance.now() - time;
+                time = performance.now();
+                time_since_caterpillar += deltatime;
+                time_since_bullet += deltatime;
+
+                if (time_since_caterpillar > this.caterpillartime) {
+                    time_since_caterpillar = 0;
+                    this.caterpillar.processscreen();
+                }
+
+                if (time_since_bullet > CGameData.bulletrefreshtime) {
+                    time_since_bullet = 0;
+                    this.processbullet();
+                }
+
+                this.inputloop();
+
                 if (this.haslost()) {
                     this.loseGame();
 
@@ -144,90 +162,82 @@ export class PRCaterpillar extends DSProcess {
                 else if (this.haswon()) {
                     this.winGame();
                 }
-                await sleep(50);
+
+                await sleep(5);
 
             }
         }
     }
 
-
-    private async functionloop(func: () => void, sleeptime: number) {
-        while (!this.levelend) {
-            if (!this.paused) {
-                func();
-                await sleep(sleeptime)
-            }
-            else
-                await sleep(50);
-        }
-    }
 
     private async inputloop() {
-        let char;
-        try {
-            char = await this.stdin.read();
-        }
-        catch (DSStreamClosedError) {
-            return;
-        }
-        if (this.levelend) {
-            return
-        }
-        if (char == right && this.playerx < CGameData.cols - 1) {
-            this.replacechar(CGameData.rows - 1, this.playerx, ' ');
-            this.playerx++;
-            this.stdout.write(CGameData.player);
-        }
-        if (char == left && this.playerx > 0) {
-            this.replacechar(CGameData.rows - 1, this.playerx - 1, CGameData.player);
-            this.playerx--;
-            this.stdout.write(' ');
-        }
-        if (char == ' ') {
-            let prevline = this.getline(CGameData.rows - 2);
-            if (prevline[this.playerx] == CGameData.bullet) {
+        for (let i = 0; i < this.stdin.readsPending(); i++) {
+            let char;
+            try {
+                char = await this.stdin.read();
+            }
+            catch (DSStreamClosedError) {
                 return;
             }
-            else if (prevline[this.playerx] == ' ') {
-                this.replacechar(CGameData.rows - 2, this.playerx, CGameData.bullet);
+            if (this.levelend) {
+                return
             }
-            else if (CGameData.bodytypes.includes(prevline[this.playerx])) {
-                this.replacechar(CGameData.rows - 2, this.playerx, CGameData.rock);
+            if (char == right && this.playerx < CGameData.cols - 1) {
+                this.replacechar(CGameData.rows - 1, this.playerx, ' ');
+                this.playerx++;
+                this.stdout.write(CGameData.player);
             }
-            else if (prevline[this.playerx] == CGameData.rock) {
-                this.replacechar(CGameData.rows - 2, this.playerx, ' ')
+            if (char == left && this.playerx > 0) {
+                this.replacechar(CGameData.rows - 1, this.playerx - 1, CGameData.player);
+                this.playerx--;
+                this.stdout.write(' ');
             }
-            this.score -= 1;
-        }
-        if (char == 'q') {
-            this.levelend = true;
-            this.exit = true;
-            this.exitscreen();
-        }
-
-        if (char == 'p') {
-            this.paused = true;
-            let unpausechar = ' ';
-            while (unpausechar != 'p') {
-                try {
-                    unpausechar = await this.stdin.read();
-                    if (unpausechar == 'q') {
-                        this.levelend = true;
-                        this.exit = true;
-                        this.exitscreen();
-
-                    }
-                }
-                catch (DSStreamClosedError) {
+            if (char == ' ') {
+                let prevline = this.getline(CGameData.rows - 2);
+                if (prevline[this.playerx] == CGameData.bullet) {
                     return;
                 }
+                else if (prevline[this.playerx] == ' ') {
+                    this.replacechar(CGameData.rows - 2, this.playerx, CGameData.bullet);
+                }
+                else if (CGameData.bodytypes.includes(prevline[this.playerx])) {
+                    this.replacechar(CGameData.rows - 2, this.playerx, CGameData.rock);
+                }
+                else if (prevline[this.playerx] == CGameData.rock) {
+                    this.replacechar(CGameData.rows - 2, this.playerx, ' ')
+                }
+                this.score -= 1;
             }
-            this.paused = false;
+            if (char == 'q') {
+                this.levelend = true;
+                this.exit = true;
+                this.exitscreen();
+            }
+
+            if (char == 'p') {
+                this.paused = true;
+                let unpausechar = ' ';
+                while (unpausechar != 'p') {
+                    try {
+                        unpausechar = await this.stdin.read();
+                        if (unpausechar == 'q') {
+                            this.levelend = true;
+                            this.exit = true;
+                            this.exitscreen();
+
+                        }
+                    }
+                    catch (DSStreamClosedError) {
+                        return;
+                    }
+                }
+                this.paused = false;
+            }
         }
     }
 
 
-    private bulletloop() {
+    private processbullet() {
         //Clear bullets from top of screen
         const topline = this.getline(0);
         for (let i = 0; i < CGameData.cols; i++) {
@@ -237,14 +247,14 @@ export class PRCaterpillar extends DSProcess {
         }
 
         for (let i = 1; i < CGameData.rows; i++) {
-            this.bulletmove(i, this.getline(i), this.getline(i - 1));
+            this.bulletmoveline(i, this.getline(i), this.getline(i - 1));
         }
         this.updatedisplay();
 
     }
 
 
-    private bulletmove(row: number, line: string, lineabove: string) {
+    private bulletmoveline(row: number, line: string, lineabove: string) {
         lineabove = lineabove;
         line = line;
         for (let col = 0; col < CGameData.cols; col++) {
@@ -311,7 +321,7 @@ export class PRCaterpillar extends DSProcess {
 
     private drawdisplay() {
         this.stdout.write(this.topleft);
-        this.stdout.write(up + up+left);
+        this.stdout.write(up + up + left);
         this.stdout.write('LVL ' + this.level.toString())
         this.stdout.write(' '.repeat((CGameData.cols - 11) / 2 - 3 - this.level.toString().length) + 'CATERPILLAR  ')
         this.stdout.write(' '.repeat((CGameData.cols - 11) / 2 - this.score.toString().length));
@@ -358,7 +368,7 @@ export class PRCaterpillar extends DSProcess {
     private async loseGame() {
         this.levelend = true;
         this.score = 100;
-        this.replacechar(1,0,''); //Move cursor to first row
+        this.replacechar(1, 0, ''); //Move cursor to first row
         this.writelinecentered('YOU LOSE')
         this.writelinecentered('replay? (y/n)');
     }
@@ -367,7 +377,7 @@ export class PRCaterpillar extends DSProcess {
     private async winGame() {
         this.levelend = true;
         this.setlevel(this.level + 1);
-        this.replacechar(1,0,''); //Move cursor to first row
+        this.replacechar(1, 0, ''); //Move cursor to first row
         this.writelinecentered('YOU WIN')
         this.writelinecentered('next lvl? (y/n)');
     }
@@ -376,7 +386,7 @@ export class PRCaterpillar extends DSProcess {
     private setlevel(newval: number) {
         this.level = newval
         this.caterpillarlength = CGameData.defaultcaterpillarlength + 2 * (this.level - 1);
-        this.framerefreshtime = CGameData.defaultframerefreshtime * Math.pow(0.95 , this.level);
+        this.caterpillartime = CGameData.defaultcaterpillartime * (1 - 1 / 2 * Math.tanh(this.level / 10));
         this.rockcount = Math.min(CGameData.rows * CGameData.cols * 0.3, 22 + this.level)
     }
 
@@ -385,6 +395,7 @@ export class PRCaterpillar extends DSProcess {
         this.adjustoffsets();
         this.drawstartingboard();
         this.drawdisplay();
+        this.caterpillar.reset();
     }
 
     private exitscreen() {
@@ -508,6 +519,7 @@ class Caterpillar {
         this.prevline = '';
         this.line = CGameData.rock.repeat(this.length);
         this.nextline = this.getpaddedline(0);
+        this.iscaterpillarremaining = true;
     }
 
 
