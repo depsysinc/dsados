@@ -11,6 +11,7 @@ import { DSIWebFile } from "./filesystem/dsIWebFile";
 
 // BIN IMPORTS
 import { PRCat } from "./process/cat";
+import { PRCaterpillar } from "./process/caterpillar";
 import { PRCHMod } from "./process/chmod";
 import { PRTestAnim } from "./process/demoanim";
 import { PRDemoCurses } from "./process/democurses";
@@ -47,6 +48,7 @@ import root_data_site_GODOT_dsmd from "./root/data/site/GODOT.dsmd";
 import root_data_site_about_dsmd from "./root/data/site/about.dsmd";
 import root_data_site_avatars_posterized_globnobulous_png from "./root/data/site/avatars/posterized_globnobulous.png";
 import root_data_site_concursion_dsmd from "./root/data/site/concursion.dsmd";
+import root_data_site_dauntless_dsmd from "./root/data/site/dauntless.dsmd";
 import root_data_site_devlog_2025_01_30_20250130_dsmd from "./root/data/site/devlog/2025-01-30/20250130.dsmd";
 import root_data_site_devlog_2025_01_30_C64_png from "./root/data/site/devlog/2025-01-30/C64.png";
 import root_data_site_devlog_2025_01_30_Road_Toad_png from "./root/data/site/devlog/2025-01-30/Road-Toad.png";
@@ -82,6 +84,9 @@ export function buildrootfs(): DSFileSystem {
 
     binfile = new DSIProcessFile(fs, PRCat);
     bindir.addfile("cat", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRCaterpillar);
+    bindir.addfile("caterpillar", binfile);
     
     binfile = new DSIProcessFile(fs, PRCHMod);
     bindir.addfile("chmod", binfile);
@@ -292,6 +297,11 @@ export function buildrootfs(): DSFileSystem {
     // Creating root/data/site/concursion.dsmd
     curfile = new DSIWebFile(fs, root_data_site_concursion_dsmd);
     curdir.addfile("concursion.dsmd", curfile);
+    
+    
+    // Creating root/data/site/dauntless.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_dauntless_dsmd);
+    curdir.addfile("dauntless.dsmd", curfile);
     
     
     // Traversing root/data/site/devlog
