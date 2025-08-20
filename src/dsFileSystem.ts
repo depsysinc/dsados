@@ -270,6 +270,11 @@ export class DSFilePerms {
 
 export abstract class DSInode {
     id: number = undefined;
+    
+    get type():string {
+        return undefined
+    }
+    
     protected constructor(
         protected _fs: DSFileSystem,
         private _perms: DSFilePerms
@@ -278,7 +283,7 @@ export abstract class DSInode {
     toJSON(): object {
         return {
             id: this.id,
-            type: this.constructor.name,
+            type: this.type,
             perms: this._perms.toJSON()
         };
     }
@@ -360,6 +365,10 @@ export class DSIDirectory extends DSInode {
         this._filelist.push(new DSFileInfo(this.parent, ".."));
 
         this._fs.added(this);  // DSIDBFS hook
+    }
+
+    get type() {
+        return "DSIDirectory"
     }
 
     setFromJSON(json: any): void {
