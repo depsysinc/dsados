@@ -9,7 +9,7 @@ export class DSIWebFile extends DSInode {
         super(fs, DSFilePerms.readonly());
     }
 
-    get type():string {
+    get type(): string {
         return "DSIWebFile"
     }
 

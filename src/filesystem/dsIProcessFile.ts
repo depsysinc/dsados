@@ -24,7 +24,7 @@ export class DSIProcessFile<T extends DSProcess> extends DSInode {
         super(fs, DSFilePerms.execonly())
     }
 
-    get type() :string {
+    get type(): string {
         return "DSProcess"
     }
 

@@ -155,7 +155,7 @@ export class DSKernel {
             await t.baudWrite(`mount: rootfs\n`)
             DSKernel.mount('/', rootfs);
 
-            
+
             await t.baudWrite(`fsck: localfs\n`)
             const localfs = new DSIDBFileSystem("depsys_local_fs", 1);
             await localfs.open();
@@ -171,7 +171,7 @@ export class DSKernel {
 
             await t.baudWrite(`mount: localfs\n`)
             DSKernel.mount('/local', localfs);
-            
+
 
             if (bootcount == 0) {
                 await t.baudWrite("nvram: enable fastboot");
@@ -336,6 +336,6 @@ export class DSKernel {
     static handleHistoryEvents(e: PopStateEvent) {
         if (!this.curproc)
             return;
-        this.curproc.handleHistory(e);        
+        this.curproc.handleHistory(e);
     }
 }

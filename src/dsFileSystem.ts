@@ -270,11 +270,11 @@ export class DSFilePerms {
 
 export abstract class DSInode {
     id: number = undefined;
-    
-    get type():string {
+
+    get type(): string {
         return undefined
     }
-    
+
     protected constructor(
         protected _fs: DSFileSystem,
         private _perms: DSFilePerms
@@ -398,7 +398,7 @@ export class DSIDirectory extends DSInode {
                     results.inodecount++;
                     results.directorycount++;
                     // Check .. link of child
-                    const childdir:DSIDirectory = fileinfo.inode;
+                    const childdir: DSIDirectory = fileinfo.inode;
                     if (childdir.getfileinfo('..').inode != this)
                         throw new DSFileSystemError("Bad child '..' link");
                     // Now enter child
@@ -417,7 +417,7 @@ export class DSIDirectory extends DSInode {
     get fileinfo(): DSFileInfo {
         return this.parent.getfileinfo(this);
     }
-    
+
     get type() {
         return "DSIDirectory"
     }
