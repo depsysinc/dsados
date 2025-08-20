@@ -367,10 +367,6 @@ export class DSIDirectory extends DSInode {
         this._fs.added(this);  // DSIDBFS hook
     }
 
-    get type() {
-        return "DSIDirectory"
-    }
-
     setFromJSON(json: any): void {
         super.setFromJSON(json);
     }
@@ -420,6 +416,10 @@ export class DSIDirectory extends DSInode {
 
     get fileinfo(): DSFileInfo {
         return this.parent.getfileinfo(this);
+    }
+    
+    get type() {
+        return "DSIDirectory"
     }
 
     get filelist(): DSFileInfo[] {

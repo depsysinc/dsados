@@ -1,7 +1,7 @@
 import '@xterm/xterm/css/xterm.css';
 
 import { DSPointerEvent, DSTerminal } from "./dsTerminal";
-import { DSFileInfo, DSFileSystem, DSIDirectory } from "./dsFileSystem";
+import { DSFileInfo, DSFileSystem, DSIDirectory, DSIDirectoryInvalidPathError } from "./dsFileSystem";
 import { DSIDBFileSystem } from "./filesystem/dsIDBFileSystem";
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
 import { buildrootfs } from "./dsRootFS";
@@ -155,16 +155,23 @@ export class DSKernel {
             await t.baudWrite(`mount: rootfs\n`)
             DSKernel.mount('/', rootfs);
 
-            /*
+            
             await t.baudWrite(`fsck: localfs\n`)
             const localfs = new DSIDBFileSystem("depsys_local_fs", 1);
             await localfs.open();
             fsckresults = localfs.fsck();
             await t.baudWrite(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
 
+            try {
+                const users = localfs.root.getdir("Users");
+            }
+            catch (DSIDirectoryInvalidPathError) {
+                localfs.root.mkdir("Users"); //If the users directory doesn't exist, create it
+            }
+
             await t.baudWrite(`mount: localfs\n`)
             DSKernel.mount('/local', localfs);
-            */
+            
 
             if (bootcount == 0) {
                 await t.baudWrite("nvram: enable fastboot");
