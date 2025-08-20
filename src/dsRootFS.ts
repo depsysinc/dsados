@@ -30,7 +30,6 @@ import { PRPwd } from "./process/pwd";
 import { PRReset } from "./process/reset";
 import { PRSleep } from "./process/sleep";
 import { PRSplash } from "./process/splash";
-import { FileWritingTests } from "./process/testprocess";
 // WEBFILE TRAVERSAL IMPORTS
 import root_data_app_dsmdbrowser_404_dsmd from "./root/data/app/dsmdbrowser/404.dsmd";
 import root_data_demo_animation_32x32_A_png from "./root/data/demo/animation/32x32_A.png";
@@ -140,9 +139,6 @@ export function buildrootfs(): DSFileSystem {
     
     binfile = new DSIProcessFile(fs, PRSplash);
     bindir.addfile("splash", binfile);
-    
-    binfile = new DSIProcessFile(fs, FileWritingTests);
-    bindir.addfile("testprocess", binfile);
     
     // BIN FOOTER
     bindir.chmod(DSFilePerms.rx());

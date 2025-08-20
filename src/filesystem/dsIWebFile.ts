@@ -58,8 +58,8 @@ export class DSIWebFile extends DSInode {
 
     chmod(newperms: DSFilePerms) {
         // Check for illegal permissions
-        //if (newperms.w)
-          //  throw new DSFilePermsUnsupportedError(newperms.permString());
+        if (newperms.w)
+            throw new DSFilePermsUnsupportedError(newperms.permString());
         super.chmod(newperms);
     }
 }
