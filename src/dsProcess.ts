@@ -1,6 +1,6 @@
 import { DSIDirectory } from "./dsFileSystem";
 import { DSStream } from "./dsStream";
-import { DSPointerEvent } from "./dsTerminal";
+import { DSKeyEvent, DSPointerEvent } from "./dsTerminal";
 
 export class DSProcessError extends Error {
     constructor(message: string) {
@@ -43,6 +43,8 @@ export abstract class DSProcess {
     handlePointer(e: DSPointerEvent) { }
 
     handleHistory(e: PopStateEvent) { }
+
+    handleKeyEvent(e: DSKeyEvent) { }
 
     chdir(dirname: string) {
         this._cwd = this._cwd.getdir(dirname);

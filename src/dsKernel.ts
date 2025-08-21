@@ -1,6 +1,6 @@
 import '@xterm/xterm/css/xterm.css';
 
-import { DSPointerEvent, DSTerminal } from "./dsTerminal";
+import { DSKeyEvent, DSPointerEvent, DSTerminal } from "./dsTerminal";
 import { DSFileInfo, DSFileSystem, DSIDirectory } from "./dsFileSystem";
 import { DSIDBFileSystem } from "./filesystem/dsIDBFileSystem";
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
@@ -324,6 +324,12 @@ export class DSKernel {
         if (!this.curproc)
             return;
         this.curproc.handlePointer(e);
+    }
+
+    static handleKeyEvent(e:DSKeyEvent) {
+        if (!this.curproc)
+            return;
+        this.curproc.handleKeyEvent(e);
     }
 
     static handleHistoryEvents(e: PopStateEvent) {
