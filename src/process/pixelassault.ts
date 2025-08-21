@@ -1,4 +1,4 @@
-import { DSFilePermsError, DSFileSystemError, DSIDirectory, DSIDirectoryIllegalFilenameError, DSInode } from "../dsFileSystem";
+import { DSFilePermsError, DSFileSystemError, DSIDirectory, DSIDirectoryIllegalFilenameError, DSIDirectoryInvalidPathError, DSInode } from "../dsFileSystem";
 import { DSKernel } from "../dsKernel";
 import { DSProcess } from "../dsProcess";
 import { DSKeyEvent, DSSprite } from "../dsTerminal";
@@ -36,7 +36,7 @@ class BoundingBox {
         return { x: this.x1, y: this.y1 };
     }
 
-    overlaps(other: BoundingBox) {
+    overlaps(other: BoundingBox): boolean {
         if (other.x1 < this.x0 ||
             other.y1 < this.y0 ||
             other.x0 > this.x1 ||
@@ -44,6 +44,20 @@ class BoundingBox {
             return false;
         }
         return true;
+    }
+    within(other: BoundingBox): boolean {
+        return this.xwithin(other) && this.ywithin(other);
+    }
+
+    xwithin(other: BoundingBox): boolean {
+        return other.x0 <= this.x0 &&
+            other.x1 >= this.x1
+    }
+
+    ywithin(other: BoundingBox): boolean {
+        return other.y0 <= this.y0 &&
+            other.y1 >= this.y1
+
     }
 }
 
@@ -64,6 +78,10 @@ export class PRPixelAssault extends DSProcess {
 
     private spaceship: PASpaceship;
     public updatefunctions: (() => void)[] = [];
+    public objects: PAGameObject[] = [];
+
+    public gamebounds: BoundingBox = new BoundingBox(0, 500, 0, 500);
+    public killlist: PAGameObject[] = [];
 
     protected async main(): Promise<void> {
         this.stdout.write(reset());
@@ -73,48 +91,79 @@ export class PRPixelAssault extends DSProcess {
 
         this.spaceship = new PASpaceship(this, "Ships/LightningFrames");
         await this.spaceship.initialize();
-        this.spaceship.goto({ x: 500, y: 50 });
-        this.fpsloop();
+        this.spaceship.goto({ x: 400, y: 400 });
+        this.mainloop();
 
 
-
-        await sleep(10000);
-        this.exited = true;
+        while (!this.exited) {
+            await sleep(50)
+        }
+        DSKernel.terminal.resetSprites();
         return;
     }
 
-    handleKeyEvent(e: DSKeyEvent): void {
-        if (e.key in PASpaceship.keyresponses) {
-            this.spaceship.onkey(e.key, e.down);
-        }
-
-    }
-
-    async load_textures(url: string): Promise<DSTexture[]> {
-        const inode = this.cwd.getfile(PRPixelAssault.spritepath + url);
-        if (!(inode instanceof DSIWebFile)) {
-            throw new DSFileSystemError("Attempt to load a non-webfile");
-        }
-        const textures: DSTexture[] = await get_image_textures(inode.url);
-        return textures;
-    }
-
-    //Sprites only update when xterm requests a refresh
-    //i.e. when text is written to the terminal
-    //Alternatively, could be fixed in DSTerminal, but keeping scope small for now
-    async fpsloop() {
+    async mainloop() {
         while (!this.exited) {
             for (let i = 0; i < 2; i++) {
-                this.stdout.write([' ', '\b'][i]);
+                this.stdout.write([' ', '\b'][i]); //Sprites only update when xterm requests a refresh, when text is written to the terminal
+
 
                 for (let i = 0; i < this.updatefunctions.length; i++) {
                     this.updatefunctions[i]()
                 }
+                this.sendCollisionMessages();
+                this.sendOutOfBoundsMessages();
+                this.killObjects();
+
 
                 await sleep(1000 / this.framerate)
             }
 
         }
+    }
+
+    handleKeyEvent(e: DSKeyEvent): void {
+        if (e.key == "KeyQ") {
+            this.exited = true;
+        }
+        if (e.key in PASpaceship.keyresponses) {
+            this.spaceship.onkey(e.key, e.down);
+        }
+    }
+
+    sendCollisionMessages() {
+        for (let i = 0; i < this.objects.length; i++) {
+            for (let j = i + 1; j < this.objects.length; j++) {
+                if (this.objects[i].bounds.overlaps(this.objects[j].bounds)) {
+                    this.objects[i].onCollision(this.objects[j]);
+                    this.objects[j].onCollision(this.objects[i]);
+                }
+            }
+        }
+    }
+
+    sendOutOfBoundsMessages() {
+        for (let i = 0; i < this.objects.length; i++) {
+            if (!this.objects[i].bounds.within(this.gamebounds)) {
+                const touching = this.objects[i].bounds.overlaps(this.gamebounds)
+                this.objects[i].onOutOfBounds(touching);
+            }
+        }
+    }
+
+    killObjects() {
+        for (let i = 0; i < this.killlist.length; i++) {
+            let obj = this.killlist[i];
+            this.objects = this.objects.filter((i => i != obj));
+
+        }
+    }
+
+    public async createObject(constructor: new (parent: PRPixelAssault, url: string) => PAGameObject, url: string, position: Vector2) {
+        const newobj = new constructor(this, url);
+        await newobj.initialize();
+        newobj.goto(position);
+        return newobj;
     }
 }
 
@@ -136,10 +185,19 @@ abstract class PAGameObject {
             this.sprite.y + this.sprite.texture.height
         );
         this.parent.updatefunctions.push(() => this.update())
+        this.parent.objects.push(this);
+
     }
 
     async get_sprite(): Promise<DSSprite> {
-        const inode = this.parent.cwd.getfile(PRPixelAssault.spritepath + this.url);
+        let inode;
+        try {
+            inode = this.parent.cwd.getfile(PRPixelAssault.spritepath + this.url);
+        }
+        catch (DSIDirectoryInvalidPathError) {
+            console.log("File not found: " + this.url)
+            return;
+        }
         let textures: DSTexture[] = [];
 
         //If passed directory, cycle through the filelist and add them all to textures
@@ -181,12 +239,52 @@ abstract class PAGameObject {
         const adjustedvelocity: Vector2 = { x: this.velocity.x / this.parent.framerate, y: this.velocity.y / this.parent.framerate }
         this.translate(adjustedvelocity);
     }
+
+    public kill() {
+        this.sprite.enabled = false;
+        this.parent.killlist.push(this);
+    }
+
+    public onCollision(other: PAGameObject) { }
+
+    public onOutOfBounds(touching: boolean) { }
+
 }
+
+class PABullet extends PAGameObject {
+    public onCollision(other: PAGameObject): void {
+        if (other instanceof PAShield) {
+            this.kill()
+        }
+    }
+    public onOutOfBounds(touching: boolean): void {
+        if (!touching) {
+            this.kill();
+            this.goto({x:200,y:200})
+        }
+    }
+}
+
+class PAEnemy extends PAGameObject {
+
+}
+
+class PAShield extends PAGameObject {
+
+}
+
+class PABonus extends PAGameObject {
+
+}
+
 
 class PASpaceship extends PAGameObject {
     private boosting: boolean;
     private speed: number = 300;
-
+    private bulletspeed: number = 500;
+    private firing: boolean = false;
+    private firingcooldown: number = 0;
+    private maxfiringcooldown: number = 5
     public static keyresponses: Record<string, Vector2> = {
         "KeyW": { x: 0, y: -1 },
         "KeyA": { x: -1, y: 0 },
@@ -196,6 +294,7 @@ class PASpaceship extends PAGameObject {
         "ArrowLeft": { x: -1, y: 0 },
         "ArrowRight": { x: 1, y: 0 },
         "ArrowDown": { x: 0, y: 1 },
+        "Space": { x: 0, y: 0 }
     }
 
     public static keysdown: Record<string, boolean> = {
@@ -207,6 +306,7 @@ class PASpaceship extends PAGameObject {
         "ArrowLeft": false,
         "ArrowRight": false,
         "ArrowDown": false,
+
     }
     async initialize() {
         await super.initialize();
@@ -214,29 +314,61 @@ class PASpaceship extends PAGameObject {
     }
 
     public onkey(key: string, down: boolean) {
+        if (key == "Space") {
+            this.firing = down;
+            return;
+        }
         let factor = (down ? 1 : -1) * this.speed;
         let vector = PASpaceship.keyresponses[key]
         if (PASpaceship.keysdown[key] != down) {
             PASpaceship.keysdown[key] = down;
             this.velocity = { x: this.velocity.x + vector.x * factor, y: this.velocity.y + vector.y * factor }
         }
-        if (!this.boosting && down) {
-            this.boostanim();
+        if (!this.boosting && (this.velocity.x != 0 || this.velocity.y != 0)) {
+            this.booston();
+        }
+        if (this.boosting && (this.velocity.x == 0 && this.velocity.y == 0)) {
+            this.boostoff();
         }
     }
 
-    private async boostanim() {
-        console.log("start boost")
+    private async booston() {
         this.boosting = true;
-        this.sprite.i += 1;
+        this.sprite.i = 1;
+        await sleep(50);
+        this.sprite.i = 2;
+    }
 
-        await sleep(50);
-        this.sprite.i += 1;
-        await sleep(150);
-        this.sprite.i += 1;
-        await sleep(50);
-        this.sprite.i = 0
+    private async boostoff() {
         this.boosting = false;
+        this.sprite.i = 3;
+        await sleep(50);
+        this.sprite.i = 0;
+    }
+
+
+    protected update(): void {
+        super.update();
+        this.firingcooldown--;
+        if (this.firing) {
+            if (this.firingcooldown <= 0) {
+                this.firingcooldown = this.maxfiringcooldown;
+                this.parent.createObject(PABullet, "bullet.png", this.bounds.center).then((obj) => {
+                    obj.velocity = { x: 0, y: -this.bulletspeed }
+                });
+            }
+        }
+    }
+
+    public onOutOfBounds(touching: boolean): void {
+        const adjustedvelocity: Vector2 = { x: -this.velocity.x / this.parent.framerate, y: -this.velocity.y / this.parent.framerate }
+        if (this.bounds.xwithin(this.parent.gamebounds)) {
+            adjustedvelocity.x = 0;
+        }
+        if (this.bounds.ywithin(this.parent.gamebounds)) {
+            adjustedvelocity.y = 0;
+        }
+        this.translate(adjustedvelocity);
     }
 
 }
