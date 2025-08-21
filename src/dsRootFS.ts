@@ -38,12 +38,17 @@ import root_data_app_pixel_assault_SciFiCreatures_NES_4x30_alphaBG_png from "./r
 import root_data_app_pixel_assault_Ships_Dove_png from "./root/data/app/pixel_assault/Ships/Dove.png";
 import root_data_app_pixel_assault_Ships_Ligher_png from "./root/data/app/pixel_assault/Ships/Ligher.png";
 import root_data_app_pixel_assault_Ships_Lightning_png from "./root/data/app/pixel_assault/Ships/Lightning.png";
+import root_data_app_pixel_assault_Ships_LightningFrames_lightning0_png from "./root/data/app/pixel_assault/Ships/LightningFrames/lightning0.png";
+import root_data_app_pixel_assault_Ships_LightningFrames_lightning1_png from "./root/data/app/pixel_assault/Ships/LightningFrames/lightning1.png";
+import root_data_app_pixel_assault_Ships_LightningFrames_lightning2_png from "./root/data/app/pixel_assault/Ships/LightningFrames/lightning2.png";
+import root_data_app_pixel_assault_Ships_LightningFrames_lightning3_png from "./root/data/app/pixel_assault/Ships/LightningFrames/lightning3.png";
 import root_data_app_pixel_assault_Ships_Ninja_png from "./root/data/app/pixel_assault/Ships/Ninja.png";
 import root_data_app_pixel_assault_Ships_Paranoid_png from "./root/data/app/pixel_assault/Ships/Paranoid.png";
 import root_data_app_pixel_assault_Ships_Saboteur_png from "./root/data/app/pixel_assault/Ships/Saboteur.png";
 import root_data_app_pixel_assault_Ships_Turtle_png from "./root/data/app/pixel_assault/Ships/Turtle.png";
 import root_data_app_pixel_assault_Ships_UFO_png from "./root/data/app/pixel_assault/Ships/UFO.png";
 import root_data_app_pixel_assault_exp2_0_png from "./root/data/app/pixel_assault/exp2_0.png";
+import root_data_app_pixel_assault_explosion_gif from "./root/data/app/pixel_assault/explosion.gif";
 import root_data_demo_animation_32x32_A_png from "./root/data/demo/animation/32x32_A.png";
 import root_data_demo_animation_32x32_B_png from "./root/data/demo/animation/32x32_B.png";
 import root_data_demo_animation_32x32_C_png from "./root/data/demo/animation/32x32_C.png";
@@ -218,6 +223,34 @@ export function buildrootfs(): DSFileSystem {
     curdir.addfile("Lightning.png", curfile);
     
     
+    // Traversing root/data/app/pixel_assault/Ships/LightningFrames
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('LightningFrames');
+    
+    // Creating root/data/app/pixel_assault/Ships/LightningFrames/lightning0.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Ships_LightningFrames_lightning0_png);
+    curdir.addfile("lightning0.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/Ships/LightningFrames/lightning1.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Ships_LightningFrames_lightning1_png);
+    curdir.addfile("lightning1.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/Ships/LightningFrames/lightning2.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Ships_LightningFrames_lightning2_png);
+    curdir.addfile("lightning2.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/Ships/LightningFrames/lightning3.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Ships_LightningFrames_lightning3_png);
+    curdir.addfile("lightning3.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/app/pixel_assault/Ships/LightningFrames
+        
     // Creating root/data/app/pixel_assault/Ships/Ninja.png
     curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Ships_Ninja_png);
     curdir.addfile("Ninja.png", curfile);
@@ -250,6 +283,11 @@ export function buildrootfs(): DSFileSystem {
     // Creating root/data/app/pixel_assault/exp2_0.png
     curfile = new DSIWebFile(fs, root_data_app_pixel_assault_exp2_0_png);
     curdir.addfile("exp2_0.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/explosion.gif
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_explosion_gif);
+    curdir.addfile("explosion.gif", curfile);
     
     
     curdir.chmod(DSFilePerms.rx());
