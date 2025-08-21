@@ -7,34 +7,43 @@ import { reset, set_cursor } from "../lib/dsCurses";
 import { DSTexture, get_image_textures } from "../lib/dsImg";
 import { sleep } from "../lib/dsLib";
 
-type BoundingBox = {
-    x0: number,
-    x1: number,
-    y0: number,
-    y1: number
-}
+class BoundingBox {
+    constructor(
+        public x0: number,
+        public x1: number,
+        public y0: number,
+        public y1: number
+    ) { }
 
-function transform(box: BoundingBox, amount: Vector2): BoundingBox {
-    const box2: BoundingBox = {
-        x0: box.x0 + amount.x,
-        x1: box.x1 + amount.x,
-        y0: box.y0 + amount.y,
-        y1: box.y1 + amount.y,
+    transform(amount: Vector2): BoundingBox {
+        return new BoundingBox(
+            this.x0 + amount.x,
+            this.x1 + amount.x,
+            this.y0 + amount.y,
+            this.y1 + amount.y
+        );
     }
-    return box2
-}
 
-function topleft(box: BoundingBox): Vector2 {
-    return {
-        x: box.x0,
-        y: box.y0
+    get topLeft(): Vector2 {
+        return { x: this.x0, y: this.y0 };
     }
-}
 
-function center(box: BoundingBox): Vector2 {
-    return {
-        x: (box.x0 + box.x1) / 2,
-        y: (box.y0 + box.y1) / 2
+    get center(): Vector2 {
+        return { x: (this.x0 + this.x1) / 2, y: (this.y0 + this.y1) / 2 };
+    }
+
+    get bottomRight(): Vector2 {
+        return { x: this.x1, y: this.y1 };
+    }
+
+    overlaps(other: BoundingBox) {
+        if (other.x1 < this.x0 ||
+            other.y1 < this.y0 ||
+            other.x0 > this.x1 ||
+            other.y0 > this.y1) {
+            return false;
+        }
+        return true;
     }
 }
 
@@ -45,35 +54,39 @@ type Vector2 = {
 
 export class PRPixelAssault extends DSProcess {
 
-    public paused: Boolean = false;
-    public levelend: Boolean = false;
-    public exited: Boolean = false;
+    public paused: boolean = false;
+    public levelend: boolean = false;
+    public exited: boolean = false;
 
     public framerate: number = 40;
 
     public static spritepath: string = "/data/app/pixel_assault/"
 
     private spaceship: PASpaceship;
+    public updatefunctions: (() => void)[] = [];
 
     protected async main(): Promise<void> {
         this.stdout.write(reset());
         DSKernel.terminal.resetSprites();
         this.stdout.write(set_cursor(false));
 
-        this.fpsloop(this.framerate);
 
         this.spaceship = new PASpaceship(this, "Ships/LightningFrames");
         await this.spaceship.initialize();
-        this.spaceship.goto({x:500,y:50});
+        this.spaceship.goto({ x: 500, y: 50 });
+        this.fpsloop();
 
-        let a: BoundingBox = { x0: 1, x1: 1, y0: 0, y1: 1 }
-        let b: BoundingBox = { x0: 5, x1: 8, y1: 9, y0: 9 }
+
 
         await sleep(10000);
+        this.exited = true;
         return;
     }
 
     handleKeyEvent(e: DSKeyEvent): void {
+        if (e.key in PASpaceship.keyresponses) {
+            this.spaceship.onkey(e.key, e.down);
+        }
 
     }
 
@@ -89,12 +102,17 @@ export class PRPixelAssault extends DSProcess {
     //Sprites only update when xterm requests a refresh
     //i.e. when text is written to the terminal
     //Alternatively, could be fixed in DSTerminal, but keeping scope small for now
-    async fpsloop(framerate: number) {
+    async fpsloop() {
         while (!this.exited) {
-            this.stdout.write(' ');
-            await sleep(1000 / framerate);
-            this.stdout.write('\b');
-            await sleep(1000 / framerate);
+            for (let i = 0; i < 2; i++) {
+                this.stdout.write([' ', '\b'][i]);
+
+                for (let i = 0; i < this.updatefunctions.length; i++) {
+                    this.updatefunctions[i]()
+                }
+
+                await sleep(1000 / this.framerate)
+            }
 
         }
     }
@@ -105,19 +123,19 @@ export class PRPixelAssault extends DSProcess {
 abstract class PAGameObject {
     protected sprite: DSSprite;
     public bounds: BoundingBox;
-    public velocity: Vector2 = {x:0,y:0};
+    public velocity: Vector2 = { x: 0, y: 0 };
     constructor(protected parent: PRPixelAssault, protected url: string) {
     }
 
     async initialize() {
         this.sprite = await this.get_sprite();
-        this.bounds = {
-            x0: this.sprite.x,
-            y0: this.sprite.y,
-            x1: this.sprite.x + this.sprite.texture.width,
-            y1: this.sprite.y + this.sprite.texture.height
-        }
-        
+        this.bounds = new BoundingBox(
+            this.sprite.x,
+            this.sprite.x + this.sprite.texture.width,
+            this.sprite.y,
+            this.sprite.y + this.sprite.texture.height
+        );
+        this.parent.updatefunctions.push(() => this.update())
     }
 
     async get_sprite(): Promise<DSSprite> {
@@ -132,7 +150,7 @@ abstract class PAGameObject {
                     throw new DSFileSystemError("Directory contents not webfiles");
                 }
                 textures = textures.concat(await get_image_textures(childnode.url));
-
+                textures[i - 2].duration = 300;
             }
         }
         else if (inode instanceof DSIWebFile) {
@@ -148,21 +166,77 @@ abstract class PAGameObject {
     }
 
     public goto(location: Vector2) {
-        const currentpos:Vector2 = center(this.bounds)
-        const offset:Vector2 = {x:location.x-currentpos.x, y:location.y-currentpos.y}
-        this.bounds = transform(this.bounds, offset);
+        const currentpos: Vector2 = this.bounds.center
+        const offset: Vector2 = { x: location.x - currentpos.x, y: location.y - currentpos.y }
+        this.translate(offset);
+    }
+
+    public translate(offset: Vector2) {
+        this.bounds = this.bounds.transform(offset);
         this.sprite.x += offset.x;
         this.sprite.y += offset.y;
+    }
+
+    protected update() {
+        const adjustedvelocity: Vector2 = { x: this.velocity.x / this.parent.framerate, y: this.velocity.y / this.parent.framerate }
+        this.translate(adjustedvelocity);
     }
 }
 
 class PASpaceship extends PAGameObject {
-    private boosting: Boolean;
+    private boosting: boolean;
+    private speed: number = 300;
 
+    public static keyresponses: Record<string, Vector2> = {
+        "KeyW": { x: 0, y: -1 },
+        "KeyA": { x: -1, y: 0 },
+        "KeyS": { x: 0, y: 1 },
+        "KeyD": { x: 1, y: 0 },
+        "ArrowUp": { x: 0, y: -1 },
+        "ArrowLeft": { x: -1, y: 0 },
+        "ArrowRight": { x: 1, y: 0 },
+        "ArrowDown": { x: 0, y: 1 },
+    }
+
+    public static keysdown: Record<string, boolean> = {
+        "KeyW": false,
+        "KeyA": false,
+        "KeyS": false,
+        "KeyD": false,
+        "ArrowUp": false,
+        "ArrowLeft": false,
+        "ArrowRight": false,
+        "ArrowDown": false,
+    }
     async initialize() {
         await super.initialize();
         this.sprite.paused = true;
     }
 
+    public onkey(key: string, down: boolean) {
+        let factor = (down ? 1 : -1) * this.speed;
+        let vector = PASpaceship.keyresponses[key]
+        if (PASpaceship.keysdown[key] != down) {
+            PASpaceship.keysdown[key] = down;
+            this.velocity = { x: this.velocity.x + vector.x * factor, y: this.velocity.y + vector.y * factor }
+        }
+        if (!this.boosting && down) {
+            this.boostanim();
+        }
+    }
+
+    private async boostanim() {
+        console.log("start boost")
+        this.boosting = true;
+        this.sprite.i += 1;
+
+        await sleep(50);
+        this.sprite.i += 1;
+        await sleep(150);
+        this.sprite.i += 1;
+        await sleep(50);
+        this.sprite.i = 0
+        this.boosting = false;
+    }
 
 }
