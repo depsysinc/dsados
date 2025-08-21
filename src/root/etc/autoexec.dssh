@@ -3,5 +3,6 @@
 #
 
 PATH=/bin
+/bin/pixelassault
 /bin/splash
 /bin/dsmdbrowser /data/site/index.dsmd
