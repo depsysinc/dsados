@@ -76,6 +76,13 @@ function scale(vector: Vector2, amount: number): Vector2 {
     return { x: vector.x * amount, y: vector.y * amount }
 }
 
+type EnemyType = {
+    spriteurl: string,
+    health: number,
+    scorevalue: number,
+    shootchance: number
+}
+
 export class PRPixelAssault extends DSProcess {
 
     public playing: boolean = false;
@@ -84,6 +91,9 @@ export class PRPixelAssault extends DSProcess {
 
     public framerate: number = 40;
     public framenum: number = 0;
+
+    public wavenumber: number = 1;
+    private enemycount: number = 0;
 
     public static spritepath: string = "/data/app/pixel_assault/"
 
@@ -95,6 +105,9 @@ export class PRPixelAssault extends DSProcess {
     public killlist: PAGameObject[] = [];
 
     private hearts: PANonInteracting[] = [];
+    private scoredigits: PANonInteracting[] = [];
+    public score: number = 0;
+
 
     protected async main(): Promise<void> {
         this.reset();
@@ -111,25 +124,41 @@ export class PRPixelAssault extends DSProcess {
             return;
         }
         this.initialized = true;
-        this.playing = true;
-
         await this.createObject(PANonInteracting, "pixelbackground (2).jpg", { x: 0, y: 0 });
 
+        for (let i = 0; i < 5; i++) {
+            let digit = await this.createObject(PANonInteracting, "numbers", { x: 400 - 20 * 5 - 5 + 20 * i, y: 3 }) as PANonInteracting;
+            this.scoredigits.push(digit);
+            digit.sprite.paused = true;
+        }
+
+
         for (let i = 0; i < 3; i++) {
-            let heart = await this.createObject(PANonInteracting, "heart_animation_trans.gif", { x: 30 * i, y: 0 });
+            let heart = await this.createObject(PANonInteracting, "heart_animation_trans.gif", { x: 30 * i, y: 0 }) as PANonInteracting;
             this.hearts.push(heart);
         }
+
+
+        await this.enemyWave(1);
+
         this.spaceship = await this.createObject(PASpaceship, "Ships/LightningFrames", { x: 200, y: 280 }) as PASpaceship;
+        this.createShield({ x: 320, y: 230 })
+        this.createShield({ x: 223, y: 230 })
+        this.createShield({ x: 127, y: 230 })
+        this.createShield({ x: 30, y: 230 })
+
+
+        this.playing = true;
+
+    }
+
+    private async enemyWave(difficulty: number) {
         for (let j = 0; j < 3; j++) {
             for (let i = 0; i < 5; i++) {
-                await this.createObject(PAEnemy, "Ships/NinjaFrames", { x: 50 * i + 10, y: 25 + j * 30 });
+                await this.createObject(PAEnemy, "Alien1", { x: 35 * i + 10, y: 25 + j * 20 });
             }
         }
-        this.createShield({ x: 325, y: 230 })
-        this.createShield({ x: 225, y: 230 })
-        this.createShield({ x: 125, y: 230 })
-        this.createShield({ x: 25, y: 230 })
-
+        this.enemycount = 15;
     }
 
     private createShield(coords: Vector2) {
@@ -156,7 +185,19 @@ export class PRPixelAssault extends DSProcess {
                 x: blockplaces[i].x * shieldpiecewidth + coords.x,
                 y: blockplaces[i].y * shieldpiecewidth + coords.y
             }
-            this.createObject(PAShield, "shieldpiece.png", newcoords)
+            this.createObject(PAShield, "shieldpiece6.png", newcoords)
+        }
+    }
+
+    private setscore() {
+        let scorestring = this.score.toString()
+        for (let i = 0; i < 6 - scorestring.length; i++) {
+            scorestring = '0' + scorestring;
+        }
+        const digits = '0123456789'
+        for (let i = 0; i < scorestring.length; i++) {
+            let digit = digits.indexOf(scorestring[i])
+            this.scoredigits[i].sprite.i = digit
         }
     }
 
@@ -166,6 +207,7 @@ export class PRPixelAssault extends DSProcess {
         DSKernel.terminal.resetSprites();
         this.stdout.write(set_cursor(false));
         this.updateboundingbox();
+        this.wavenumber = 1;
         this.objects = [];
         this.playing = false;
         this.initialized = false;
@@ -194,6 +236,15 @@ export class PRPixelAssault extends DSProcess {
         return DSKernel.terminal.width >= this.width && DSKernel.terminal.height >= this.height;
     }
 
+    public async onenemykilled() {
+        this.enemycount--;
+        if (this.enemycount == 0) {
+            this.wavenumber += 1;
+            await sleep(3000);
+            this.enemyWave(this.wavenumber)
+        }
+
+    }
 
 
     async mainloop() {
@@ -208,6 +259,7 @@ export class PRPixelAssault extends DSProcess {
                 this.framenum++;
                 this.runUpdateFunctions();
                 this.sendCollisionMessages();
+                this.setscore();
                 this.sendOutOfBoundsMessages();
                 this.killObjects();
             }
@@ -222,7 +274,7 @@ export class PRPixelAssault extends DSProcess {
             console.log("leave")
             this.exited = true;
         }
-        if (!this.playing && e.key == "KeyY") {
+        if (!this.playing && !this.initialized && e.key == "KeyY") {
             this.createGame();
         }
         if (e.key == "KeyP" && e.down) {
@@ -406,6 +458,9 @@ abstract class PAGameObject {
 }
 
 class PANonInteracting extends PAGameObject {
+    public sprite: DSSprite;
+
+
     public async initialize(): Promise<void> {
         await super.initialize();
         let removedself = this.parent.objects.pop()
@@ -418,7 +473,6 @@ class PANonInteracting extends PAGameObject {
 class PABullet extends PAGameObject {
     public onCollision(other: PAGameObject): void {
         if (other instanceof PAShield || other instanceof PABullet) {
-            //this.bounds = new BoundingBox(0, 0, 0, 0)
             this.kill();
         }
     }
@@ -461,15 +515,20 @@ class PAEnemyBullet extends PABullet {
 
 class PAEnemy extends PAGameObject {
     private health: number = 1;
+    private type: EnemyType;
 
     private static shootchance = 1 / 300;
-    private static speed: number = 100; //Units - px/sec
+    private static speed: number = 50; //Units - px/sec
 
     protected static globalhorizontalmotion: Vector2 = { x: this.speed, y: 0 };
 
     private static downdistace = 25; //Units - px
     private static downframes: number; //Units - frames
     protected static downstartframe: number = -50;
+
+    public setType(type: EnemyType) {
+        this.type = type;
+    }
 
     public async initialize(): Promise<void> {
         await super.initialize();
@@ -483,6 +542,8 @@ class PAEnemy extends PAGameObject {
         ) {
             this.health--;
             if (this.health <= 0) {
+                PAEnemy.speed += 0.5;
+                this.parent.onenemykilled();
                 this.explode();
                 this.kill();
             }
@@ -542,7 +603,7 @@ class PASpaceship extends PAGameObject {
     private speed: number = 300;
     private firing: boolean = false;
     private firingcooldown: number = 0;
-    private maxfiringcooldown: number = 200 / this.parent.framerate
+    private maxfiringcooldown: number = 500 / this.parent.framerate
     public static keyresponses: Record<string, Vector2> = {
         "KeyW": { x: 0, y: -1 },
         "KeyA": { x: -1, y: 0 },
