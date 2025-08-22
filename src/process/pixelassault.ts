@@ -3,7 +3,7 @@ import { DSKernel } from "../dsKernel";
 import { DSProcess } from "../dsProcess";
 import { DSKeyEvent, DSSprite } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
-import { reset, set_cursor } from "../lib/dsCurses";
+import { cursorright, down, reset, right, set_cursor } from "../lib/dsCurses";
 import { DSTexture, get_image_textures } from "../lib/dsImg";
 import { sleep } from "../lib/dsLib";
 
@@ -66,10 +66,14 @@ type Vector2 = {
     y: number
 }
 
+function scale(vector: Vector2, amount: number): Vector2 {
+    return { x: vector.x * amount, y: vector.y * amount }
+}
+
 export class PRPixelAssault extends DSProcess {
 
-    public paused: boolean = false;
-    public levelend: boolean = false;
+    public playing: boolean = false;
+    public initialized: boolean = false;
     public exited: boolean = false;
 
     public framerate: number = 40;
@@ -77,58 +81,114 @@ export class PRPixelAssault extends DSProcess {
     public static spritepath: string = "/data/app/pixel_assault/"
 
     private spaceship: PASpaceship;
-    public updatefunctions: (() => void)[] = [];
     public objects: PAGameObject[] = [];
-
+    private width = 350;
+    private height = 400;
     public gamebounds: BoundingBox = new BoundingBox(0, 500, 0, 500);
     public killlist: PAGameObject[] = [];
 
     protected async main(): Promise<void> {
-        this.stdout.write(reset());
-        DSKernel.terminal.resetSprites();
-        this.stdout.write(set_cursor(false));
-
-
-        this.spaceship = new PASpaceship(this, "Ships/LightningFrames");
-        await this.spaceship.initialize();
-        this.spaceship.goto({ x: 400, y: 400 });
-        this.mainloop();
-
-
-        while (!this.exited) {
-            await sleep(50)
-        }
-        DSKernel.terminal.resetSprites();
+        this.reset();
+        await this.splash();
+        await this.mainloop();
+        this.reset();
         return;
     }
 
+    private async createGame() {
+        this.reset();
+        if (!this.screencorrectsize()) {
+            this.splash();
+            return;
+        }
+        this.initialized = true;
+        this.playing = true;
+        this.spaceship = await this.createObject(PASpaceship, "Ships/LightningFrames", { x: 400, y: 400 }) as PASpaceship;
+        await this.createObject(PAEnemy, "Ships/NinjaFrames", { x: this.gamebounds.x0+50, y: this.gamebounds.y0+50 });
+
+    }
+
+    private reset() {
+        this.stdout.write(reset());
+        DSKernel.terminal.resetSprites();
+        this.stdout.write(set_cursor(false));
+        this.updateboundingbox();
+        this.objects = [];
+        this.playing = false;
+        this.initialized = false;
+    }
+
+    private async splash() {
+        this.reset();
+        if (!this.screencorrectsize()) {
+            this.stdout.write("Resize screen!")
+        }
+        else {
+            this.stdout.write("Splash screen engaged. Y to start.")
+        }
+    }
+
+    private updateboundingbox() {
+        this.gamebounds = new BoundingBox(
+            (DSKernel.terminal.width - this.width) / 2,
+            (DSKernel.terminal.width + this.width) / 2,
+            (DSKernel.terminal.height - this.height) / 2,
+            (DSKernel.terminal.height + this.height) / 2
+        )
+    }
+
+    private screencorrectsize() {
+        return DSKernel.terminal.width >= this.width && DSKernel.terminal.height >= this.height;
+    }
+
+
+
     async mainloop() {
         while (!this.exited) {
-            for (let i = 0; i < 2; i++) {
-                this.stdout.write([' ', '\b'][i]); //Sprites only update when xterm requests a refresh, when text is written to the terminal
+            if (this.playing && !this.initialized) {
+                await this.createGame();
+            }
 
+            if (this.playing) {
+                this.stdout.write(cursorright(1)); //Sprites only update when xterm requests a refresh, when text is written to the terminal
 
-                for (let i = 0; i < this.updatefunctions.length; i++) {
-                    this.updatefunctions[i]()
-                }
+                this.runUpdateFunctions();
                 this.sendCollisionMessages();
                 this.sendOutOfBoundsMessages();
                 this.killObjects();
-
-
-                await sleep(1000 / this.framerate)
             }
-
+            await sleep(1000 / this.framerate)
         }
+
+
     }
 
     handleKeyEvent(e: DSKeyEvent): void {
         if (e.key == "KeyQ") {
+            console.log("leave")
             this.exited = true;
         }
-        if (e.key in PASpaceship.keyresponses) {
+        if (!this.playing && e.key == "KeyY") {
+            this.createGame();
+        }
+        if (e.key == "KeyP" && e.down) {
+            this.playing = !this.playing;
+        }
+
+        if (this.playing && e.key in PASpaceship.keyresponses) {
             this.spaceship.onkey(e.key, e.down);
         }
+    }
+
+    runUpdateFunctions() {
+        for (let i = 0; i < this.objects.length; i++) {
+            this.objects[i].update()
+        }
+
+    }
+
+    handleResize(): void {
+        this.splash();
     }
 
     sendCollisionMessages() {
@@ -167,13 +227,31 @@ export class PRPixelAssault extends DSProcess {
     }
 }
 
+class Explosion {
+    constructor(protected parent: PAGameObject) {
+        this.explode(parent.bounds.center)
+    }
 
+    async explode(coords: Vector2) {
+        const inode = this.parent.parent.cwd.getfile(PRPixelAssault.spritepath + "explosion.gif") as DSIWebFile;
+        const textures = await get_image_textures(inode.url);
+        const texturecount = textures.length;
+        const sprite = DSKernel.terminal.newSprite(textures);
+        sprite.x = coords.x - sprite.texture.width / 2
+        sprite.y = coords.y - sprite.texture.height / 2
+        sprite.enabled = true;
+        while (sprite.i < texturecount - 1) {
+            await sleep(50);
+        }
+        sprite.enabled = false;
+    }
+}
 
 abstract class PAGameObject {
     protected sprite: DSSprite;
     public bounds: BoundingBox;
     public velocity: Vector2 = { x: 0, y: 0 };
-    constructor(protected parent: PRPixelAssault, protected url: string) {
+    constructor(public parent: PRPixelAssault, private url: string) {
     }
 
     async initialize() {
@@ -184,18 +262,17 @@ abstract class PAGameObject {
             this.sprite.y,
             this.sprite.y + this.sprite.texture.height
         );
-        this.parent.updatefunctions.push(() => this.update())
         this.parent.objects.push(this);
 
     }
 
-    async get_sprite(): Promise<DSSprite> {
+    private async get_sprite(): Promise<DSSprite> {
         let inode;
         try {
             inode = this.parent.cwd.getfile(PRPixelAssault.spritepath + this.url);
         }
         catch (DSIDirectoryInvalidPathError) {
-            console.log("File not found: " + this.url)
+            console.error("File not found: " + this.url)
             return;
         }
         let textures: DSTexture[] = [];
@@ -235,8 +312,8 @@ abstract class PAGameObject {
         this.sprite.y += offset.y;
     }
 
-    protected update() {
-        const adjustedvelocity: Vector2 = { x: this.velocity.x / this.parent.framerate, y: this.velocity.y / this.parent.framerate }
+    public update() {
+        const adjustedvelocity: Vector2 = scale(this.velocity, 1 / this.parent.framerate)
         this.translate(adjustedvelocity);
     }
 
@@ -254,19 +331,69 @@ abstract class PAGameObject {
 class PABullet extends PAGameObject {
     public onCollision(other: PAGameObject): void {
         if (other instanceof PAShield) {
-            this.kill()
+            this.kill();
         }
     }
     public onOutOfBounds(touching: boolean): void {
         if (!touching) {
             this.kill();
-            this.goto({x:200,y:200})
+            this.goto({ x: 200, y: 200 })
+        }
+    }
+}
+
+class PAPlayerBullet extends PABullet {
+    private speed = 500;
+    public async initialize(): Promise<void> {
+        await super.initialize();
+        this.velocity = { x: 0, y: -this.speed }
+    }
+
+    public onCollision(other: PAGameObject): void {
+        super.onCollision(other);
+        if (other instanceof PAEnemy) {
+            this.kill();
         }
     }
 }
 
 class PAEnemy extends PAGameObject {
+    private health: number = 1;
+    private speed: number = 100; //Units - px/sec
+    private downdistace = 50; //Units - px
+    private downtravelcountdown: number = 0;
 
+    public async initialize(): Promise<void> {
+        await super.initialize();
+        this.velocity = { x: this.speed, y: 0 }
+    }
+    public onCollision(other: PAGameObject): void {
+        if (other instanceof PAPlayerBullet ||
+            other instanceof PAShield ||
+            other instanceof PASpaceship ||
+            other instanceof PAEnemy
+        ) {
+            this.health--;
+            if (this.health <= 0) {
+                new Explosion(this);
+                this.kill();
+            }
+        }
+    }
+    public update(): void {
+        super.update();
+        this.downtravelcountdown--;
+        if (this.downtravelcountdown == 0) {
+            let direction = this.bounds.x0 < 50 ? 1 : -1
+            this.velocity = { x: direction * this.speed, y: 0 }
+        }
+    }
+
+    public onOutOfBounds(touching: boolean): void {
+        this.translate(scale(this.velocity, -1 / this.parent.framerate));
+        this.velocity = { x: 0, y: this.speed }
+        this.downtravelcountdown = Math.ceil(this.downdistace * this.parent.framerate / this.speed)
+    }
 }
 
 class PAShield extends PAGameObject {
@@ -274,17 +401,20 @@ class PAShield extends PAGameObject {
 }
 
 class PABonus extends PAGameObject {
-
+    public onOutOfBounds(touching: boolean): void {
+        if (!touching) {
+            this.kill();
+        }
+    }
 }
 
 
 class PASpaceship extends PAGameObject {
     private boosting: boolean;
     private speed: number = 300;
-    private bulletspeed: number = 500;
     private firing: boolean = false;
     private firingcooldown: number = 0;
-    private maxfiringcooldown: number = 5
+    private maxfiringcooldown: number = 200 / this.parent.framerate
     public static keyresponses: Record<string, Vector2> = {
         "KeyW": { x: 0, y: -1 },
         "KeyA": { x: -1, y: 0 },
@@ -347,21 +477,19 @@ class PASpaceship extends PAGameObject {
     }
 
 
-    protected update(): void {
+    public update(): void {
         super.update();
         this.firingcooldown--;
         if (this.firing) {
             if (this.firingcooldown <= 0) {
                 this.firingcooldown = this.maxfiringcooldown;
-                this.parent.createObject(PABullet, "bullet.png", this.bounds.center).then((obj) => {
-                    obj.velocity = { x: 0, y: -this.bulletspeed }
-                });
+                this.parent.createObject(PAPlayerBullet, "bullet.png", this.bounds.center)
             }
         }
     }
 
     public onOutOfBounds(touching: boolean): void {
-        const adjustedvelocity: Vector2 = { x: -this.velocity.x / this.parent.framerate, y: -this.velocity.y / this.parent.framerate }
+        const adjustedvelocity: Vector2 = scale(this.velocity, -1 / this.parent.framerate);
         if (this.bounds.xwithin(this.parent.gamebounds)) {
             adjustedvelocity.x = 0;
         }

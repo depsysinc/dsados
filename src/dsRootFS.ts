@@ -43,6 +43,10 @@ import root_data_app_pixel_assault_Ships_LightningFrames_lightning1_png from "./
 import root_data_app_pixel_assault_Ships_LightningFrames_lightning2_png from "./root/data/app/pixel_assault/Ships/LightningFrames/lightning2.png";
 import root_data_app_pixel_assault_Ships_LightningFrames_lightning3_png from "./root/data/app/pixel_assault/Ships/LightningFrames/lightning3.png";
 import root_data_app_pixel_assault_Ships_Ninja_png from "./root/data/app/pixel_assault/Ships/Ninja.png";
+import root_data_app_pixel_assault_Ships_NinjaFrames_ninja0_png from "./root/data/app/pixel_assault/Ships/NinjaFrames/ninja0.png";
+import root_data_app_pixel_assault_Ships_NinjaFrames_ninja1_png from "./root/data/app/pixel_assault/Ships/NinjaFrames/ninja1.png";
+import root_data_app_pixel_assault_Ships_NinjaFrames_ninja2_png from "./root/data/app/pixel_assault/Ships/NinjaFrames/ninja2.png";
+import root_data_app_pixel_assault_Ships_NinjaFrames_ninja3_png from "./root/data/app/pixel_assault/Ships/NinjaFrames/ninja3.png";
 import root_data_app_pixel_assault_Ships_Paranoid_png from "./root/data/app/pixel_assault/Ships/Paranoid.png";
 import root_data_app_pixel_assault_Ships_Saboteur_png from "./root/data/app/pixel_assault/Ships/Saboteur.png";
 import root_data_app_pixel_assault_Ships_Turtle_png from "./root/data/app/pixel_assault/Ships/Turtle.png";
@@ -257,6 +261,34 @@ export function buildrootfs(): DSFileSystem {
     curdir.addfile("Ninja.png", curfile);
     
     
+    // Traversing root/data/app/pixel_assault/Ships/NinjaFrames
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('NinjaFrames');
+    
+    // Creating root/data/app/pixel_assault/Ships/NinjaFrames/ninja0.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Ships_NinjaFrames_ninja0_png);
+    curdir.addfile("ninja0.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/Ships/NinjaFrames/ninja1.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Ships_NinjaFrames_ninja1_png);
+    curdir.addfile("ninja1.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/Ships/NinjaFrames/ninja2.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Ships_NinjaFrames_ninja2_png);
+    curdir.addfile("ninja2.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/Ships/NinjaFrames/ninja3.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Ships_NinjaFrames_ninja3_png);
+    curdir.addfile("ninja3.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/app/pixel_assault/Ships/NinjaFrames
+        
     // Creating root/data/app/pixel_assault/Ships/Paranoid.png
     curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Ships_Paranoid_png);
     curdir.addfile("Paranoid.png", curfile);
