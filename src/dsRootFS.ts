@@ -51,6 +51,7 @@ import root_data_app_pixel_assault_Ships_Paranoid_png from "./root/data/app/pixe
 import root_data_app_pixel_assault_Ships_Saboteur_png from "./root/data/app/pixel_assault/Ships/Saboteur.png";
 import root_data_app_pixel_assault_Ships_Turtle_png from "./root/data/app/pixel_assault/Ships/Turtle.png";
 import root_data_app_pixel_assault_Ships_UFO_png from "./root/data/app/pixel_assault/Ships/UFO.png";
+import root_data_app_pixel_assault_background_jpg from "./root/data/app/pixel_assault/background.jpg";
 import root_data_app_pixel_assault_bullet_png from "./root/data/app/pixel_assault/bullet.png";
 import root_data_app_pixel_assault_exp2_0_png from "./root/data/app/pixel_assault/exp2_0.png";
 import root_data_app_pixel_assault_explosion_gif from "./root/data/app/pixel_assault/explosion.gif";
@@ -313,6 +314,11 @@ export function buildrootfs(): DSFileSystem {
     curdir = dirstack.pop();
     // Exited root/data/app/pixel_assault/Ships
         
+    // Creating root/data/app/pixel_assault/background.jpg
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_background_jpg);
+    curdir.addfile("background.jpg", curfile);
+    
+    
     // Creating root/data/app/pixel_assault/bullet.png
     curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bullet_png);
     curdir.addfile("bullet.png", curfile);
