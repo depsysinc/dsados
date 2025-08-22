@@ -103,6 +103,14 @@ export class PRPixelAssault extends DSProcess {
         }
         this.initialized = true;
         this.playing = true;
+
+        const inode = this.cwd.getfile(PRPixelAssault.spritepath + "background.jpg") as DSIWebFile;
+        const textures = await get_image_textures(inode.url);
+        const background = DSKernel.terminal.newSprite(textures);
+        background.x = this.gamebounds.x0;
+        background.y = this.gamebounds.y0;
+        background.enabled = true;
+
         this.spaceship = await this.createObject(PASpaceship, "Ships/LightningFrames", { x: 400, y: 400 }) as PASpaceship;
         await this.createObject(PAEnemy, "Ships/NinjaFrames", { x: this.gamebounds.x0+50, y: this.gamebounds.y0+50 });
 
