@@ -56,6 +56,7 @@ import root_data_app_pixel_assault_bullet_png from "./root/data/app/pixel_assaul
 import root_data_app_pixel_assault_enemybullet_png from "./root/data/app/pixel_assault/enemybullet.png";
 import root_data_app_pixel_assault_exp2_0_png from "./root/data/app/pixel_assault/exp2_0.png";
 import root_data_app_pixel_assault_explosion_gif from "./root/data/app/pixel_assault/explosion.gif";
+import root_data_app_pixel_assault_heart_animation_trans_gif from "./root/data/app/pixel_assault/heart_animation_trans.gif";
 import root_data_app_pixel_assault_pixelbackground_jpg from "./root/data/app/pixel_assault/pixelbackground.jpg";
 import root_data_app_pixel_assault_pixelsplosion_gif from "./root/data/app/pixel_assault/pixelsplosion.gif";
 import root_data_demo_animation_32x32_A_png from "./root/data/demo/animation/32x32_A.png";
@@ -340,6 +341,11 @@ export function buildrootfs(): DSFileSystem {
     // Creating root/data/app/pixel_assault/explosion.gif
     curfile = new DSIWebFile(fs, root_data_app_pixel_assault_explosion_gif);
     curdir.addfile("explosion.gif", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/heart_animation_trans.gif
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_heart_animation_trans_gif);
+    curdir.addfile("heart_animation_trans.gif", curfile);
     
     
     // Creating root/data/app/pixel_assault/pixelbackground.jpg
