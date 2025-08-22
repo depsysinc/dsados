@@ -53,8 +53,11 @@ import root_data_app_pixel_assault_Ships_Turtle_png from "./root/data/app/pixel_
 import root_data_app_pixel_assault_Ships_UFO_png from "./root/data/app/pixel_assault/Ships/UFO.png";
 import root_data_app_pixel_assault_background_jpg from "./root/data/app/pixel_assault/background.jpg";
 import root_data_app_pixel_assault_bullet_png from "./root/data/app/pixel_assault/bullet.png";
+import root_data_app_pixel_assault_enemybullet_png from "./root/data/app/pixel_assault/enemybullet.png";
 import root_data_app_pixel_assault_exp2_0_png from "./root/data/app/pixel_assault/exp2_0.png";
 import root_data_app_pixel_assault_explosion_gif from "./root/data/app/pixel_assault/explosion.gif";
+import root_data_app_pixel_assault_pixelbackground_jpg from "./root/data/app/pixel_assault/pixelbackground.jpg";
+import root_data_app_pixel_assault_pixelsplosion_gif from "./root/data/app/pixel_assault/pixelsplosion.gif";
 import root_data_demo_animation_32x32_A_png from "./root/data/demo/animation/32x32_A.png";
 import root_data_demo_animation_32x32_B_png from "./root/data/demo/animation/32x32_B.png";
 import root_data_demo_animation_32x32_C_png from "./root/data/demo/animation/32x32_C.png";
@@ -324,6 +327,11 @@ export function buildrootfs(): DSFileSystem {
     curdir.addfile("bullet.png", curfile);
     
     
+    // Creating root/data/app/pixel_assault/enemybullet.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_enemybullet_png);
+    curdir.addfile("enemybullet.png", curfile);
+    
+    
     // Creating root/data/app/pixel_assault/exp2_0.png
     curfile = new DSIWebFile(fs, root_data_app_pixel_assault_exp2_0_png);
     curdir.addfile("exp2_0.png", curfile);
@@ -332,6 +340,16 @@ export function buildrootfs(): DSFileSystem {
     // Creating root/data/app/pixel_assault/explosion.gif
     curfile = new DSIWebFile(fs, root_data_app_pixel_assault_explosion_gif);
     curdir.addfile("explosion.gif", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/pixelbackground.jpg
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_pixelbackground_jpg);
+    curdir.addfile("pixelbackground.jpg", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/pixelsplosion.gif
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_pixelsplosion_gif);
+    curdir.addfile("pixelsplosion.gif", curfile);
     
     
     curdir.chmod(DSFilePerms.rx());

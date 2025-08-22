@@ -104,15 +104,15 @@ export class PRPixelAssault extends DSProcess {
         this.initialized = true;
         this.playing = true;
 
-        const inode = this.cwd.getfile(PRPixelAssault.spritepath + "background.jpg") as DSIWebFile;
+        const inode = this.cwd.getfile(PRPixelAssault.spritepath + "pixelbackground.jpg") as DSIWebFile;
         const textures = await get_image_textures(inode.url);
         const background = DSKernel.terminal.newSprite(textures);
         background.x = this.gamebounds.x0;
         background.y = this.gamebounds.y0;
         background.enabled = true;
 
-        this.spaceship = await this.createObject(PASpaceship, "Ships/LightningFrames", { x: 400, y: 400 }) as PASpaceship;
-        await this.createObject(PAEnemy, "Ships/NinjaFrames", { x: this.gamebounds.x0+50, y: this.gamebounds.y0+50 });
+        this.spaceship = await this.createObject(PASpaceship, "Ships/LightningFrames", { x: 200, y: 350 }) as PASpaceship;
+        await this.createObject(PAEnemy, "Ships/NinjaFrames", { x: 50, y: 50 });
 
     }
 
@@ -226,22 +226,35 @@ export class PRPixelAssault extends DSProcess {
 
         }
     }
-
-    public async createObject(constructor: new (parent: PRPixelAssault, url: string) => PAGameObject, url: string, position: Vector2) {
+    public async createObject(constructor: new (parent: PRPixelAssault, url: string) => PAGameObject, url: string, creator: PAGameObject): Promise<PAGameObject>
+    public async createObject(constructor: new (parent: PRPixelAssault, url: string) => PAGameObject, url: string, position: Vector2): Promise<PAGameObject>
+    public async createObject(constructor: new (parent: PRPixelAssault, url: string) => PAGameObject, url: string, location: PAGameObject | Vector2): Promise<PAGameObject> {
         const newobj = new constructor(this, url);
         await newobj.initialize();
-        newobj.goto(position);
+        if (location instanceof PAGameObject) {
+            newobj.goto(location.bounds.center);
+        }
+        else {
+            newobj.goto(location);
+            newobj.translate(this.gamebounds.topLeft)
+
+        }
         return newobj;
     }
+
+
 }
 
+
 class Explosion {
+    static filename = "pixelsplosion.gif";
+
     constructor(protected parent: PAGameObject) {
         this.explode(parent.bounds.center)
     }
 
     async explode(coords: Vector2) {
-        const inode = this.parent.parent.cwd.getfile(PRPixelAssault.spritepath + "explosion.gif") as DSIWebFile;
+        const inode = this.parent.parent.cwd.getfile(PRPixelAssault.spritepath + Explosion.filename) as DSIWebFile;
         const textures = await get_image_textures(inode.url);
         const texturecount = textures.length;
         const sprite = DSKernel.terminal.newSprite(textures);
@@ -276,13 +289,7 @@ abstract class PAGameObject {
 
     private async get_sprite(): Promise<DSSprite> {
         let inode;
-        try {
-            inode = this.parent.cwd.getfile(PRPixelAssault.spritepath + this.url);
-        }
-        catch (DSIDirectoryInvalidPathError) {
-            console.error("File not found: " + this.url)
-            return;
-        }
+        inode = this.parent.cwd.getfile(PRPixelAssault.spritepath + this.url);
         let textures: DSTexture[] = [];
 
         //If passed directory, cycle through the filelist and add them all to textures
@@ -338,7 +345,7 @@ abstract class PAGameObject {
 
 class PABullet extends PAGameObject {
     public onCollision(other: PAGameObject): void {
-        if (other instanceof PAShield) {
+        if (other instanceof PAShield || other instanceof PABullet) {
             this.kill();
         }
     }
@@ -365,11 +372,26 @@ class PAPlayerBullet extends PABullet {
     }
 }
 
+class PAEnemyBullet extends PABullet {
+    private speed = 300;
+    public async initialize(): Promise<void> {
+        await super.initialize();
+        this.velocity = { x: 0, y: this.speed }
+    }
+    public onCollision(other: PAGameObject): void {
+        super.onCollision(other);
+        if (other instanceof PASpaceship) {
+            this.kill();
+        }
+    }
+}
+
 class PAEnemy extends PAGameObject {
     private health: number = 1;
     private speed: number = 100; //Units - px/sec
-    private downdistace = 50; //Units - px
+    private downdistace = 25; //Units - px
     private downtravelcountdown: number = 0;
+    private shootchance = 1 / 300;
 
     public async initialize(): Promise<void> {
         await super.initialize();
@@ -392,8 +414,11 @@ class PAEnemy extends PAGameObject {
         super.update();
         this.downtravelcountdown--;
         if (this.downtravelcountdown == 0) {
-            let direction = this.bounds.x0 < 50 ? 1 : -1
+            let direction = this.bounds.x0 < this.parent.gamebounds.x0 + 50 ? 1 : -1
             this.velocity = { x: direction * this.speed, y: 0 }
+        }
+        if (Math.random() < this.shootchance) {
+            this.parent.createObject(PAEnemyBullet, "enemybullet.png", this);
         }
     }
 
@@ -491,7 +516,7 @@ class PASpaceship extends PAGameObject {
         if (this.firing) {
             if (this.firingcooldown <= 0) {
                 this.firingcooldown = this.maxfiringcooldown;
-                this.parent.createObject(PAPlayerBullet, "bullet.png", this.bounds.center)
+                this.parent.createObject(PAPlayerBullet, "bullet.png", this)
             }
         }
     }
