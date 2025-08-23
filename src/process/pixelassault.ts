@@ -1,11 +1,53 @@
-import { DSFilePermsError, DSFileSystemError, DSIDirectory, DSIDirectoryIllegalFilenameError, DSIDirectoryInvalidPathError, DSInode } from "../dsFileSystem";
+import {  DSFileSystemError, DSIDirectory } from "../dsFileSystem";
 import { DSKernel } from "../dsKernel";
 import { DSProcess } from "../dsProcess";
 import { DSKeyEvent, DSSprite } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
-import { cursornextline, cursorright, down, gotoxy, reset, right, set_cursor } from "../lib/dsCurses";
+import { cursornextline, cursorright, gotoxy, reset, right, set_cursor } from "../lib/dsCurses";
 import { DSTexture, get_image_textures } from "../lib/dsImg";
 import { sleep } from "../lib/dsLib";
+
+class PAGameData {
+    public static framerate: number = 40;
+
+    public static enemyrows: number = 5;
+    public static enemycols: number = 8;
+
+    public static spritepath: string = "/data/app/pixel_assault/"
+
+    public static width = 400;
+    public static height = 320;
+
+    public static startlives = 3;
+
+    public static keyresponses: Record<string, Vector2> = {
+        "KeyW": { x: 0, y: -1 },
+        "KeyA": { x: -1, y: 0 },
+        "KeyS": { x: 0, y: 1 },
+        "KeyD": { x: 1, y: 0 },
+        "ArrowUp": { x: 0, y: -1 },
+        "ArrowLeft": { x: -1, y: 0 },
+        "ArrowRight": { x: 1, y: 0 },
+        "ArrowDown": { x: 0, y: 1 },
+        "Space": { x: 0, y: 0 }
+    }
+
+    public static replacementkeys: Record<string, string> = {
+        "KeyW": "ArrowUp",
+        "KeyA": "ArrowLeft",
+        "KeyS": "ArrowDown",
+        "KeyD": "ArrowRight",
+        "ArrowUp": "Not a key",
+        "ArrowLeft": "Not a key",
+        "ArrowRight": "Not a key",
+        "ArrowDown": "Not a key",
+
+    }
+
+}
+
+
+
 
 class BoundingBox {
     constructor(
@@ -144,27 +186,19 @@ export class PRPixelAssault extends DSProcess {
     public exited: boolean = false;
     public splashing: boolean = true;
 
-    public framerate: number = 40;
-    public frameNumber: number = 0;
 
-    public wavenumber: number = 1;
     private enemycount: number = 0;
-    private enemyrows: number = 5;
-    private enemycols: number = 8;
+    private currentwavenumber: number = 1;
 
-    public static spritepath: string = "/data/app/pixel_assault/"
-
-    private width = 400;
-    private height = 320;
+    public frameNumber: number = 0;
     public gamebounds: BoundingBox = new BoundingBox(0, 500, 0, 500);
 
     private spaceship: PASpaceship;
     public objects: PAGameObject[] = [];
     public killlist: PAGameObject[] = [];
-
     private hearts: PANonInteracting[] = [];
     private scoredigits: PANonInteracting[] = [];
-  
+
     public score: number = 0;
 
 
@@ -244,7 +278,7 @@ export class PRPixelAssault extends DSProcess {
                 this.sendOutOfBoundsMessages();
                 this.killObjects();
             }
-            await sleep(1000 / this.framerate)
+            await sleep(1000 / PAGameData.framerate)
         }
 
     }
@@ -252,9 +286,9 @@ export class PRPixelAssault extends DSProcess {
     private async createEnemyWave(difficulty: number) {
         PAEnemy.moving = false;
         PAEnemy.resetmotion();
-        this.enemycount = this.enemycols * this.enemyrows;
+        this.enemycount = PAGameData.enemycols * PAGameData.enemyrows;
         let difficultremaining = difficulty;
-        for (let j = 0; j < this.enemyrows; j++) {
+        for (let j = 0; j < PAGameData.enemyrows; j++) {
             let rowtype: EnemyType;
             for (let i = 0; i < enemy_types.length; i++) {
 
@@ -264,8 +298,8 @@ export class PRPixelAssault extends DSProcess {
                     break;
                 }
             }
-            for (let i = 0; i < this.enemycols; i++) {
-                this.createObject(PAEnemy, 'Enemies/'+rowtype.spriteurl, { x: 35 * i + 10, y: 25 + j * 25 }).then((enemy) => {
+            for (let i = 0; i < PAGameData.enemycols; i++) {
+                this.createObject(PAEnemy, 'Enemies/' + rowtype.spriteurl, { x: 35 * i + 10, y: 25 + j * 25 }).then((enemy) => {
                     (enemy as PAEnemy).setType(rowtype);
                 }
                 );
@@ -388,9 +422,9 @@ export class PRPixelAssault extends DSProcess {
     public async onEnemyKilled() {
         this.enemycount--;
         if (this.enemycount == 0) {
-            this.wavenumber += 1;
+            this.currentwavenumber += 1;
             await sleep(3000);
-            this.createEnemyWave(this.wavenumber)
+            this.createEnemyWave(this.currentwavenumber)
         }
 
     }
@@ -431,7 +465,7 @@ export class PRPixelAssault extends DSProcess {
         DSKernel.terminal.resetSprites();
         this.stdout.write(set_cursor(false));
         this.updateGameBounds();
-        this.wavenumber = 1;
+        this.currentwavenumber = 1;
         this.objects = [];
         this.playing = false;
         this.initialized = false;
@@ -459,7 +493,7 @@ export class PRPixelAssault extends DSProcess {
             this.playing = !this.playing;
         }
 
-        if (this.playing && e.key in PASpaceship.keyresponses) {
+        if (this.playing && e.key in PAGameData.keyresponses) {
             this.spaceship.onkey(e.key, e.down);
         }
     }
@@ -470,42 +504,20 @@ export class PRPixelAssault extends DSProcess {
 
     private updateGameBounds() {
         this.gamebounds = new BoundingBox(
-            (DSKernel.terminal.width - this.width) / 2,
-            (DSKernel.terminal.width + this.width) / 2,
-            (DSKernel.terminal.height - this.height) / 2,
-            (DSKernel.terminal.height + this.height) / 2
+            (DSKernel.terminal.width - PAGameData.width) / 2,
+            (DSKernel.terminal.width + PAGameData.width) / 2,
+            (DSKernel.terminal.height - PAGameData.height) / 2,
+            (DSKernel.terminal.height + PAGameData.height) / 2
         )
     }
 
     private screenCorrectSize() {
-        return DSKernel.terminal.width >= this.width && DSKernel.terminal.height >= this.height;
-    }
-
-
-}
-
-
-class Explosion {
-    static filename = "pixelsplosion.gif";
-
-    constructor(protected parent: PAGameObject) {
-        this.explode(parent.bounds.center)
-    }
-
-    async explode(coords: Vector2) {
-        const inode = this.parent.parent.cwd.getfile(PRPixelAssault.spritepath + Explosion.filename) as DSIWebFile;
-        const textures = await get_image_textures(inode.url);
-        const texturecount = textures.length;
-        const sprite = DSKernel.terminal.newSprite(textures);
-        sprite.x = coords.x - sprite.texture.width / 2
-        sprite.y = coords.y - sprite.texture.height / 2
-        sprite.enabled = true;
-        while (sprite.i < texturecount - 1) {
-            await sleep(50);
-        }
-        sprite.enabled = false;
+        return DSKernel.terminal.width >= PAGameData.width && DSKernel.terminal.height >= PAGameData.height;
     }
 }
+
+
+
 
 abstract class PAGameObject {
     protected sprite: DSSprite;
@@ -528,7 +540,7 @@ abstract class PAGameObject {
 
     private async get_sprite(): Promise<DSSprite> {
         let inode;
-        inode = this.parent.cwd.getfile(PRPixelAssault.spritepath + this.url);
+        inode = this.parent.cwd.getfile(PAGameData.spritepath + this.url);
         let textures: DSTexture[] = [];
 
         //If passed directory, cycle through the filelist and add them all to textures
@@ -567,7 +579,7 @@ abstract class PAGameObject {
     }
 
     public update() {
-        const adjustedvelocity: Vector2 = scale(this.velocity, 1 / this.parent.framerate)
+        const adjustedvelocity: Vector2 = scale(this.velocity, 1 / PAGameData.framerate)
         this.translate(adjustedvelocity);
     }
 
@@ -595,6 +607,16 @@ class PANonInteracting extends PAGameObject {
         if (removedself != this) {
             throw new Error("Something went wrong")
         };
+    }
+}
+
+class PAShield extends PAGameObject {
+    public onCollision(other: PAGameObject): void {
+        if (other instanceof PABullet ||
+            other instanceof PAEnemy
+        ) {
+            this.kill();
+        }
     }
 }
 
@@ -660,21 +682,17 @@ class PAEnemy extends PAGameObject {
     private static downframes: number; //Units - frames
     protected static downstartframe: number = -50;
 
+    public async initialize(): Promise<void> {
+        await super.initialize();
+        this.velocity = PAEnemy.globalhorizontalmotion;
+        PAEnemy.downframes = Math.ceil(PAEnemy.downdistace * PAGameData.framerate / PAEnemy.speed)
+    }
+
     public setType(type: EnemyType) {
         this.type = type;
         this.health = type.health;
     }
 
-    public static resetmotion() {
-        this.downstartframe = -50;
-        this.globalhorizontalmotion = { x: this.speed, y: 0 };
-    }
-
-    public async initialize(): Promise<void> {
-        await super.initialize();
-        this.velocity = PAEnemy.globalhorizontalmotion;
-        PAEnemy.downframes = Math.ceil(PAEnemy.downdistace * this.parent.framerate / PAEnemy.speed)
-    }
     public onCollision(other: PAGameObject): void {
         if (other instanceof PAPlayerBullet ||
             other instanceof PAShield ||
@@ -693,6 +711,20 @@ class PAEnemy extends PAGameObject {
             }
         }
     }
+
+    public async createBullet() {
+        let bullet = await this.parent.createObject(PAEnemyBullet, "enemybullet.png", this) as PAEnemyBullet;
+        bullet.setSpeed(this.type.bulletspeed);
+
+    }
+
+
+    public static resetmotion() {
+        this.downstartframe = -50;
+        this.globalhorizontalmotion = { x: this.speed, y: 0 };
+    }
+
+
     public update(): void {
         const framessincedowntravel = this.parent.frameNumber - PAEnemy.downstartframe
         if (framessincedowntravel == 1) {
@@ -716,26 +748,10 @@ class PAEnemy extends PAGameObject {
         }
     }
 
-    public async createBullet() {
-        let bullet = await this.parent.createObject(PAEnemyBullet, "enemybullet.png", this) as PAEnemyBullet;
-        bullet.setSpeed(this.type.bulletspeed);
-
-    }
-
     public onOutOfBounds(touching: boolean): void {
         PAEnemy.downstartframe = this.parent.frameNumber;
         if (!this.bounds.ywithin(this.parent.gamebounds)) {
             this.parent.loseGame();
-        }
-    }
-}
-
-class PAShield extends PAGameObject {
-    public onCollision(other: PAGameObject): void {
-        if (other instanceof PABullet ||
-            other instanceof PAEnemy
-        ) {
-            this.kill();
         }
     }
 }
@@ -803,27 +819,15 @@ class PABonus extends PAGameObject {
     }
 }
 
-
 class PASpaceship extends PAGameObject {
 
-    public lives: number = 3;
+    public lives: number = PAGameData.startlives;
 
     private boosting: boolean;
     private speed: number = 200;
     private firing: boolean = false;
     private firingcooldown: number = 0;
-    private maxfiringcooldown: number = 500 / this.parent.framerate
-    public static keyresponses: Record<string, Vector2> = {
-        "KeyW": { x: 0, y: -1 },
-        "KeyA": { x: -1, y: 0 },
-        "KeyS": { x: 0, y: 1 },
-        "KeyD": { x: 1, y: 0 },
-        "ArrowUp": { x: 0, y: -1 },
-        "ArrowLeft": { x: -1, y: 0 },
-        "ArrowRight": { x: 1, y: 0 },
-        "ArrowDown": { x: 0, y: 1 },
-        "Space": { x: 0, y: 0 }
-    }
+    private maxfiringcooldown: number = 500 / PAGameData.framerate
 
     public static keysdown: Record<string, boolean> = {
         "KeyW": false,
@@ -837,17 +841,7 @@ class PASpaceship extends PAGameObject {
         "Not a key": false
     }
 
-    public static keypairs: Record<string, string> = {
-        "KeyW": "ArrowUp",
-        "KeyA": "ArrowLeft",
-        "KeyS": "ArrowDown",
-        "KeyD": "ArrowRight",
-        "ArrowUp": "Not a key",
-        "ArrowLeft": "Not a key",
-        "ArrowRight": "Not a key",
-        "ArrowDown": "Not a key",
 
-    }
 
     public static resetkeysdown() {
         this.keysdown = {
@@ -863,11 +857,6 @@ class PASpaceship extends PAGameObject {
         }
     }
 
-    async initialize() {
-        await super.initialize();
-        this.sprite.paused = true;
-    }
-
     public onkey(key: string, down: boolean) {
         if (key == "Space") {
             this.firing = down;
@@ -878,20 +867,10 @@ class PASpaceship extends PAGameObject {
         }
     }
 
-    private async booston() {
-        this.boosting = true;
-        this.sprite.i = 1;
-        await sleep(50);
-        this.sprite.i = 2;
+    async initialize() {
+        await super.initialize();
+        this.sprite.paused = true;
     }
-
-    private async boostoff() {
-        this.boosting = false;
-        this.sprite.i = 3;
-        await sleep(50);
-        this.sprite.i = 0;
-    }
-
 
     public update(): void {
 
@@ -904,10 +883,10 @@ class PASpaceship extends PAGameObject {
         }
         this.velocity = { x: 0, y: 0 }
         Object.keys(PASpaceship.keysdown).forEach(key => {
-            if (PASpaceship.keysdown[key] && !PASpaceship.keysdown[PASpaceship.keypairs[key]]) {
+            if (PASpaceship.keysdown[key] && !PASpaceship.keysdown[PAGameData.replacementkeys[key]]) {
                 this.velocity = {
-                    x: this.velocity.x + PASpaceship.keyresponses[key].x * this.speed,
-                    y: this.velocity.y + PASpaceship.keyresponses[key].y * this.speed,
+                    x: this.velocity.x + PAGameData.keyresponses[key].x * this.speed,
+                    y: this.velocity.y + PAGameData.keyresponses[key].y * this.speed,
                 }
             }
         });
@@ -919,13 +898,11 @@ class PASpaceship extends PAGameObject {
             this.boostoff();
         }
 
-
         super.update();
-
     }
 
     public onOutOfBounds(touching: boolean): void {
-        const adjustedvelocity: Vector2 = scale(this.velocity, -1 / this.parent.framerate);
+        const adjustedvelocity: Vector2 = scale(this.velocity, -1 / PAGameData.framerate);
         if (this.bounds.xwithin(this.parent.gamebounds)) {
             adjustedvelocity.x = 0;
         }
@@ -948,10 +925,24 @@ class PASpaceship extends PAGameObject {
         }
 
         if (other instanceof PAShield) {
-            const backupvelocity: Vector2 = scale(this.velocity, -1 / this.parent.framerate);
+            const backupvelocity: Vector2 = scale(this.velocity, -1 / PAGameData.framerate);
             this.translate(backupvelocity);
         }
 
+    }
+
+    private async booston() {
+        this.boosting = true;
+        this.sprite.i = 1;
+        await sleep(50);
+        this.sprite.i = 2;
+    }
+
+    private async boostoff() {
+        this.boosting = false;
+        this.sprite.i = 3;
+        await sleep(50);
+        this.sprite.i = 0;
     }
 
     private async flashanim() {
@@ -968,10 +959,33 @@ class PASpaceship extends PAGameObject {
         await sleep(5000);
         this.maxfiringcooldown *= 2;
     }
+
     public async speedup() {
         this.speed *= 2;
         await sleep(5000);
         this.speed /= 2;
     }
 
+}
+
+class Explosion {
+    static filename = "pixelsplosion.gif";
+
+    constructor(protected parent: PAGameObject) {
+        this.explode(parent.bounds.center)
+    }
+
+    async explode(coords: Vector2) {
+        const inode = this.parent.parent.cwd.getfile(PAGameData.spritepath + Explosion.filename) as DSIWebFile;
+        const textures = await get_image_textures(inode.url);
+        const texturecount = textures.length;
+        const sprite = DSKernel.terminal.newSprite(textures);
+        sprite.x = coords.x - sprite.texture.width / 2
+        sprite.y = coords.y - sprite.texture.height / 2
+        sprite.enabled = true;
+        while (sprite.i < texturecount - 1) {
+            await sleep(50);
+        }
+        sprite.enabled = false;
+    }
 }

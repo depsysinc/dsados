@@ -44,7 +44,6 @@ import root_data_app_pixel_assault_Enemies_grab_grab1_png from "./root/data/app/
 import root_data_app_pixel_assault_Enemies_grab_grab2_png from "./root/data/app/pixel_assault/Enemies/grab/grab2.png";
 import root_data_app_pixel_assault_Enemies_grab_grab3_png from "./root/data/app/pixel_assault/Enemies/grab/grab3.png";
 import root_data_app_pixel_assault_Enemies_paranoid_gif from "./root/data/app/pixel_assault/Enemies/paranoid.gif";
-import root_data_app_pixel_assault_PixelAssaultSplash_png from "./root/data/app/pixel_assault/PixelAssaultSplash.png";
 import root_data_app_pixel_assault_PixelAssaultSplash2_png from "./root/data/app/pixel_assault/PixelAssaultSplash2.png";
 import root_data_app_pixel_assault_background_jpg from "./root/data/app/pixel_assault/background.jpg";
 import root_data_app_pixel_assault_bonuses_bulletbonus_png from "./root/data/app/pixel_assault/bonuses/bulletbonus.png";
@@ -306,11 +305,6 @@ export function buildrootfs(): DSFileSystem {
     curdir = dirstack.pop();
     // Exited root/data/app/pixel_assault/Enemies
         
-    // Creating root/data/app/pixel_assault/PixelAssaultSplash.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_PixelAssaultSplash_png);
-    curdir.addfile("PixelAssaultSplash.png", curfile);
-    
-    
     // Creating root/data/app/pixel_assault/PixelAssaultSplash2.png
     curfile = new DSIWebFile(fs, root_data_app_pixel_assault_PixelAssaultSplash2_png);
     curdir.addfile("PixelAssaultSplash2.png", curfile);
