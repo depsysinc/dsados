@@ -223,11 +223,9 @@ export class PRPixelAssault extends DSProcess {
     }
 
     private setscore() {
+        console.log("setting");
         let scorestring = this.score.toString();
-        console.log(scorestring);
         scorestring = '0'.repeat(5-scorestring.length)+scorestring
-      
-        console.log(scorestring)
         const digits = '0123456789'
         for (let i = 0; i < scorestring.length; i++) {
             let digit = digits.indexOf(scorestring[4-i])
@@ -255,6 +253,7 @@ export class PRPixelAssault extends DSProcess {
         else {
             this.stdout.write("Splash screen engaged. Y to start.")
         }
+        console.log('splashfinished')
     }
 
     private updateboundingbox() {
@@ -300,7 +299,7 @@ export class PRPixelAssault extends DSProcess {
             await sleep(1000 / this.framerate)
         }
 
-
+        console.log("leaving")
     }
 
     handleKeyEvent(e: DSKeyEvent): void {
@@ -369,9 +368,8 @@ export class PRPixelAssault extends DSProcess {
     }
 
     public loseGame() {
-        console.log("You lose!")
         this.splash();
-        this.exited = true;
+        console.log("youlose");
     }
 
     public async createObject(constructor: new (parent: PRPixelAssault, url: string) => PAGameObject, url: string, creator: PAGameObject): Promise<PAGameObject>
