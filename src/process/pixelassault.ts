@@ -1,4 +1,4 @@
-import {  DSFileSystemError, DSIDirectory } from "../dsFileSystem";
+import { DSFileSystemError, DSIDirectory } from "../dsFileSystem";
 import { DSKernel } from "../dsKernel";
 import { DSProcess } from "../dsProcess";
 import { DSKeyEvent, DSSprite } from "../dsTerminal";
@@ -523,6 +523,9 @@ abstract class PAGameObject {
     protected sprite: DSSprite;
     public bounds: BoundingBox;
     public velocity: Vector2 = { x: 0, y: 0 };
+
+    private static texturehashes: Record<string, DSTexture[]> = {}
+
     constructor(public parent: PRPixelAssault, private url: string) {
     }
 
@@ -539,26 +542,31 @@ abstract class PAGameObject {
     }
 
     private async get_sprite(): Promise<DSSprite> {
-        let inode;
-        inode = this.parent.cwd.getfile(PAGameData.spritepath + this.url);
         let textures: DSTexture[] = [];
-
-        //If passed directory, cycle through the filelist and add them all to textures
-        if (inode instanceof DSIDirectory) {
-            for (let i = 2; i < inode.filelist.length; i++) {
-                let childnode = inode.filelist[i].inode
-                if (!(childnode instanceof DSIWebFile)) {
-                    throw new DSFileSystemError("Directory contents not webfiles");
-                }
-                textures = textures.concat(await get_image_textures(childnode.url));
-                textures[i - 2].duration = 150000;
-            }
-        }
-        else if (inode instanceof DSIWebFile) {
-            textures = await get_image_textures(inode.url);
+        if (this.url in PAGameObject.texturehashes) {
+            textures = PAGameObject.texturehashes[this.url];
         }
         else {
-            throw new DSFileSystemError("Incorrect sprite type passed")
+            let inode = this.parent.cwd.getfile(PAGameData.spritepath + this.url);
+
+            //If passed directory, cycle through the filelist and add them all to textures
+            if (inode instanceof DSIDirectory) {
+                for (let i = 2; i < inode.filelist.length; i++) {
+                    let childnode = inode.filelist[i].inode
+                    if (!(childnode instanceof DSIWebFile)) {
+                        throw new DSFileSystemError("Directory contents not webfiles");
+                    }
+                    textures = textures.concat(await get_image_textures(childnode.url));
+                    textures[i - 2].duration = 150000;
+                }
+            }
+            else if (inode instanceof DSIWebFile) {
+                textures = await get_image_textures(inode.url);
+            }
+            else {
+                throw new DSFileSystemError("Incorrect sprite type passed")
+            }
+            PAGameObject.texturehashes[this.url] = textures;
         }
 
         let sprite = DSKernel.terminal.newSprite(textures);
