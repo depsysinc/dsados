@@ -81,7 +81,8 @@ type EnemyType = {
     spriteurl: string,
     health: number,
     scorevalue: number,
-    shootchance: number
+    shootchance: number,
+    bonuschance: number
 }
 
 //List of all enemy types; must be sorted from highest difficulty to lowest
@@ -91,14 +92,16 @@ const enemy_types: EnemyType[] = [
         spriteurl: 'Alien1',
         health: 1,
         scorevalue: 30,
-        shootchance: 1 / 100
+        shootchance: 1 / 100,
+        bonuschance: 1 / 4
     },
     {
         difficulty: 0,
         spriteurl: 'Ships/enemygreen.gif',
         health: 1,
         scorevalue: 10,
-        shootchance: 1 / 2000
+        shootchance: 1 / 2000,
+        bonuschance: 1 / 10
     }
 ]
 
@@ -149,21 +152,21 @@ export class PRPixelAssault extends DSProcess {
         await this.createObject(PANonInteracting, "pixelbackground (2).jpg", { x: 0, y: 0 });
 
         for (let i = 0; i < 5; i++) {
-            let digit = await this.createObject(PANonInteracting, "numbers", { x: 400 - 20 * (i+1), y: 3 }) as PANonInteracting;
+            let digit = await this.createObject(PANonInteracting, "numbers", { x: 400 - 20 * (i + 1), y: 3 }) as PANonInteracting;
             this.scoredigits.push(digit);
             digit.sprite.paused = true;
         }
 
+        this.spaceship = await this.createObject(PASpaceship, "Ships/LightningFrames", { x: 200, y: 280 }) as PASpaceship;
 
-        for (let i = 0; i < 3; i++) {
-            let heart = await this.createObject(PANonInteracting, "heart_animation_trans.gif", { x: 30 * i, y: 0 }) as PANonInteracting;
-            this.hearts.push(heart);
+
+        for (let i = 0; i < this.spaceship.lives; i++) {
+            await this.createHeart();
         }
 
 
         await this.enemyWave(1);
 
-        this.spaceship = await this.createObject(PASpaceship, "Ships/LightningFrames", { x: 200, y: 280 }) as PASpaceship;
         this.createShield({ x: 320, y: 230 })
         this.createShield({ x: 223, y: 230 })
         this.createShield({ x: 127, y: 230 })
@@ -194,7 +197,7 @@ export class PRPixelAssault extends DSProcess {
         this.enemycount = this.enemycols * this.enemyrows;
     }
 
-    private createShield(coords: Vector2) {
+    public createShield(coords: Vector2) {
         const shieldpiecewidth = 5;
         const shielddrawing =
             `
@@ -203,7 +206,7 @@ export class PRPixelAssault extends DSProcess {
 1111111111
 1111111111
 1111  1111
-111    111  
+111    111
         `.split('\n')
         const blockplaces: Vector2[] = []
         for (let i = shielddrawing.length - 1; i >= 0; i--) {
@@ -225,10 +228,10 @@ export class PRPixelAssault extends DSProcess {
     private setscore() {
         console.log("setting");
         let scorestring = this.score.toString();
-        scorestring = '0'.repeat(5-scorestring.length)+scorestring
+        scorestring = '0'.repeat(5 - scorestring.length) + scorestring
         const digits = '0123456789'
         for (let i = 0; i < scorestring.length; i++) {
-            let digit = digits.indexOf(scorestring[4-i])
+            let digit = digits.indexOf(scorestring[4 - i])
             this.scoredigits[i].sprite.i = digit
         }
     }
@@ -355,7 +358,7 @@ export class PRPixelAssault extends DSProcess {
             let obj = this.killlist[i];
             this.objects = this.objects.filter((i => i != obj));
             if (obj instanceof PAEnemy) {
-                if (!this.killlist.slice(i+1).includes(obj))
+                if (!this.killlist.slice(i + 1).includes(obj))
                     this.onenemykilled();
             }
         }
@@ -367,9 +370,23 @@ export class PRPixelAssault extends DSProcess {
         lastheart.kill();
     }
 
+    public async createHeart() {
+        let heart = await this.createObject(PANonInteracting, "heart_animation_trans.gif", { x: 30 * this.hearts.length, y: 0 }) as PANonInteracting;
+        this.hearts.push(heart);
+        console.log(this.hearts, this.hearts.length);
+
+    }
+
     public loseGame() {
         this.splash();
         console.log("youlose");
+    }
+
+    public async createRandomBonus(parent: PAGameObject) {
+        const bufftypes = ['bulletbonus', 'heartbonus', 'scorebonus', 'shieldbonus', 'speedbonus']
+        let buffchoice = bufftypes[Math.floor(Math.random() * bufftypes.length)]
+        let obj = await this.createObject(PABonus, "bonuses/" + buffchoice + ".png", parent) as PABonus;
+        obj.bufftype = buffchoice;
     }
 
     public async createObject(constructor: new (parent: PRPixelAssault, url: string) => PAGameObject, url: string, creator: PAGameObject): Promise<PAGameObject>
@@ -564,7 +581,7 @@ class PAEnemy extends PAGameObject {
     public setType(type: EnemyType) {
         this.type = type;
         this.health = type.health;
-        
+
     }
 
     public async initialize(): Promise<void> {
@@ -583,6 +600,10 @@ class PAEnemy extends PAGameObject {
                 this.parent.score += this.type.scorevalue;
                 this.explode();
                 this.kill();
+                if (Math.random() < this.type.bonuschance && other instanceof PAPlayerBullet) {
+                    this.parent.createRandomBonus(this);
+                }
+
             }
         }
     }
@@ -624,9 +645,62 @@ class PAShield extends PAGameObject {
 }
 
 class PABonus extends PAGameObject {
+
+    public bufftype: string;
+
     public onOutOfBounds(touching: boolean): void {
         if (!touching) {
             this.kill();
+        }
+    }
+
+    public onCollision(other: PAGameObject): void {
+        if (other instanceof PASpaceship) {
+            this.grantbuff(other);
+            this.kill();
+        }
+    }
+
+    public async initialize(): Promise<void> {
+        await super.initialize();
+        this.velocity.y = 20;
+    }
+
+    public update(): void {
+        this.velocity.x = 20 * Math.sin(this.parent.framenum / 20);
+        super.update();
+    }
+
+    public grantbuff(spaceship: PASpaceship) {
+        switch (this.bufftype) {
+            case "bulletbonus":
+                spaceship.speedbullets();
+                break;
+
+            case "heartbonus":
+                if (spaceship.lives < 10) {
+                    this.parent.createHeart();
+                    spaceship.lives++
+                }
+                break;
+
+            case "scorebonus":
+                this.parent.score += 150 + 10 * Math.floor(Math.random() * 10);
+                break;
+
+            case "shieldbonus":
+                let ycoord = Math.max(this.parent.gamebounds.y0,spaceship.bounds.center.y - 50);
+                let xcoord = Math.max(0,Math.min(350,this.bounds.center.x -35 + Math.random()*20))
+                this.parent.createShield({ x: xcoord-this.parent.gamebounds.x0, y: ycoord-this.parent.gamebounds.y0 });
+                break;
+
+            case "speedbonus":
+                spaceship.speedup();
+                break;
+
+            default:
+                console.warn("Unknown buff type:", this.bufftype);
+                break;
         }
     }
 }
@@ -637,7 +711,7 @@ class PASpaceship extends PAGameObject {
     public lives: number = 3;
 
     private boosting: boolean;
-    private speed: number = 300;
+    private speed: number = 200;
     private firing: boolean = false;
     private firingcooldown: number = 0;
     private maxfiringcooldown: number = 500 / this.parent.framerate
@@ -662,8 +736,21 @@ class PASpaceship extends PAGameObject {
         "ArrowLeft": false,
         "ArrowRight": false,
         "ArrowDown": false,
+        "Not a key": false
+    }
+
+    public static keypairs: Record<string,string> = {
+        "KeyW": "ArrowUp",
+        "KeyA": "ArrowLeft",
+        "KeyS": "ArrowDown",
+        "KeyD": "ArrowRight",
+        "ArrowUp": "Not a key",
+        "ArrowLeft": "Not a key",
+        "ArrowRight": "Not a key",
+        "ArrowDown": "Not a key",
 
     }
+
     async initialize() {
         await super.initialize();
         this.sprite.paused = true;
@@ -674,17 +761,8 @@ class PASpaceship extends PAGameObject {
             this.firing = down;
             return;
         }
-        let factor = (down ? 1 : -1) * this.speed;
-        let vector = PASpaceship.keyresponses[key]
         if (PASpaceship.keysdown[key] != down) {
             PASpaceship.keysdown[key] = down;
-            this.velocity = { x: this.velocity.x + vector.x * factor, y: this.velocity.y + vector.y * factor }
-        }
-        if (!this.boosting && (this.velocity.x != 0 || this.velocity.y != 0)) {
-            this.booston();
-        }
-        if (this.boosting && (this.velocity.x == 0 && this.velocity.y == 0)) {
-            this.boostoff();
         }
     }
 
@@ -704,7 +782,7 @@ class PASpaceship extends PAGameObject {
 
 
     public update(): void {
-        super.update();
+
         this.firingcooldown--;
         if (this.firing) {
             if (this.firingcooldown <= 0) {
@@ -712,6 +790,26 @@ class PASpaceship extends PAGameObject {
                 this.parent.createObject(PAPlayerBullet, "bullet2.png", this)
             }
         }
+        this.velocity = { x: 0, y: 0 }
+        Object.keys(PASpaceship.keysdown).forEach(key => {
+            if (PASpaceship.keysdown[key] && !PASpaceship.keysdown[PASpaceship.keypairs[key]]) {
+                this.velocity = {
+                    x: this.velocity.x + PASpaceship.keyresponses[key].x * this.speed,
+                    y: this.velocity.y + PASpaceship.keyresponses[key].y * this.speed,
+                }
+            }
+        });
+
+        if (!this.boosting && (this.velocity.x != 0 || this.velocity.y != 0)) {
+            this.booston();
+        }
+        if (this.boosting && (this.velocity.x == 0 && this.velocity.y == 0)) {
+            this.boostoff();
+        }
+
+
+        super.update();
+
     }
 
     public onOutOfBounds(touching: boolean): void {
@@ -757,6 +855,17 @@ class PASpaceship extends PAGameObject {
             this.sprite.enabled = true;
             await sleep(100);
         }
+    }
+
+    public async speedbullets() {
+        this.maxfiringcooldown /= 2;
+        await sleep(5000);
+        this.maxfiringcooldown *= 2;
+    }
+    public async speedup() {
+        this.speed *= 2;
+        await sleep(5000);
+        this.speed /= 2;
     }
 
 }

@@ -56,6 +56,11 @@ import root_data_app_pixel_assault_Ships_Turtle_png from "./root/data/app/pixel_
 import root_data_app_pixel_assault_Ships_UFO_png from "./root/data/app/pixel_assault/Ships/UFO.png";
 import root_data_app_pixel_assault_Ships_enemygreen_gif from "./root/data/app/pixel_assault/Ships/enemygreen.gif";
 import root_data_app_pixel_assault_background_jpg from "./root/data/app/pixel_assault/background.jpg";
+import root_data_app_pixel_assault_bonuses_bulletbonus_png from "./root/data/app/pixel_assault/bonuses/bulletbonus.png";
+import root_data_app_pixel_assault_bonuses_heartbonus_png from "./root/data/app/pixel_assault/bonuses/heartbonus.png";
+import root_data_app_pixel_assault_bonuses_scorebonus_png from "./root/data/app/pixel_assault/bonuses/scorebonus.png";
+import root_data_app_pixel_assault_bonuses_shieldbonus_png from "./root/data/app/pixel_assault/bonuses/shieldbonus.png";
+import root_data_app_pixel_assault_bonuses_speedbonus_png from "./root/data/app/pixel_assault/bonuses/speedbonus.png";
 import root_data_app_pixel_assault_bullet_png from "./root/data/app/pixel_assault/bullet.png";
 import root_data_app_pixel_assault_bullet2_png from "./root/data/app/pixel_assault/bullet2.png";
 import root_data_app_pixel_assault_enemybullet_png from "./root/data/app/pixel_assault/enemybullet.png";
@@ -370,6 +375,39 @@ export function buildrootfs(): DSFileSystem {
     curdir.addfile("background.jpg", curfile);
     
     
+    // Traversing root/data/app/pixel_assault/bonuses
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('bonuses');
+    
+    // Creating root/data/app/pixel_assault/bonuses/bulletbonus.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bonuses_bulletbonus_png);
+    curdir.addfile("bulletbonus.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/bonuses/heartbonus.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bonuses_heartbonus_png);
+    curdir.addfile("heartbonus.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/bonuses/scorebonus.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bonuses_scorebonus_png);
+    curdir.addfile("scorebonus.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/bonuses/shieldbonus.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bonuses_shieldbonus_png);
+    curdir.addfile("shieldbonus.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/bonuses/speedbonus.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bonuses_speedbonus_png);
+    curdir.addfile("speedbonus.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/app/pixel_assault/bonuses
+        
     // Creating root/data/app/pixel_assault/bullet.png
     curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bullet_png);
     curdir.addfile("bullet.png", curfile);
