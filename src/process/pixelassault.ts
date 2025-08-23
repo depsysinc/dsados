@@ -77,11 +77,30 @@ function scale(vector: Vector2, amount: number): Vector2 {
 }
 
 type EnemyType = {
+    difficulty: number,
     spriteurl: string,
     health: number,
     scorevalue: number,
     shootchance: number
 }
+
+//List of all enemy types; must be sorted from highest difficulty to lowest
+const enemy_types: EnemyType[] = [
+    {
+        difficulty: 1,
+        spriteurl: 'Alien1',
+        health: 1,
+        scorevalue: 30,
+        shootchance: 1 / 100
+    },
+    {
+        difficulty: 0,
+        spriteurl: 'Ships/enemygreen.gif',
+        health: 1,
+        scorevalue: 10,
+        shootchance: 1 / 2000
+    }
+]
 
 export class PRPixelAssault extends DSProcess {
 
@@ -94,6 +113,9 @@ export class PRPixelAssault extends DSProcess {
 
     public wavenumber: number = 1;
     private enemycount: number = 0;
+
+    private enemyrows: number = 4;
+    private enemycols: number = 8;
 
     public static spritepath: string = "/data/app/pixel_assault/"
 
@@ -127,7 +149,7 @@ export class PRPixelAssault extends DSProcess {
         await this.createObject(PANonInteracting, "pixelbackground (2).jpg", { x: 0, y: 0 });
 
         for (let i = 0; i < 5; i++) {
-            let digit = await this.createObject(PANonInteracting, "numbers", { x: 400 - 20 * 5 - 5 + 20 * i, y: 3 }) as PANonInteracting;
+            let digit = await this.createObject(PANonInteracting, "numbers", { x: 400 - 20 * (i+1), y: 3 }) as PANonInteracting;
             this.scoredigits.push(digit);
             digit.sprite.paused = true;
         }
@@ -153,12 +175,23 @@ export class PRPixelAssault extends DSProcess {
     }
 
     private async enemyWave(difficulty: number) {
-        for (let j = 0; j < 3; j++) {
-            for (let i = 0; i < 5; i++) {
-                await this.createObject(PAEnemy, "Alien1", { x: 35 * i + 10, y: 25 + j * 20 });
+        let difficultremaining = difficulty;
+        for (let j = 0; j < this.enemyrows; j++) {
+            let rowtype;
+            for (let i = 0; i < enemy_types.length; i++) {
+
+                if (enemy_types[i].difficulty <= difficultremaining) {
+                    rowtype = enemy_types[i];
+                    difficultremaining -= rowtype.difficulty;
+                    break;
+                }
+            }
+            for (let i = 0; i < this.enemycols; i++) {
+                let enemy = await this.createObject(PAEnemy, rowtype.spriteurl, { x: 35 * i + 10, y: 25 + j * 25 }) as PAEnemy;
+                enemy.setType(rowtype);
             }
         }
-        this.enemycount = 15;
+        this.enemycount = this.enemycols * this.enemyrows;
     }
 
     private createShield(coords: Vector2) {
@@ -190,13 +223,14 @@ export class PRPixelAssault extends DSProcess {
     }
 
     private setscore() {
-        let scorestring = this.score.toString()
-        for (let i = 0; i < 6 - scorestring.length; i++) {
-            scorestring = '0' + scorestring;
-        }
+        let scorestring = this.score.toString();
+        console.log(scorestring);
+        scorestring = '0'.repeat(5-scorestring.length)+scorestring
+      
+        console.log(scorestring)
         const digits = '0123456789'
         for (let i = 0; i < scorestring.length; i++) {
-            let digit = digits.indexOf(scorestring[i])
+            let digit = digits.indexOf(scorestring[4-i])
             this.scoredigits[i].sprite.i = digit
         }
     }
@@ -321,8 +355,12 @@ export class PRPixelAssault extends DSProcess {
         for (let i = 0; i < this.killlist.length; i++) {
             let obj = this.killlist[i];
             this.objects = this.objects.filter((i => i != obj));
-
+            if (obj instanceof PAEnemy) {
+                if (!this.killlist.slice(i+1).includes(obj))
+                    this.onenemykilled();
+            }
         }
+        this.killlist = [];
     }
 
     public loseHeart() {
@@ -517,7 +555,6 @@ class PAEnemy extends PAGameObject {
     private health: number = 1;
     private type: EnemyType;
 
-    private static shootchance = 1 / 300;
     private static speed: number = 50; //Units - px/sec
 
     protected static globalhorizontalmotion: Vector2 = { x: this.speed, y: 0 };
@@ -528,6 +565,8 @@ class PAEnemy extends PAGameObject {
 
     public setType(type: EnemyType) {
         this.type = type;
+        this.health = type.health;
+        
     }
 
     public async initialize(): Promise<void> {
@@ -543,7 +582,7 @@ class PAEnemy extends PAGameObject {
             this.health--;
             if (this.health <= 0) {
                 PAEnemy.speed += 0.5;
-                this.parent.onenemykilled();
+                this.parent.score += this.type.scorevalue;
                 this.explode();
                 this.kill();
             }
@@ -566,7 +605,7 @@ class PAEnemy extends PAGameObject {
 
         super.update();
 
-        if (Math.random() < PAEnemy.shootchance) {
+        if (Math.random() < this.type.shootchance) {
             this.parent.createObject(PAEnemyBullet, "enemybullet.png", this);
         }
     }
