@@ -82,26 +82,58 @@ type EnemyType = {
     health: number,
     scorevalue: number,
     shootchance: number,
-    bonuschance: number
+    bonuschance: number,
+    bulletspeed: number
 }
 
 //List of all enemy types; must be sorted from highest difficulty to lowest
 const enemy_types: EnemyType[] = [
     {
-        difficulty: 1,
+        difficulty: 23,
         spriteurl: 'Alien1',
-        health: 1,
-        scorevalue: 30,
+        health: 2,
+        scorevalue: 160,
         shootchance: 1 / 100,
-        bonuschance: 1 / 4
+        bonuschance: 1 / 2,
+        bulletspeed: 300
+    },
+    {
+        difficulty: 11,
+        spriteurl: 'grab',
+        health: 1,
+        scorevalue: 80,
+        shootchance: 1 / 200,
+        bonuschance: 1 / 3,
+        bulletspeed: 150
+    },
+
+    {
+        difficulty: 4.5,
+        spriteurl: 'blub',
+        health: 2,
+        scorevalue: 40,
+        shootchance: 1 / 400,
+        bonuschance: 1 / 4,
+        bulletspeed: 50
+    },
+
+    {
+        difficulty: 1.2,
+        spriteurl: 'paranoid.gif',
+        health: 1,
+        scorevalue: 20,
+        shootchance: 1 / 800,
+        bonuschance: 1 / 7,
+        bulletspeed: 150
     },
     {
         difficulty: 0,
         spriteurl: 'Ships/enemygreen.gif',
         health: 1,
         scorevalue: 10,
-        shootchance: 1 / 2000,
-        bonuschance: 1 / 10
+        shootchance: 1 / 1500,
+        bonuschance: 1 / 14,
+        bulletspeed: 50
     }
 ]
 
@@ -178,6 +210,9 @@ export class PRPixelAssault extends DSProcess {
     }
 
     private async enemyWave(difficulty: number) {
+        PAEnemy.moving = false;
+        PAEnemy.resetmotion();
+        this.enemycount = this.enemycols * this.enemyrows;
         let difficultremaining = difficulty;
         for (let j = 0; j < this.enemyrows; j++) {
             let rowtype;
@@ -194,7 +229,8 @@ export class PRPixelAssault extends DSProcess {
                 enemy.setType(rowtype);
             }
         }
-        this.enemycount = this.enemycols * this.enemyrows;
+        PAEnemy.moving = true;
+
     }
 
     public createShield(coords: Vector2) {
@@ -226,7 +262,6 @@ export class PRPixelAssault extends DSProcess {
     }
 
     private setscore() {
-        console.log("setting");
         let scorestring = this.score.toString();
         scorestring = '0'.repeat(5 - scorestring.length) + scorestring
         const digits = '0123456789'
@@ -246,6 +281,14 @@ export class PRPixelAssault extends DSProcess {
         this.objects = [];
         this.playing = false;
         this.initialized = false;
+        this.score = 0;
+        this.hearts = [];
+        this.enemycount = 0;
+        this.killlist = [];
+        this.scoredigits = [];
+        this.framenum = 0;
+        PAEnemy.resetmotion();
+
     }
 
     private async splash() {
@@ -284,24 +327,30 @@ export class PRPixelAssault extends DSProcess {
 
 
     async mainloop() {
-        while (!this.exited) {
-            if (this.playing && !this.initialized) {
-                await this.createGame();
+try {
+            while (!this.exited) {
+                if (this.playing && !this.initialized) {
+                    await this.createGame();
+                }
+    
+                if (this.playing) {
+                    this.stdout.write(cursorright(1)); //Sprites only update when xterm requests a refresh, when text is written to the terminal
+    
+                    this.framenum++;
+                    this.runUpdateFunctions();
+                    this.sendCollisionMessages();
+                    if (!this.playing) //If you just lost
+                        continue;
+                    this.setscore();
+                    this.sendOutOfBoundsMessages();
+                    this.killObjects();
+                }
+                await sleep(1000 / this.framerate)
             }
-
-            if (this.playing) {
-                this.stdout.write(cursorright(1)); //Sprites only update when xterm requests a refresh, when text is written to the terminal
-
-                this.framenum++;
-                this.runUpdateFunctions();
-                this.sendCollisionMessages();
-                this.setscore();
-                this.sendOutOfBoundsMessages();
-                this.killObjects();
-            }
-            await sleep(1000 / this.framerate)
-        }
-
+    
+} catch (error) {
+    console.log(error);
+}
         console.log("leaving")
     }
 
@@ -338,7 +387,7 @@ export class PRPixelAssault extends DSProcess {
             for (let j = i + 1; j < this.objects.length; j++) {
                 if (this.objects[i].bounds.overlaps(this.objects[j].bounds)) {
                     this.objects[i].onCollision(this.objects[j]);
-                    this.objects[j].onCollision(this.objects[i]);
+                    this.objects[j]?.onCollision(this.objects[i]);
                 }
             }
         }
@@ -373,19 +422,16 @@ export class PRPixelAssault extends DSProcess {
     public async createHeart() {
         let heart = await this.createObject(PANonInteracting, "heart_animation_trans.gif", { x: 30 * this.hearts.length, y: 0 }) as PANonInteracting;
         this.hearts.push(heart);
-        console.log(this.hearts, this.hearts.length);
-
     }
 
     public loseGame() {
         this.splash();
-        console.log("youlose");
     }
 
     public async createRandomBonus(parent: PAGameObject) {
         const bufftypes = ['bulletbonus', 'heartbonus', 'scorebonus', 'shieldbonus', 'speedbonus']
-        let buffchoice = bufftypes[Math.floor(Math.random() * bufftypes.length)]
-        let obj = await this.createObject(PABonus, "bonuses/" + buffchoice + ".png", parent) as PABonus;
+        const buffchoice = bufftypes[Math.floor(Math.random() * bufftypes.length)]
+        const obj = await this.createObject(PABonus, "bonuses/" + buffchoice + ".png", parent) as PABonus;
         obj.bufftype = buffchoice;
     }
 
@@ -464,7 +510,7 @@ abstract class PAGameObject {
                     throw new DSFileSystemError("Directory contents not webfiles");
                 }
                 textures = textures.concat(await get_image_textures(childnode.url));
-                textures[i - 2].duration = 300;
+                textures[i - 2].duration = 150000;
             }
         }
         else if (inode instanceof DSIWebFile) {
@@ -558,6 +604,12 @@ class PAEnemyBullet extends PABullet {
         await super.initialize();
         this.velocity = { x: 0, y: this.speed }
     }
+
+    public setSpeed(newspeed: number) {
+        this.speed = newspeed;
+        this.velocity = { x: 0, y: this.speed }
+    }
+
     public onCollision(other: PAGameObject): void {
         super.onCollision(other);
         if (other instanceof PASpaceship) {
@@ -573,15 +625,20 @@ class PAEnemy extends PAGameObject {
     private static speed: number = 50; //Units - px/sec
 
     protected static globalhorizontalmotion: Vector2 = { x: this.speed, y: 0 };
+    public static moving: boolean = false;
 
-    private static downdistace = 25; //Units - px
+    private static downdistace = 15; //Units - px
     private static downframes: number; //Units - frames
     protected static downstartframe: number = -50;
 
     public setType(type: EnemyType) {
         this.type = type;
         this.health = type.health;
+    }
 
+    public static resetmotion() {
+        this.downstartframe = -50;
+        this.globalhorizontalmotion = { x: this.speed, y: 0 };
     }
 
     public async initialize(): Promise<void> {
@@ -596,14 +653,14 @@ class PAEnemy extends PAGameObject {
         ) {
             this.health--;
             if (this.health <= 0) {
-                PAEnemy.speed += 0.5;
-                this.parent.score += this.type.scorevalue;
                 this.explode();
                 this.kill();
-                if (Math.random() < this.type.bonuschance && other instanceof PAPlayerBullet) {
-                    this.parent.createRandomBonus(this);
+                if (other instanceof PAPlayerBullet) {
+                    this.parent.score += this.type.scorevalue;
+                    if (Math.random() < this.type.bonuschance) {
+                        this.parent.createRandomBonus(this);
+                    }
                 }
-
             }
         }
     }
@@ -621,16 +678,26 @@ class PAEnemy extends PAGameObject {
         else {
             PAEnemy.globalhorizontalmotion = this.velocity;
         }
-
-        super.update();
+        if (PAEnemy.moving) {
+            super.update();
+        }
 
         if (Math.random() < this.type.shootchance) {
-            this.parent.createObject(PAEnemyBullet, "enemybullet.png", this);
+            this.createBullet();
         }
+    }
+
+    public async createBullet() {
+        let bullet = await this.parent.createObject(PAEnemyBullet, "enemybullet.png", this) as PAEnemyBullet;
+        bullet.setSpeed(this.type.bulletspeed);
+
     }
 
     public onOutOfBounds(touching: boolean): void {
         PAEnemy.downstartframe = this.parent.framenum;
+        if (!this.bounds.ywithin(this.parent.gamebounds)) {
+            this.parent.loseGame();
+        }
     }
 }
 
@@ -689,9 +756,10 @@ class PABonus extends PAGameObject {
                 break;
 
             case "shieldbonus":
-                let ycoord = Math.max(this.parent.gamebounds.y0,spaceship.bounds.center.y - 50);
-                let xcoord = Math.max(0,Math.min(350,this.bounds.center.x -35 + Math.random()*20))
-                this.parent.createShield({ x: xcoord-this.parent.gamebounds.x0, y: ycoord-this.parent.gamebounds.y0 });
+                let ycoord = Math.max(this.parent.gamebounds.y0, spaceship.bounds.center.y - 100);
+                let xcoord = spaceship.bounds.center.x - 35 + Math.random() * 20
+                let clampedxcoord = Math.max(this.parent.gamebounds.x0, Math.min(this.parent.gamebounds.x1, xcoord))
+                this.parent.createShield({ x: clampedxcoord - this.parent.gamebounds.x0, y: ycoord - this.parent.gamebounds.y0 });
                 break;
 
             case "speedbonus":
@@ -739,7 +807,7 @@ class PASpaceship extends PAGameObject {
         "Not a key": false
     }
 
-    public static keypairs: Record<string,string> = {
+    public static keypairs: Record<string, string> = {
         "KeyW": "ArrowUp",
         "KeyA": "ArrowLeft",
         "KeyS": "ArrowDown",
@@ -830,7 +898,7 @@ class PASpaceship extends PAGameObject {
             this.flashanim();
 
             if (this.lives == 0) {
-                this.explode();;
+                this.explode();
                 this.parent.loseGame();
             }
         }
