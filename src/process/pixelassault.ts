@@ -114,7 +114,7 @@ const enemy_types: EnemyType[] = [
         scorevalue: 40,
         shootchance: 1 / 300,
         bonuschance: 1 / 4,
-        bulletspeed: 50
+        bulletspeed: 75
     },
 
     {
@@ -128,12 +128,12 @@ const enemy_types: EnemyType[] = [
     },
     {
         difficulty: 0,
-        spriteurl: 'Ships/enemygreen.gif',
+        spriteurl: 'enemygreen.gif',
         health: 1,
         scorevalue: 10,
         shootchance: 1 / 1500,
         bonuschance: 1 / 14,
-        bulletspeed: 50
+        bulletspeed: 51
     }
 ]
 
@@ -145,61 +145,79 @@ export class PRPixelAssault extends DSProcess {
     public splashing: boolean = true;
 
     public framerate: number = 40;
-    public framenum: number = 0;
+    public frameNumber: number = 0;
 
     public wavenumber: number = 1;
     private enemycount: number = 0;
-
-    private enemyrows: number = 4;
+    private enemyrows: number = 5;
     private enemycols: number = 8;
 
     public static spritepath: string = "/data/app/pixel_assault/"
 
-    private spaceship: PASpaceship;
-    public objects: PAGameObject[] = [];
     private width = 400;
     private height = 320;
     public gamebounds: BoundingBox = new BoundingBox(0, 500, 0, 500);
+
+    private spaceship: PASpaceship;
+    public objects: PAGameObject[] = [];
     public killlist: PAGameObject[] = [];
 
     private hearts: PANonInteracting[] = [];
     private scoredigits: PANonInteracting[] = [];
+  
     public score: number = 0;
 
 
     protected async main(): Promise<void> {
         this.reset();
-        await this.splash();
+        this.splash();
         await this.mainloop();
         this.reset();
         return;
     }
 
+    private async splash() {
+        this.splashing = true;
+        this.reset();
+        if (!this.screenCorrectSize()) {
+            DSKernel.terminal.resetSprites();
+            this.stdout.write("Resize screen!")
+        }
+        else {
+            this.createObject(PANonInteracting, "PixelAssaultSplash2.png", { x: 0, y: 0 })
+        }
+    }
+
     private async createGame() {
         this.reset();
-        if (!this.screencorrectsize()) {
+        if (!this.screenCorrectSize()) {
             this.splash();
             return;
         }
         this.initialized = true;
-        await this.createObject(PANonInteracting, "pixelbackground (2).jpg", { x: 0, y: 0 });
 
+        //Background
+        await this.createObject(PANonInteracting, "background.jpg", { x: 0, y: 0 });
+
+        //Score display
         for (let i = 0; i < 5; i++) {
             let digit = await this.createObject(PANonInteracting, "numbers", { x: 400 - 20 * (i + 1), y: 3 }) as PANonInteracting;
             this.scoredigits.push(digit);
             digit.sprite.paused = true;
         }
 
-        this.spaceship = await this.createObject(PASpaceship, "Ships/LightningFrames", { x: 200, y: 280 }) as PASpaceship;
+        //Spaceship
+        this.spaceship = await this.createObject(PASpaceship, "player", { x: 200, y: 280 }) as PASpaceship;
 
-
+        //Hearts
         for (let i = 0; i < this.spaceship.lives; i++) {
             await this.createHeart();
         }
 
+        //Enemies
+        await this.createEnemyWave(1);
 
-        await this.enemyWave(1);
-
+        //Shields
         this.createShield({ x: 300, y: 230 })
         this.createShield({ x: 175, y: 230 })
         this.createShield({ x: 50, y: 230 })
@@ -209,13 +227,35 @@ export class PRPixelAssault extends DSProcess {
 
     }
 
-    private async enemyWave(difficulty: number) {
+    async mainloop() {
+        while (!this.exited) {
+            if (this.playing && !this.initialized) {
+                await this.createGame();
+            }
+
+            if (this.playing) {
+                this.stdout.write(cursorright(1)); //Sprites only update when xterm requests a refresh, when text is written to the terminal
+
+                this.frameNumber++;
+                this.updatescore();
+
+                this.runUpdateFunctions();
+                this.sendCollisionMessages();
+                this.sendOutOfBoundsMessages();
+                this.killObjects();
+            }
+            await sleep(1000 / this.framerate)
+        }
+
+    }
+
+    private async createEnemyWave(difficulty: number) {
         PAEnemy.moving = false;
         PAEnemy.resetmotion();
         this.enemycount = this.enemycols * this.enemyrows;
         let difficultremaining = difficulty;
         for (let j = 0; j < this.enemyrows; j++) {
-            let rowtype;
+            let rowtype: EnemyType;
             for (let i = 0; i < enemy_types.length; i++) {
 
                 if (enemy_types[i].difficulty <= difficultremaining) {
@@ -225,8 +265,10 @@ export class PRPixelAssault extends DSProcess {
                 }
             }
             for (let i = 0; i < this.enemycols; i++) {
-                let enemy = await this.createObject(PAEnemy, rowtype.spriteurl, { x: 35 * i + 10, y: 25 + j * 25 }) as PAEnemy;
-                enemy.setType(rowtype);
+                this.createObject(PAEnemy, 'Enemies/'+rowtype.spriteurl, { x: 35 * i + 10, y: 25 + j * 25 }).then((enemy) => {
+                    (enemy as PAEnemy).setType(rowtype);
+                }
+                );
             }
         }
         PAEnemy.moving = true;
@@ -261,7 +303,38 @@ export class PRPixelAssault extends DSProcess {
         }
     }
 
-    private setscore() {
+    public async createRandomBonus(parent: PAGameObject) {
+        const bufftypes = ['bulletbonus', 'heartbonus', 'scorebonus', 'shieldbonus', 'speedbonus']
+        const buffchoice = bufftypes[Math.floor(Math.random() * bufftypes.length)]
+        const obj = await this.createObject(PABonus, "bonuses/" + buffchoice + ".png", parent) as PABonus;
+        obj.bufftype = buffchoice;
+    }
+
+    public async createHeart() {
+        let heart = await this.createObject(PANonInteracting, "heartanim.gif", { x: 30 * this.hearts.length, y: 0 }) as PANonInteracting;
+        this.hearts.push(heart);
+    }
+
+
+    public async createObject(constructor: new (parent: PRPixelAssault, url: string) => PAGameObject, url: string, creator: PAGameObject): Promise<PAGameObject>
+    public async createObject(constructor: new (parent: PRPixelAssault, url: string) => PAGameObject, url: string, position: Vector2): Promise<PAGameObject>
+
+    public async createObject(constructor: new (parent: PRPixelAssault, url: string) => PAGameObject, url: string, location: PAGameObject | Vector2): Promise<PAGameObject> {
+        const newobj = new constructor(this, url);
+        await newobj.initialize();
+        if (location instanceof PAGameObject) {
+            newobj.goto(location.bounds.center);
+        }
+        else {
+            newobj.goto(location);
+            newobj.translate(this.gamebounds.topLeft);
+
+        }
+        return newobj;
+    }
+
+
+    private updatescore() {
         let scorestring = this.score.toString();
         scorestring = '0'.repeat(5 - scorestring.length) + scorestring
         const digits = '0123456789'
@@ -271,129 +344,11 @@ export class PRPixelAssault extends DSProcess {
         }
     }
 
-    private writelinecentered(message: string) {
-        if (message.length > DSKernel.terminal.cols) {
-            console.warn("Message too long, trimming");
-            let trimlength = Math.ceil((message.length - DSKernel.terminal.cols) / 2);
-            message = message.slice(trimlength, message.length - trimlength);
-        }
-        let middlecol = DSKernel.terminal.cols / 2;
-        this.stdout.write(cursornextline());
-        this.stdout.write(right.repeat(Math.floor(middlecol - message.length / 2)));
-        this.stdout.write(message);
-
-    }
-
-    private reset() {
-        this.stdout.write(reset());
-        DSKernel.terminal.resetSprites();
-        this.stdout.write(set_cursor(false));
-        this.updateboundingbox();
-        this.wavenumber = 1;
-        this.objects = [];
-        this.playing = false;
-        this.initialized = false;
-        this.score = 0;
-        this.hearts = [];
-        this.enemycount = 0;
-        this.killlist = [];
-        this.scoredigits = [];
-        this.framenum = 0;
-        PAEnemy.resetmotion();
-        PASpaceship.resetkeysdown();
-
-    }
-
-    private async splash() {
-        this.splashing = true;
-        this.reset();
-        if (!this.screencorrectsize()) {
-            this.stdout.write("Resize screen!")
-        }
-        else {
-            this.stdout.write("Splash screen engaged. Y to start.")
-        }
-    }
-
-    private updateboundingbox() {
-        this.gamebounds = new BoundingBox(
-            (DSKernel.terminal.width - this.width) / 2,
-            (DSKernel.terminal.width + this.width) / 2,
-            (DSKernel.terminal.height - this.height) / 2,
-            (DSKernel.terminal.height + this.height) / 2
-        )
-    }
-
-    private screencorrectsize() {
-        return DSKernel.terminal.width >= this.width && DSKernel.terminal.height >= this.height;
-    }
-
-    public async onenemykilled() {
-        this.enemycount--;
-        if (this.enemycount == 0) {
-            this.wavenumber += 1;
-            await sleep(3000);
-            this.enemyWave(this.wavenumber)
-        }
-
-    }
-
-
-    async mainloop() {
-        try {
-            while (!this.exited) {
-                if (this.playing && !this.initialized) {
-                    await this.createGame();
-                }
-
-                if (this.playing) {
-                    this.stdout.write(cursorright(1)); //Sprites only update when xterm requests a refresh, when text is written to the terminal
-
-                    this.framenum++;
-                    this.runUpdateFunctions();
-                    this.sendCollisionMessages();
-                    if (!this.playing) //If you just lost
-                        continue;
-                    this.setscore();
-                    this.sendOutOfBoundsMessages();
-                    this.killObjects();
-                }
-                await sleep(1000 / this.framerate)
-            }
-
-        } catch (error) {
-            console.log(error);
-        }
-        console.log("leaving")
-    }
-
-    handleKeyEvent(e: DSKeyEvent): void {
-        if (e.key == "KeyQ") {
-            console.log("leave")
-            this.exited = true;
-        }
-        if (this.splashing && e.key == "KeyY") {
-            this.createGame();
-            this.splashing = false;
-        }
-        if (e.key == "KeyP" && e.down) {
-            this.playing = !this.playing;
-        }
-
-        if (this.playing && e.key in PASpaceship.keyresponses) {
-            this.spaceship.onkey(e.key, e.down);
-        }
-    }
-
     runUpdateFunctions() {
         for (let i = 0; i < this.objects.length; i++) {
             this.objects[i].update()
         }
 
-    }
-
-    handleResize(): void {
-        this.splash();
     }
 
     sendCollisionMessages() {
@@ -422,10 +377,22 @@ export class PRPixelAssault extends DSProcess {
             this.objects = this.objects.filter((i => i != obj));
             if (obj instanceof PAEnemy) {
                 if (!this.killlist.slice(i + 1).includes(obj))
-                    this.onenemykilled();
+                    this.onEnemyKilled();
             }
         }
         this.killlist = [];
+    }
+
+
+
+    public async onEnemyKilled() {
+        this.enemycount--;
+        if (this.enemycount == 0) {
+            this.wavenumber += 1;
+            await sleep(3000);
+            this.createEnemyWave(this.wavenumber)
+        }
+
     }
 
     public loseHeart() {
@@ -433,43 +400,85 @@ export class PRPixelAssault extends DSProcess {
         lastheart.kill();
     }
 
-    public async createHeart() {
-        let heart = await this.createObject(PANonInteracting, "heart_animation_trans.gif", { x: 30 * this.hearts.length, y: 0 }) as PANonInteracting;
-        this.hearts.push(heart);
-    }
-
     public async loseGame() {
         let score = this.score;
         this.reset();
+
         this.stdout.write(gotoxy(0, 4));
         this.writelinecentered("YOU LOSE");
         this.writelinecentered("Your Score: " + score);
+
         await sleep(5000);
         this.splash();
     }
 
-    public async createRandomBonus(parent: PAGameObject) {
-        const bufftypes = ['bulletbonus', 'heartbonus', 'scorebonus', 'shieldbonus', 'speedbonus']
-        const buffchoice = bufftypes[Math.floor(Math.random() * bufftypes.length)]
-        const obj = await this.createObject(PABonus, "bonuses/" + buffchoice + ".png", parent) as PABonus;
-        obj.bufftype = buffchoice;
+
+    private writelinecentered(message: string) {
+        if (message.length > DSKernel.terminal.cols) {
+            console.warn("Message too long, trimming");
+            let trimlength = Math.ceil((message.length - DSKernel.terminal.cols) / 2);
+            message = message.slice(trimlength, message.length - trimlength);
+        }
+        let middlecol = DSKernel.terminal.cols / 2;
+        this.stdout.write(cursornextline());
+        this.stdout.write(right.repeat(Math.floor(middlecol - message.length / 2)));
+        this.stdout.write(message);
+
     }
 
-    public async createObject(constructor: new (parent: PRPixelAssault, url: string) => PAGameObject, url: string, creator: PAGameObject): Promise<PAGameObject>
-    public async createObject(constructor: new (parent: PRPixelAssault, url: string) => PAGameObject, url: string, position: Vector2): Promise<PAGameObject>
+    private reset() {
+        this.stdout.write(reset());
+        DSKernel.terminal.resetSprites();
+        this.stdout.write(set_cursor(false));
+        this.updateGameBounds();
+        this.wavenumber = 1;
+        this.objects = [];
+        this.playing = false;
+        this.initialized = false;
+        this.score = 0;
+        this.hearts = [];
+        this.enemycount = 0;
+        this.killlist = [];
+        this.scoredigits = [];
+        this.frameNumber = 0;
+        PAEnemy.resetmotion();
+        PASpaceship.resetkeysdown();
 
-    public async createObject(constructor: new (parent: PRPixelAssault, url: string) => PAGameObject, url: string, location: PAGameObject | Vector2): Promise<PAGameObject> {
-        const newobj = new constructor(this, url);
-        await newobj.initialize();
-        if (location instanceof PAGameObject) {
-            newobj.goto(location.bounds.center);
-        }
-        else {
-            newobj.goto(location);
-            newobj.translate(this.gamebounds.topLeft);
+    }
 
+    handleKeyEvent(e: DSKeyEvent): void {
+        if (e.key == "KeyQ") {
+            console.log("leave")
+            this.exited = true;
         }
-        return newobj;
+        if (this.splashing && e.key == "KeyY") {
+            this.createGame();
+            this.splashing = false;
+        }
+        if (e.key == "KeyP" && e.down) {
+            this.playing = !this.playing;
+        }
+
+        if (this.playing && e.key in PASpaceship.keyresponses) {
+            this.spaceship.onkey(e.key, e.down);
+        }
+    }
+
+    handleResize(): void {
+        this.splash();
+    }
+
+    private updateGameBounds() {
+        this.gamebounds = new BoundingBox(
+            (DSKernel.terminal.width - this.width) / 2,
+            (DSKernel.terminal.width + this.width) / 2,
+            (DSKernel.terminal.height - this.height) / 2,
+            (DSKernel.terminal.height + this.height) / 2
+        )
+    }
+
+    private screenCorrectSize() {
+        return DSKernel.terminal.width >= this.width && DSKernel.terminal.height >= this.height;
     }
 
 
@@ -685,7 +694,7 @@ class PAEnemy extends PAGameObject {
         }
     }
     public update(): void {
-        const framessincedowntravel = this.parent.framenum - PAEnemy.downstartframe
+        const framessincedowntravel = this.parent.frameNumber - PAEnemy.downstartframe
         if (framessincedowntravel == 1) {
             this.velocity = scale(PAEnemy.globalhorizontalmotion, -1);
         }
@@ -714,7 +723,7 @@ class PAEnemy extends PAGameObject {
     }
 
     public onOutOfBounds(touching: boolean): void {
-        PAEnemy.downstartframe = this.parent.framenum;
+        PAEnemy.downstartframe = this.parent.frameNumber;
         if (!this.bounds.ywithin(this.parent.gamebounds)) {
             this.parent.loseGame();
         }
@@ -754,7 +763,7 @@ class PABonus extends PAGameObject {
     }
 
     public update(): void {
-        this.velocity.x = 20 * Math.sin(this.parent.framenum / 20);
+        this.velocity.x = 20 * Math.sin(this.parent.frameNumber / 20);
         super.update();
     }
 
@@ -776,9 +785,9 @@ class PABonus extends PAGameObject {
                 break;
 
             case "shieldbonus":
-                let ycoord =  spaceship.bounds.center.y - 70;
+                let ycoord = spaceship.bounds.center.y - 70;
                 let xcoord = spaceship.bounds.center.x - 35 + Math.random() * 20
-                let clampedycoord = Math.max(this.parent.gamebounds.y0,Math.min(this.parent.gamebounds.y1-100, ycoord))
+                let clampedycoord = Math.max(this.parent.gamebounds.y0, Math.min(this.parent.gamebounds.y1 - 100, ycoord))
                 let clampedxcoord = Math.max(this.parent.gamebounds.x0, Math.min(this.parent.gamebounds.x1, xcoord))
                 this.parent.createShield({ x: clampedxcoord - this.parent.gamebounds.x0, y: clampedycoord - this.parent.gamebounds.y0 });
                 break;
@@ -842,16 +851,16 @@ class PASpaceship extends PAGameObject {
 
     public static resetkeysdown() {
         this.keysdown = {
-        "KeyW": false,
-        "KeyA": false,
-        "KeyS": false,
-        "KeyD": false,
-        "ArrowUp": false,
-        "ArrowLeft": false,
-        "ArrowRight": false,
-        "ArrowDown": false,
-        "Not a key": false
-    }
+            "KeyW": false,
+            "KeyA": false,
+            "KeyS": false,
+            "KeyD": false,
+            "ArrowUp": false,
+            "ArrowLeft": false,
+            "ArrowRight": false,
+            "ArrowDown": false,
+            "Not a key": false
+        }
     }
 
     async initialize() {
@@ -890,7 +899,7 @@ class PASpaceship extends PAGameObject {
         if (this.firing) {
             if (this.firingcooldown <= 0) {
                 this.firingcooldown = this.maxfiringcooldown;
-                this.parent.createObject(PAPlayerBullet, "bullet2.png", this)
+                this.parent.createObject(PAPlayerBullet, "bullet.png", this)
             }
         }
         this.velocity = { x: 0, y: 0 }
@@ -940,12 +949,6 @@ class PASpaceship extends PAGameObject {
 
         if (other instanceof PAShield) {
             const backupvelocity: Vector2 = scale(this.velocity, -1 / this.parent.framerate);
-            if (!this.bounds.xoverlaps(this.parent.gamebounds)) {
-                backupvelocity.x = 0
-            }
-            if (!this.bounds.yoverlaps(this.parent.gamebounds)) {
-                backupvelocity.y = 0
-            }
             this.translate(backupvelocity);
         }
 
