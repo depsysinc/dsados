@@ -134,8 +134,8 @@ const enemy_types: EnemyType[] = [
         difficulty: 23,
         spriteurl: 'Alien1',
         health: 2,
-        scorevalue: 160,
-        shootchance: 1 / 50,
+        scorevalue: 810,
+        shootchance: 1 / 30,
         bonuschance: 1 / 2,
         bulletspeed: 300
     },
@@ -143,7 +143,7 @@ const enemy_types: EnemyType[] = [
         difficulty: 11,
         spriteurl: 'grab',
         health: 1,
-        scorevalue: 80,
+        scorevalue: 270,
         shootchance: 1 / 100,
         bonuschance: 1 / 3,
         bulletspeed: 150
@@ -153,7 +153,7 @@ const enemy_types: EnemyType[] = [
         difficulty: 4.5,
         spriteurl: 'blub',
         health: 2,
-        scorevalue: 40,
+        scorevalue: 90,
         shootchance: 1 / 300,
         bonuschance: 1 / 4,
         bulletspeed: 75
@@ -163,7 +163,7 @@ const enemy_types: EnemyType[] = [
         difficulty: 1.2,
         spriteurl: 'paranoid.gif',
         health: 1,
-        scorevalue: 20,
+        scorevalue: 30,
         shootchance: 1 / 800,
         bonuschance: 1 / 7,
         bulletspeed: 150
@@ -630,7 +630,7 @@ class PAShield extends PAGameObject {
 
 class PABullet extends PAGameObject {
     public onCollision(other: PAGameObject): void {
-        if (other instanceof PAShield || other instanceof PABullet) {
+        if (other instanceof PAShield) {
             this.kill();
         }
     }
@@ -975,6 +975,7 @@ class PASpaceship extends PAGameObject {
     }
 
 }
+
 
 class Explosion {
     static filename = "pixelsplosion.gif";
