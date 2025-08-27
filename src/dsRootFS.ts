@@ -47,6 +47,7 @@ import root_data_site_DSADOS_dsmd from "./root/data/site/DSADOS.dsmd";
 import root_data_site_GODOT_dsmd from "./root/data/site/GODOT.dsmd";
 import root_data_site_about_dsmd from "./root/data/site/about.dsmd";
 import root_data_site_avatars_posterized_globnobulous_png from "./root/data/site/avatars/posterized_globnobulous.png";
+import root_data_site_caterpillar_png from "./root/data/site/caterpillar.png";
 import root_data_site_concursion_dsmd from "./root/data/site/concursion.dsmd";
 import root_data_site_dauntless_dsmd from "./root/data/site/dauntless.dsmd";
 import root_data_site_devlog_2025_01_30_20250130_dsmd from "./root/data/site/devlog/2025-01-30/20250130.dsmd";
@@ -61,6 +62,9 @@ import root_data_site_devlog_2025_03_16_20250316_dsmd from "./root/data/site/dev
 import root_data_site_devlog_2025_03_16_mainmenu_png from "./root/data/site/devlog/2025-03-16/mainmenu.png";
 import root_data_site_devlog_2025_03_16_modem_300_users_manual_front_png from "./root/data/site/devlog/2025-03-16/modem_300_users_manual_front.png";
 import root_data_site_devlog_2025_03_16_playarea_png from "./root/data/site/devlog/2025-03-16/playarea.png";
+import root_data_site_devlog_2025_08_26_20250826_dsmd from "./root/data/site/devlog/2025-08-26/20250826.dsmd";
+import root_data_site_devlog_2025_08_26_demo2_gif from "./root/data/site/devlog/2025-08-26/demo2.gif";
+import root_data_site_devlog_2025_08_26_ozzyforest_png from "./root/data/site/devlog/2025-08-26/ozzyforest.png";
 import root_data_site_devlog_devlog_dsmd from "./root/data/site/devlog/devlog.dsmd";
 import root_data_site_devlog_entry_template_dsmd from "./root/data/site/devlog/entry-template.dsmd";
 import root_data_site_games_dsmd from "./root/data/site/games.dsmd";
@@ -294,6 +298,11 @@ export function buildrootfs(): DSFileSystem {
     curdir = dirstack.pop();
     // Exited root/data/site/avatars
         
+    // Creating root/data/site/caterpillar.png
+    curfile = new DSIWebFile(fs, root_data_site_caterpillar_png);
+    curdir.addfile("caterpillar.png", curfile);
+    
+    
     // Creating root/data/site/concursion.dsmd
     curfile = new DSIWebFile(fs, root_data_site_concursion_dsmd);
     curdir.addfile("concursion.dsmd", curfile);
@@ -407,6 +416,29 @@ export function buildrootfs(): DSFileSystem {
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
     // Exited root/data/site/devlog/2025-03-16
+        
+    // Traversing root/data/site/devlog/2025-08-26
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2025-08-26');
+    
+    // Creating root/data/site/devlog/2025-08-26/20250826.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_08_26_20250826_dsmd);
+    curdir.addfile("20250826.dsmd", curfile);
+    
+    
+    // Creating root/data/site/devlog/2025-08-26/demo2.gif
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_08_26_demo2_gif);
+    curdir.addfile("demo2.gif", curfile);
+    
+    
+    // Creating root/data/site/devlog/2025-08-26/ozzyforest.png
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_08_26_ozzyforest_png);
+    curdir.addfile("ozzyforest.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/site/devlog/2025-08-26
         
     // Creating root/data/site/devlog/devlog.dsmd
     curfile = new DSIWebFile(fs, root_data_site_devlog_devlog_dsmd);
