@@ -159,18 +159,20 @@ export class DSKernel {
             await t.baudWrite(`fsck: localfs\n`)
             const localfs = new DSIDBFileSystem("depsys_local_fs", 1);
             await localfs.open();
+
             fsckresults = localfs.fsck();
             await t.baudWrite(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
 
-            try {
-                const users = localfs.root.getdir("Users");
-            }
-            catch (DSIDirectoryInvalidPathError) {
-                localfs.root.mkdir("Users"); //If the users directory doesn't exist, create it
-            }
-
             await t.baudWrite(`mount: localfs\n`)
             DSKernel.mount('/local', localfs);
+
+            try {
+                const home = localfs.root.getdir("Home");
+            }
+            catch (DSIDirectoryInvalidPathError) {
+                localfs.root.mkdir("Home"); //If the home directory doesn't exist, create it
+            }
+
 
 
             if (bootcount == 0) {

@@ -271,7 +271,7 @@ export class DSFilePerms {
 export abstract class DSInode {
     id: number = undefined;
 
-    get type(): string {
+    get inodeType(): string {
         return undefined
     }
 
@@ -283,7 +283,7 @@ export abstract class DSInode {
     toJSON(): object {
         return {
             id: this.id,
-            type: this.type,
+            type: this.inodeType,
             perms: this._perms.toJSON()
         };
     }
@@ -418,7 +418,7 @@ export class DSIDirectory extends DSInode {
         return this.parent.getfileinfo(this);
     }
 
-    get type() {
+    get inodeType() {
         return "DSIDirectory"
     }
 
