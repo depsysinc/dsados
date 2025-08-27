@@ -166,15 +166,6 @@ export class DSKernel {
             await t.baudWrite(`mount: localfs\n`)
             DSKernel.mount('/local', localfs);
 
-            try {
-                const home = localfs.root.getdir("Home");
-            }
-            catch (DSIDirectoryInvalidPathError) {
-                localfs.root.mkdir("Home"); //If the home directory doesn't exist, create it
-            }
-
-
-
             if (bootcount == 0) {
                 await t.baudWrite("nvram: enable fastboot");
                 const oldbaud = t.baud;

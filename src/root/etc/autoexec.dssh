@@ -2,6 +2,10 @@
 # DSADOS AUTOEXEC FILE
 #
 
+cd local
+mkdir home
+cd ..
+
 PATH=/bin
 /bin/splash
 /bin/dsmdbrowser /data/site/index.dsmd
