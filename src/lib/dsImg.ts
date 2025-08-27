@@ -26,9 +26,14 @@ export function isgif(url: string): boolean {
 
 export async function getGifFrames(url: string): Promise<DSTexture[]> {
     const frames: DSTexture[] = [];
-    let response = await fetch(url)
-
-    const imagedecoder = new ImageDecoder({ data: response.body, type: "image/gif" })
+    let response = await fetch(url);
+    let imagedecoder;
+    try {
+        imagedecoder = new ImageDecoder({ data: response.body, type: "image/gif" })}
+    catch (e) {
+        const image = await load_image(url);
+        return [{image:image, width:image.width, height:image.height}]
+    }
     let k = 0
     while (true) {
         try {
