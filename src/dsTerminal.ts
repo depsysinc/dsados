@@ -365,6 +365,7 @@ export class DSTerminal {
 
     reset() {
         this._terminal.reset();
+        this.resetSprites();
     }
 
     handleResize() {
