@@ -1,6 +1,6 @@
 import { DSKernel } from "../dsKernel";
 import { DSProcess } from "../dsProcess";
-import { up, down, left, right, cursordown, cursorleft, cursornextline, cursorright, reset, set_cursor } from "../lib/dsCurses";
+import { up, down, left, right, cursordown, cursorleft, cursornextline, cursorright, clear_text, set_cursor } from "../lib/dsCurses";
 import { sleep } from "../lib/dsLib";
 
 class CGameData {
@@ -79,8 +79,9 @@ export class PRCaterpillar extends DSProcess {
     private paused: boolean = false;
 
     protected async main(): Promise<void> {
+        DSKernel.terminal.reset();
         while (!this.screencorrectsize()) {
-            this.stdout.write(reset());
+            this.stdout.write(clear_text());
             this.stdout.write('Please resize your screen');
             await sleep(50);
         }
@@ -93,7 +94,7 @@ export class PRCaterpillar extends DSProcess {
 
     }
     private splash() {
-        this.stdout.write(reset());
+        this.stdout.write(clear_text());
         this.writelinecentered('#        ┏┓┏┓┏┳┓┏┓┳┓┏┓┳┓ ┓ ┏┓┳┓         #');
         this.writelinecentered('#        ┃ ┣┫ ┃ ┣ ┣┫┃┃┃┃ ┃ ┣┫┣┫         #');
         this.writelinecentered('#        ┗┛┛┗ ┻ ┗┛┛┗┣┛┻┗┛┗┛┛┗┛┗╸        #');
@@ -297,7 +298,7 @@ export class PRCaterpillar extends DSProcess {
 
     private drawstartingboard() {
 
-        this.stdout.write(reset());
+        this.stdout.write(clear_text());
 
         //Draw the rocks
         for (let i = 0; i < this.rockcount; i++) {
@@ -399,7 +400,7 @@ export class PRCaterpillar extends DSProcess {
     }
 
     private exitscreen() {
-        this.stdout.write(reset());
+        DSKernel.terminal.reset();
         this.stdout.write('Exiting...');
     }
 
@@ -480,7 +481,7 @@ export class PRCaterpillar extends DSProcess {
     handleResize(): void {
         this.levelend = true;
         if (DSKernel.terminal.cols < CGameData.cols || DSKernel.terminal.rows < CGameData.rows + 2) {
-            this.stdout.write(reset());
+            this.stdout.write(clear_text());
             this.stdout.write('Please resize your screen');
         }
         else {

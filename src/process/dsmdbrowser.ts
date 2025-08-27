@@ -2,7 +2,7 @@ import { DSProcessError } from "../dsProcess";
 import { DSOptionParser } from "../lib/dsOptionParser";
 import { DSMDDoc, ImageBlock, DSMDToken, LinkToken } from "../lib/dsMarkdown";
 import { DSIDirectory } from "../dsFileSystem";
-import { gotoxy, reset, setattr, textattrs } from "../lib/dsCurses";
+import { gotoxy, clear_text, setattr, textattrs } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
 import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent, MouseMoveAppEvent, MouseButtonDownEvent as MouseButtonDownAppEvent, MouseButtonUpEvent as MouseButtonUpAppEvent, TouchEndAppEvent, LeftArrowAppEvent, HistoryAppEvent } from "../dsApp";
 
@@ -173,8 +173,7 @@ export class PRDSMDBrowser extends DSApp {
                 console.log(e);
             }
         }
-        this.stdout.write(reset());
-        t.resetSprites();
+        DSKernel.terminal.reset();
     }
 
     private async openLink(url: string) {
@@ -187,6 +186,7 @@ export class PRDSMDBrowser extends DSApp {
             commands.shift(); //remove cmd:
             let process = commands[0];
             await DSKernel.exec(process, commands);
+            DSKernel.terminal.reset();
             this._redraw();
         
         } else {
@@ -281,7 +281,7 @@ export class PRDSMDBrowser extends DSApp {
     private _redraw() {
         const t = DSKernel.terminal;
         const doc = this._curdoc;
-        this.stdout.write(reset());
+        this.stdout.write(clear_text());
         this.stdout.write(setattr(`${this._curdoc.fgcolor};${this._curdoc.bgcolor}`));
         for (let j = 0; j < t.rows && j + this._rowidx < doc.rows.length; j++) {
             const row = doc.rows[this._rowidx + j];
@@ -305,8 +305,8 @@ export class PRDSMDBrowser extends DSApp {
     private async _loadDoc(filepath: string) {
 
         // Clear screen place loading message
-        DSKernel.terminal.resetSprites();
-        this.stdout.write(reset() + `LOADING [${filepath}]\n`);
+        DSKernel.terminal.reset();
+        this.stdout.write(`LOADING [${filepath}]\n`);
         try {
             const inode = this.cwd.getfile(filepath);
             const text = await inode.contentAsText().read();
