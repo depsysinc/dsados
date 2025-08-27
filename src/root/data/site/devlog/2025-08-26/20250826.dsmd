@@ -1,0 +1,55 @@
+![globnobulous](/data/site/avatars/posterized_globnobulous.png)
+Globnobulous
+
+# [26-08-2025] - Some Progress, Then Pause
+
+Wow, five months goes by fast :)  So what have I been up to?
+
+Well, for April and May I continued heads down on core engine work.  Deep dives will have to wait, but here's a taste:
+
+On the Server side
+  - Representation of the GameWorld through core classes such as GameObject, GameObjectController, GameObjectObserver, TeamContext, PlayerView, Process, ProcessContext, etc.
+
+  - Addition of core GameObject attributes such as Trajectory, Orientation, Surfaces, etc.
+
+  - Organization of the GameWorld into a hierarchy of GameObjects
+
+  - Server console command interpreter
+
+On the Client side
+  - Code generation for capnproto message definitions and client side versions of the above classes
+
+  - GDScript classes to contain and visualize client side C++ objects
+
+  - Godot 4.4 upgrade
+
+And after all of that, what do we get?  A bunch of sliding and rotating spheres :D
+
+![demo](/data/site/devlog/2025-08-26/demo2.gif)
+
+Unsurprisingly, there's a lot going on in the above gif.  Clicking **createtestobjects** triggers
+a lot of activity. The button click sends a **createtestobjects** console command to the server which
+
+  - Instantiates a bunch of GameObjects with various different trajectory and orientation attributes
+
+  - makes them visible to the TeamContext and
+
+  - subscribes the PlayerView to them
+
+This sends subscription messages back to the client which
+
+  - Instantiates client side representations of those GameObjects and
+
+  - Instantiates appropriate godot child scenes
+
+The slider adjusts the "current time" on the client side, affecting the visible objects based on their trajectory/orientation equations.
+
+Next I need to be able to run the clock forward server side and represent sequences of activity, and I started on that at the beginning of June, but then summer happened...
+
+![ozzyforest](/data/site/devlog/2025-08-26/ozzyforest.png)
+
+It's been *25 years* since I took a summer off, and man did I need it.  Time is flying and my kids are growing like weeds so the priority is walks, rides, adventures, and trails.
+
+But summer is coming to a close and a new school year starts next week for my boys ... and for me :)
+
+More on that soon...
