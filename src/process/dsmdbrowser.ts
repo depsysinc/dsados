@@ -1,7 +1,6 @@
 import { DSProcessError } from "../dsProcess";
 import { DSOptionParser } from "../lib/dsOptionParser";
-import { DSMDDoc, ImageBlock, DSMDToken, LinkToken } from "../lib/dsMarkdown";
-import { DSIDirectory } from "../dsFileSystem";
+import { DSMDDoc, ImageBlock, LinkToken } from "../lib/dsMarkdown";
 import { gotoxy, reset, setattr, textattrs } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
 import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent, MouseMoveAppEvent, MouseButtonDownEvent as MouseButtonDownAppEvent, MouseButtonUpEvent as MouseButtonUpAppEvent, TouchEndAppEvent, LeftArrowAppEvent, HistoryAppEvent } from "../dsApp";
@@ -190,6 +189,9 @@ export class PRDSMDBrowser extends DSApp {
             this._redraw();
         
         } else {
+            if (!url.startsWith('/')) {
+                url = await this.getGlobalPath(url);
+            }
             this._savedrowsbypage.set(this._currentfilename, this._rowidx);
             this._rowidx = 0;
             history.pushState({ filepath: url }, '');
@@ -320,4 +322,20 @@ export class PRDSMDBrowser extends DSApp {
 
         this.eventQueue.enqueue(new ResizeAppEvent());
     }
+
+    private async getGlobalPath(path: string): Promise<string> {
+        const currentdirpath = this._currentfilename.slice(0, this._currentfilename.lastIndexOf('/') + 1);
+        const currentdir = this.cwd.getdir(currentdirpath);
+        if (path.lastIndexOf('/') != -1) {
+            const newdir = currentdir.getdir(path.slice(0, path.lastIndexOf('/')));
+            const newfilename = path.slice(path.lastIndexOf('/'));
+            const globalpath = newdir.path + newfilename;
+            return globalpath;
+
+        }
+        else {
+            return currentdirpath + path;
+        }
+    }
+
 }
