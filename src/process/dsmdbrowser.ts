@@ -42,7 +42,7 @@ export class PRDSMDBrowser extends DSApp {
         this._currentfilename = filename;
         history.replaceState({ filepath: filename }, "");
         await this._loadDoc(filename);
-        
+
         const t = DSKernel.terminal;
         while (!this.done) {
             const e = await this.eventQueue.dequeue();
@@ -189,14 +189,14 @@ export class PRDSMDBrowser extends DSApp {
             this._redraw();
         
         } else {
-            if (!url.startsWith('/')) {
-                url = await this.getGlobalPath(url);
-            }
             this._savedrowsbypage.set(this._currentfilename, this._rowidx);
             this._rowidx = 0;
-            history.pushState({ filepath: url }, '');
-            this._currentfilename = url;
+            const newdir = this.currentdir.getdir(this.getDirPath(url));
+            const newpath = newdir.path + '/' + this.getFileName(url);
+            history.pushState({ filepath: newpath }, '');
+
             await this._loadDoc(url);
+            this._currentfilename = newpath;
         }
     }
 
@@ -310,11 +310,11 @@ export class PRDSMDBrowser extends DSApp {
         DSKernel.terminal.resetSprites();
         this.stdout.write(reset() + `LOADING [${filepath}]\n`);
         try {
-            const inode = this.cwd.getfile(filepath);
+            const inode = this.currentdir.getfile(filepath);
             const text = await inode.contentAsText().read();
             this._curdoc = new DSMDDoc();
             this._curdoc.parse(text);
-            await this._curdoc.loadContent(this.cwd);
+            await this._curdoc.loadContent(this.currentdir);
         } catch (e) {
             this._curdoc = new DSMDDoc();
             this._curdoc.parse(this._err404 + `\n\n[${e}]`);
@@ -323,19 +323,27 @@ export class PRDSMDBrowser extends DSApp {
         this.eventQueue.enqueue(new ResizeAppEvent());
     }
 
-    private async getGlobalPath(path: string): Promise<string> {
-        const currentdirpath = this._currentfilename.slice(0, this._currentfilename.lastIndexOf('/') + 1);
-        const currentdir = this.cwd.getdir(currentdirpath);
-        if (path.lastIndexOf('/') != -1) {
-            const newdir = currentdir.getdir(path.slice(0, path.lastIndexOf('/')));
-            const newfilename = path.slice(path.lastIndexOf('/'));
-            const globalpath = newdir.path + newfilename;
-            return globalpath;
+    private get currentdir() {
+        return this.cwd.getdir(this.getDirPath(this._currentfilename))
+    }
 
+    private getDirPath(filepath: string): string {
+        if (filepath.lastIndexOf('/') != -1) {
+            return filepath.slice(0, filepath.lastIndexOf('/'));
         }
         else {
-            return currentdirpath + path;
+            return '.'
         }
     }
+
+    private getFileName(filepath: string): string {
+        if (filepath.lastIndexOf('/') != -1) {
+            return filepath.slice(filepath.lastIndexOf('/') + 1);
+        }
+        else {
+            return filepath
+        }
+    }
+
 
 }
