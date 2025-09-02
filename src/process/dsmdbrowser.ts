@@ -22,6 +22,10 @@ export class PRDSMDBrowser extends DSApp {
     private _currentfilename: string;
     private _savedrowsbypage: Map<string, number> = new Map<string, number>();
 
+    private get currentdir() {
+        return this.cwd.getdir(this.getDirPath(this._currentfilename))
+    }
+
     protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
             this.procname,
@@ -199,6 +203,43 @@ export class PRDSMDBrowser extends DSApp {
             this._currentfilename = newpath;
         }
     }
+    
+    private async _loadDoc(filepath: string) {
+
+        // Clear screen place loading message
+        DSKernel.terminal.resetSprites();
+        this.stdout.write(reset() + `LOADING [${filepath}]\n`);
+        try {
+            const inode = this.currentdir.getfile(filepath);
+            const text = await inode.contentAsText().read();
+            this._curdoc = new DSMDDoc();
+            this._curdoc.parse(text);
+            await this._curdoc.loadContent(this.currentdir);
+        } catch (e) {
+            this._curdoc = new DSMDDoc();
+            this._curdoc.parse(this._err404 + `\n\n[${e}]`);
+        }
+
+        this.eventQueue.enqueue(new ResizeAppEvent());
+    }
+    
+    private getDirPath(filepath: string): string {
+        if (filepath.lastIndexOf('/') != -1) {
+            return filepath.slice(0, filepath.lastIndexOf('/'));
+        }
+        else {
+            return '.'
+        }
+    }
+
+    private getFileName(filepath: string): string {
+        if (filepath.lastIndexOf('/') != -1) {
+            return filepath.slice(filepath.lastIndexOf('/') + 1);
+        }
+        else {
+            return filepath
+        }
+    }
 
     private highlightLink(openlink: LinkToken) {
         const closelink = openlink.closingtoken;
@@ -303,47 +344,4 @@ export class PRDSMDBrowser extends DSApp {
         }
 
     }
-
-    private async _loadDoc(filepath: string) {
-
-        // Clear screen place loading message
-        DSKernel.terminal.resetSprites();
-        this.stdout.write(reset() + `LOADING [${filepath}]\n`);
-        try {
-            const inode = this.currentdir.getfile(filepath);
-            const text = await inode.contentAsText().read();
-            this._curdoc = new DSMDDoc();
-            this._curdoc.parse(text);
-            await this._curdoc.loadContent(this.currentdir);
-        } catch (e) {
-            this._curdoc = new DSMDDoc();
-            this._curdoc.parse(this._err404 + `\n\n[${e}]`);
-        }
-
-        this.eventQueue.enqueue(new ResizeAppEvent());
-    }
-
-    private get currentdir() {
-        return this.cwd.getdir(this.getDirPath(this._currentfilename))
-    }
-
-    private getDirPath(filepath: string): string {
-        if (filepath.lastIndexOf('/') != -1) {
-            return filepath.slice(0, filepath.lastIndexOf('/'));
-        }
-        else {
-            return '.'
-        }
-    }
-
-    private getFileName(filepath: string): string {
-        if (filepath.lastIndexOf('/') != -1) {
-            return filepath.slice(filepath.lastIndexOf('/') + 1);
-        }
-        else {
-            return filepath
-        }
-    }
-
-
 }
