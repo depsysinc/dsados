@@ -25,6 +25,7 @@ import { PRFile } from "./process/file";
 import { PRImgview } from "./process/imgview";
 import { PRInit } from "./process/init";
 import { PRLs } from "./process/ls";
+import { PRMan } from "./process/man";
 import { PRMkdir } from "./process/mkdir";
 import { PRPs } from "./process/ps";
 import { PRPwd } from "./process/pwd";
@@ -41,6 +42,7 @@ import root_data_demo_markdown_demomarkdown_dsmd from "./root/data/demo/markdown
 import root_data_demo_mousetouch_pointer_png from "./root/data/demo/mousetouch/pointer.png";
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
 import root_data_depsys_txt from "./root/data/depsys.txt";
+import root_data_man_echo_dsmd from "./root/data/man/echo.dsmd";
 import root_data_site_130x46_godot_png from "./root/data/site/130x46_godot.png";
 import root_data_site_181x64_godot_png from "./root/data/site/181x64_godot.png";
 import root_data_site_DSADOS_dsmd from "./root/data/site/DSADOS.dsmd";
@@ -130,6 +132,9 @@ export function buildrootfs(): DSFileSystem {
     
     binfile = new DSIProcessFile(fs, PRLs);
     bindir.addfile("ls", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRMan);
+    bindir.addfile("man", binfile);
     
     binfile = new DSIProcessFile(fs, PRMkdir);
     bindir.addfile("mkdir", binfile);
@@ -256,6 +261,19 @@ export function buildrootfs(): DSFileSystem {
     curdir.addfile("depsys.txt", curfile);
     
     
+    // Traversing root/data/man
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('man');
+    
+    // Creating root/data/man/echo.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_echo_dsmd);
+    curdir.addfile("echo.dsmd", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/man
+        
     // Traversing root/data/site
     dirstack.push(curdir);
     curdir = curdir.mkdir('site');
