@@ -270,6 +270,11 @@ export class DSFilePerms {
 
 export abstract class DSInode {
     id: number = undefined;
+
+    get inodeType(): string {
+        return undefined
+    }
+
     protected constructor(
         protected _fs: DSFileSystem,
         private _perms: DSFilePerms
@@ -278,7 +283,7 @@ export abstract class DSInode {
     toJSON(): object {
         return {
             id: this.id,
-            type: this.constructor.name,
+            type: this.inodeType,
             perms: this._perms.toJSON()
         };
     }
@@ -393,7 +398,7 @@ export class DSIDirectory extends DSInode {
                     results.inodecount++;
                     results.directorycount++;
                     // Check .. link of child
-                    const childdir:DSIDirectory = fileinfo.inode;
+                    const childdir: DSIDirectory = fileinfo.inode;
                     if (childdir.getfileinfo('..').inode != this)
                         throw new DSFileSystemError("Bad child '..' link");
                     // Now enter child
@@ -411,6 +416,10 @@ export class DSIDirectory extends DSInode {
 
     get fileinfo(): DSFileInfo {
         return this.parent.getfileinfo(this);
+    }
+
+    get inodeType() {
+        return "DSIDirectory"
     }
 
     get filelist(): DSFileInfo[] {
