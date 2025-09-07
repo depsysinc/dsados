@@ -102,6 +102,7 @@ export class PRDSMDBrowser extends DSApp {
                     this._redraw();
 
             } else if (e instanceof TouchStartAppEvent) { // TOUCH
+                t.xterm.blur(); //Prevent keyboard from popping up on Android
                 this._touchstart = { col: e.col, row: e.row, idx: this._rowidx };
                 const rowidx = e.row + this._rowidx - 1;
                 const link = this._curdoc.getlink(e.col, rowidx);
