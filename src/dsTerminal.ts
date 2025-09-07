@@ -25,6 +25,7 @@ function isMobileDevice(): boolean {
 export type DSSprite = {
     texture: TextureArray,
     framedurations?: number[],
+    paused?: boolean,
     x: number,
     y: number,
     i: number,
@@ -39,6 +40,14 @@ export type DSPointerEvent = {
     col: number,
     row: number,
     button: number,
+}
+
+export type DSKeyEvent = {
+    down: boolean,
+    key: string,
+    ctrl: boolean,
+    alt: boolean,
+    shift: boolean
 }
 
 export class DSTerminal {
@@ -195,6 +204,8 @@ export class DSTerminal {
         t.element.ontouchmove = (e) => { this._handleTouchEvents(e); }
         t.element.ontouchcancel = (e) => { this._handleTouchEvents(e); }
 
+        t.onKey((e) => { this._handleKeyEvents(e.domEvent, true)})
+        t.element.onkeyup = (e) => { this._handleKeyEvents(e, false) }
 
         // Note - this is called after onData on every keypress, so the command is propagated before the selection is cleared
         t.attachCustomKeyEventHandler((arg) => { this._checkKeypressForCopy(arg); return true });
@@ -286,6 +297,17 @@ export class DSTerminal {
         pe.col = Math.ceil(pe.x / this.cellwidth);
         pe.row = Math.ceil(pe.y / this.cellheight);
         DSKernel.handlePointer(pe);
+    }
+
+    private _handleKeyEvents(e: KeyboardEvent, keydown: boolean) {
+        const ke: DSKeyEvent = {
+            down: keydown,
+            key: e.code,
+            ctrl: e.ctrlKey,
+            alt: e.altKey,
+            shift: e.shiftKey,
+        }
+        DSKernel.handleKeyEvent(ke);
     }
 
     private _checkKeypressForCopy(e: KeyboardEvent) {
@@ -415,7 +437,8 @@ export class DSTerminal {
 
 
         const update = async () => {
-            sprite.i = (sprite.i + 1) % sprite.texture.length;
+            if (!sprite.paused) 
+                sprite.i = (sprite.i + 1) % sprite.texture.length;
             await sleep(sprite.framedurations[sprite.i] / 1000);
             requestAnimationFrame(update)
             this.refresh();
