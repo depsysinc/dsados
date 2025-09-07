@@ -9,6 +9,10 @@ export class DSIWebFile extends DSInode {
         super(fs, DSFilePerms.readonly());
     }
 
+    get inodeType(): string {
+        return "DSIWebFile"
+    }
+
     get lasterror(): string {
         return this._lasterror;
     }

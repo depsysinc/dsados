@@ -24,6 +24,10 @@ export class DSIProcessFile<T extends DSProcess> extends DSInode {
         super(fs, DSFilePerms.execonly())
     }
 
+    get inodeType(): string {
+        return "DSProcessFile"
+    }
+
     getProcessClass() {
         return this._processClass;
     }
