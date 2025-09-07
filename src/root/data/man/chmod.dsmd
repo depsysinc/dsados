@@ -1,0 +1,17 @@
+NAME
+
+  **chmod** - change permissions of a file
+
+
+SYNOPSIS
+
+    chmod *argument* *argument*
+
+DESCRIPTION
+
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
+    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+
+SEE ALSO
+
+    cmd1, cmd2

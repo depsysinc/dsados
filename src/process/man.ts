@@ -8,7 +8,7 @@ export class PRMan extends DSProcess {
         const optparser = new DSOptionParser(
             this.procname,
             true,
-            "   display the man page for a given process",
+            "   display the documentation for a process",
             "[...]"
         );
         let nextarg = optparser.parseWithUsageAndHelp(this.argv);

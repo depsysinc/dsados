@@ -1,0 +1,21 @@
+NAME
+
+  **cat** - output contents of a file to the terminal
+
+
+SYNOPSIS
+
+    cat *filename*
+
+DESCRIPTION
+
+    The cat command will output the contents of a file to the terminal. The
+    contents will be output verbatim, with no modification, and no trailing
+    newline. When run on an image, or other non-text file, this will cause it
+    to output a garbled mess. When run on a .dsmd, the markdown formatting 
+    will be ignored. When the filename does not exist, cat will throw a 
+    DSProcessError.
+
+SEE ALSO
+
+    imgview, dsmdbrowser
