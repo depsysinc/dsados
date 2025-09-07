@@ -181,6 +181,14 @@ export class PRDSMDBrowser extends DSApp {
         // Check for external link
         if (url.startsWith("http")) {
             window.open(url, '_blank');
+        } 
+        else if (url.startsWith('cmd: ')) {
+            let commands = url.split(' ');
+            commands.shift(); //remove cmd:
+            let process = commands[0];
+            await DSKernel.exec(process, commands);
+            this._redraw();
+        
         } else {
             this._savedrowsbypage.set(this._currentfilename, this._rowidx);
             this._rowidx = 0;

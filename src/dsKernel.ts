@@ -1,7 +1,7 @@
 import '@xterm/xterm/css/xterm.css';
 
-import { DSPointerEvent, DSTerminal } from "./dsTerminal";
 import { DSFileInfo, DSFileSystem, DSIDirectory, DSIDirectoryInvalidPathError } from "./dsFileSystem";
+import { DSKeyEvent, DSPointerEvent, DSTerminal } from "./dsTerminal";
 import { DSIDBFileSystem } from "./filesystem/dsIDBFileSystem";
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
 import { buildrootfs } from "./dsRootFS";
@@ -324,6 +324,12 @@ export class DSKernel {
         if (!this.curproc)
             return;
         this.curproc.handlePointer(e);
+    }
+
+    static handleKeyEvent(e:DSKeyEvent) {
+        if (!this.curproc)
+            return;
+        this.curproc.handleKeyEvent(e);
     }
 
     static handleHistoryEvents(e: PopStateEvent) {

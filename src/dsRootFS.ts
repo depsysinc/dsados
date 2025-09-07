@@ -11,6 +11,7 @@ import { DSIWebFile } from "./filesystem/dsIWebFile";
 
 // BIN IMPORTS
 import { PRCat } from "./process/cat";
+import { PRCaterpillar } from "./process/caterpillar";
 import { PRCHMod } from "./process/chmod";
 import { PRTestAnim } from "./process/demoanim";
 import { PRDemoCurses } from "./process/democurses";
@@ -25,6 +26,7 @@ import { PRImgview } from "./process/imgview";
 import { PRInit } from "./process/init";
 import { PRLs } from "./process/ls";
 import { PRMkdir } from "./process/mkdir";
+import { PRPixelAssault } from "./process/pixelassault";
 import { PRPs } from "./process/ps";
 import { PRPwd } from "./process/pwd";
 import { PRReset } from "./process/reset";
@@ -32,6 +34,45 @@ import { PRSleep } from "./process/sleep";
 import { PRSplash } from "./process/splash";
 // WEBFILE TRAVERSAL IMPORTS
 import root_data_app_dsmdbrowser_404_dsmd from "./root/data/app/dsmdbrowser/404.dsmd";
+import root_data_app_pixel_assault_Enemies_Alien1_tile000_png from "./root/data/app/pixel_assault/Enemies/Alien1/tile000.png";
+import root_data_app_pixel_assault_Enemies_Alien1_tile001_png from "./root/data/app/pixel_assault/Enemies/Alien1/tile001.png";
+import root_data_app_pixel_assault_Enemies_Alien1_tile002_png from "./root/data/app/pixel_assault/Enemies/Alien1/tile002.png";
+import root_data_app_pixel_assault_Enemies_blub_blub1_png from "./root/data/app/pixel_assault/Enemies/blub/blub1.png";
+import root_data_app_pixel_assault_Enemies_blub_blub2_png from "./root/data/app/pixel_assault/Enemies/blub/blub2.png";
+import root_data_app_pixel_assault_Enemies_enemygreen_gif from "./root/data/app/pixel_assault/Enemies/enemygreen.gif";
+import root_data_app_pixel_assault_Enemies_grab_grab1_png from "./root/data/app/pixel_assault/Enemies/grab/grab1.png";
+import root_data_app_pixel_assault_Enemies_grab_grab2_png from "./root/data/app/pixel_assault/Enemies/grab/grab2.png";
+import root_data_app_pixel_assault_Enemies_grab_grab3_png from "./root/data/app/pixel_assault/Enemies/grab/grab3.png";
+import root_data_app_pixel_assault_Enemies_paranoid_gif from "./root/data/app/pixel_assault/Enemies/paranoid.gif";
+import root_data_app_pixel_assault_PixelAssaultSplash2_png from "./root/data/app/pixel_assault/PixelAssaultSplash2.png";
+import root_data_app_pixel_assault_background_jpg from "./root/data/app/pixel_assault/background.jpg";
+import root_data_app_pixel_assault_bonuses_bulletbonus_png from "./root/data/app/pixel_assault/bonuses/bulletbonus.png";
+import root_data_app_pixel_assault_bonuses_heartbonus_png from "./root/data/app/pixel_assault/bonuses/heartbonus.png";
+import root_data_app_pixel_assault_bonuses_scorebonus_png from "./root/data/app/pixel_assault/bonuses/scorebonus.png";
+import root_data_app_pixel_assault_bonuses_shieldbonus_png from "./root/data/app/pixel_assault/bonuses/shieldbonus.png";
+import root_data_app_pixel_assault_bonuses_speedbonus_png from "./root/data/app/pixel_assault/bonuses/speedbonus.png";
+import root_data_app_pixel_assault_bullet_png from "./root/data/app/pixel_assault/bullet.png";
+import root_data_app_pixel_assault_enemybullet_png from "./root/data/app/pixel_assault/enemybullet.png";
+import root_data_app_pixel_assault_heartanim_gif from "./root/data/app/pixel_assault/heartanim.gif";
+import root_data_app_pixel_assault_numbers_digit0_png from "./root/data/app/pixel_assault/numbers/digit0.png";
+import root_data_app_pixel_assault_numbers_digit1_png from "./root/data/app/pixel_assault/numbers/digit1.png";
+import root_data_app_pixel_assault_numbers_digit2_png from "./root/data/app/pixel_assault/numbers/digit2.png";
+import root_data_app_pixel_assault_numbers_digit3_png from "./root/data/app/pixel_assault/numbers/digit3.png";
+import root_data_app_pixel_assault_numbers_digit4_png from "./root/data/app/pixel_assault/numbers/digit4.png";
+import root_data_app_pixel_assault_numbers_digit5_png from "./root/data/app/pixel_assault/numbers/digit5.png";
+import root_data_app_pixel_assault_numbers_digit6_png from "./root/data/app/pixel_assault/numbers/digit6.png";
+import root_data_app_pixel_assault_numbers_digit7_png from "./root/data/app/pixel_assault/numbers/digit7.png";
+import root_data_app_pixel_assault_numbers_digit8_png from "./root/data/app/pixel_assault/numbers/digit8.png";
+import root_data_app_pixel_assault_numbers_digit9_png from "./root/data/app/pixel_assault/numbers/digit9.png";
+import root_data_app_pixel_assault_pixelsplosion_gif from "./root/data/app/pixel_assault/pixelsplosion.gif";
+import root_data_app_pixel_assault_player_lightning0_png from "./root/data/app/pixel_assault/player/lightning0.png";
+import root_data_app_pixel_assault_player_lightning1_png from "./root/data/app/pixel_assault/player/lightning1.png";
+import root_data_app_pixel_assault_player_lightning2_png from "./root/data/app/pixel_assault/player/lightning2.png";
+import root_data_app_pixel_assault_player_lightning3_png from "./root/data/app/pixel_assault/player/lightning3.png";
+import root_data_app_pixel_assault_shieldpiece_png from "./root/data/app/pixel_assault/shieldpiece.png";
+import root_data_app_pixel_assault_shieldpiece10_png from "./root/data/app/pixel_assault/shieldpiece10.png";
+import root_data_app_pixel_assault_shieldpiece3_png from "./root/data/app/pixel_assault/shieldpiece3.png";
+import root_data_app_pixel_assault_shieldpiece6_png from "./root/data/app/pixel_assault/shieldpiece6.png";
 import root_data_demo_animation_32x32_A_png from "./root/data/demo/animation/32x32_A.png";
 import root_data_demo_animation_32x32_B_png from "./root/data/demo/animation/32x32_B.png";
 import root_data_demo_animation_32x32_C_png from "./root/data/demo/animation/32x32_C.png";
@@ -46,7 +87,9 @@ import root_data_site_DSADOS_dsmd from "./root/data/site/DSADOS.dsmd";
 import root_data_site_GODOT_dsmd from "./root/data/site/GODOT.dsmd";
 import root_data_site_about_dsmd from "./root/data/site/about.dsmd";
 import root_data_site_avatars_posterized_globnobulous_png from "./root/data/site/avatars/posterized_globnobulous.png";
+import root_data_site_caterpillar_png from "./root/data/site/caterpillar.png";
 import root_data_site_concursion_dsmd from "./root/data/site/concursion.dsmd";
+import root_data_site_dauntless_dsmd from "./root/data/site/dauntless.dsmd";
 import root_data_site_devlog_2025_01_30_20250130_dsmd from "./root/data/site/devlog/2025-01-30/20250130.dsmd";
 import root_data_site_devlog_2025_01_30_C64_png from "./root/data/site/devlog/2025-01-30/C64.png";
 import root_data_site_devlog_2025_01_30_Road_Toad_png from "./root/data/site/devlog/2025-01-30/Road-Toad.png";
@@ -59,6 +102,9 @@ import root_data_site_devlog_2025_03_16_20250316_dsmd from "./root/data/site/dev
 import root_data_site_devlog_2025_03_16_mainmenu_png from "./root/data/site/devlog/2025-03-16/mainmenu.png";
 import root_data_site_devlog_2025_03_16_modem_300_users_manual_front_png from "./root/data/site/devlog/2025-03-16/modem_300_users_manual_front.png";
 import root_data_site_devlog_2025_03_16_playarea_png from "./root/data/site/devlog/2025-03-16/playarea.png";
+import root_data_site_devlog_2025_08_26_20250826_dsmd from "./root/data/site/devlog/2025-08-26/20250826.dsmd";
+import root_data_site_devlog_2025_08_26_demo2_gif from "./root/data/site/devlog/2025-08-26/demo2.gif";
+import root_data_site_devlog_2025_08_26_ozzyforest_png from "./root/data/site/devlog/2025-08-26/ozzyforest.png";
 import root_data_site_devlog_devlog_dsmd from "./root/data/site/devlog/devlog.dsmd";
 import root_data_site_devlog_entry_template_dsmd from "./root/data/site/devlog/entry-template.dsmd";
 import root_data_site_games_dsmd from "./root/data/site/games.dsmd";
@@ -82,6 +128,9 @@ export function buildrootfs(): DSFileSystem {
 
     binfile = new DSIProcessFile(fs, PRCat);
     bindir.addfile("cat", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRCaterpillar);
+    bindir.addfile("caterpillar", binfile);
     
     binfile = new DSIProcessFile(fs, PRCHMod);
     bindir.addfile("chmod", binfile);
@@ -124,6 +173,9 @@ export function buildrootfs(): DSFileSystem {
     
     binfile = new DSIProcessFile(fs, PRMkdir);
     bindir.addfile("mkdir", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRPixelAssault);
+    bindir.addfile("pixelassault", binfile);
     
     binfile = new DSIProcessFile(fs, PRPs);
     bindir.addfile("ps", binfile);
@@ -170,6 +222,265 @@ export function buildrootfs(): DSFileSystem {
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
     // Exited root/data/app/dsmdbrowser
+        
+    // Traversing root/data/app/pixel_assault
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('pixel_assault');
+    
+    // Traversing root/data/app/pixel_assault/Enemies
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('Enemies');
+    
+    // Traversing root/data/app/pixel_assault/Enemies/Alien1
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('Alien1');
+    
+    // Creating root/data/app/pixel_assault/Enemies/Alien1/tile000.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_Alien1_tile000_png);
+    curdir.addfile("tile000.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/Enemies/Alien1/tile001.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_Alien1_tile001_png);
+    curdir.addfile("tile001.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/Enemies/Alien1/tile002.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_Alien1_tile002_png);
+    curdir.addfile("tile002.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/app/pixel_assault/Enemies/Alien1
+        
+    // Traversing root/data/app/pixel_assault/Enemies/blub
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('blub');
+    
+    // Creating root/data/app/pixel_assault/Enemies/blub/blub1.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_blub_blub1_png);
+    curdir.addfile("blub1.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/Enemies/blub/blub2.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_blub_blub2_png);
+    curdir.addfile("blub2.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/app/pixel_assault/Enemies/blub
+        
+    // Creating root/data/app/pixel_assault/Enemies/enemygreen.gif
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_enemygreen_gif);
+    curdir.addfile("enemygreen.gif", curfile);
+    
+    
+    // Traversing root/data/app/pixel_assault/Enemies/grab
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('grab');
+    
+    // Creating root/data/app/pixel_assault/Enemies/grab/grab1.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_grab_grab1_png);
+    curdir.addfile("grab1.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/Enemies/grab/grab2.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_grab_grab2_png);
+    curdir.addfile("grab2.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/Enemies/grab/grab3.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_grab_grab3_png);
+    curdir.addfile("grab3.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/app/pixel_assault/Enemies/grab
+        
+    // Creating root/data/app/pixel_assault/Enemies/paranoid.gif
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_paranoid_gif);
+    curdir.addfile("paranoid.gif", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/app/pixel_assault/Enemies
+        
+    // Creating root/data/app/pixel_assault/PixelAssaultSplash2.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_PixelAssaultSplash2_png);
+    curdir.addfile("PixelAssaultSplash2.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/background.jpg
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_background_jpg);
+    curdir.addfile("background.jpg", curfile);
+    
+    
+    // Traversing root/data/app/pixel_assault/bonuses
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('bonuses');
+    
+    // Creating root/data/app/pixel_assault/bonuses/bulletbonus.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bonuses_bulletbonus_png);
+    curdir.addfile("bulletbonus.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/bonuses/heartbonus.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bonuses_heartbonus_png);
+    curdir.addfile("heartbonus.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/bonuses/scorebonus.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bonuses_scorebonus_png);
+    curdir.addfile("scorebonus.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/bonuses/shieldbonus.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bonuses_shieldbonus_png);
+    curdir.addfile("shieldbonus.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/bonuses/speedbonus.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bonuses_speedbonus_png);
+    curdir.addfile("speedbonus.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/app/pixel_assault/bonuses
+        
+    // Creating root/data/app/pixel_assault/bullet.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bullet_png);
+    curdir.addfile("bullet.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/enemybullet.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_enemybullet_png);
+    curdir.addfile("enemybullet.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/heartanim.gif
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_heartanim_gif);
+    curdir.addfile("heartanim.gif", curfile);
+    
+    
+    // Traversing root/data/app/pixel_assault/numbers
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('numbers');
+    
+    // Creating root/data/app/pixel_assault/numbers/digit0.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit0_png);
+    curdir.addfile("digit0.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/numbers/digit1.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit1_png);
+    curdir.addfile("digit1.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/numbers/digit2.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit2_png);
+    curdir.addfile("digit2.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/numbers/digit3.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit3_png);
+    curdir.addfile("digit3.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/numbers/digit4.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit4_png);
+    curdir.addfile("digit4.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/numbers/digit5.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit5_png);
+    curdir.addfile("digit5.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/numbers/digit6.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit6_png);
+    curdir.addfile("digit6.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/numbers/digit7.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit7_png);
+    curdir.addfile("digit7.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/numbers/digit8.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit8_png);
+    curdir.addfile("digit8.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/numbers/digit9.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit9_png);
+    curdir.addfile("digit9.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/app/pixel_assault/numbers
+        
+    // Creating root/data/app/pixel_assault/pixelsplosion.gif
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_pixelsplosion_gif);
+    curdir.addfile("pixelsplosion.gif", curfile);
+    
+    
+    // Traversing root/data/app/pixel_assault/player
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('player');
+    
+    // Creating root/data/app/pixel_assault/player/lightning0.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_player_lightning0_png);
+    curdir.addfile("lightning0.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/player/lightning1.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_player_lightning1_png);
+    curdir.addfile("lightning1.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/player/lightning2.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_player_lightning2_png);
+    curdir.addfile("lightning2.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/player/lightning3.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_player_lightning3_png);
+    curdir.addfile("lightning3.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/app/pixel_assault/player
+        
+    // Creating root/data/app/pixel_assault/shieldpiece.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_shieldpiece_png);
+    curdir.addfile("shieldpiece.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/shieldpiece10.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_shieldpiece10_png);
+    curdir.addfile("shieldpiece10.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/shieldpiece3.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_shieldpiece3_png);
+    curdir.addfile("shieldpiece3.png", curfile);
+    
+    
+    // Creating root/data/app/pixel_assault/shieldpiece6.png
+    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_shieldpiece6_png);
+    curdir.addfile("shieldpiece6.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/app/pixel_assault
         
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
@@ -289,9 +600,19 @@ export function buildrootfs(): DSFileSystem {
     curdir = dirstack.pop();
     // Exited root/data/site/avatars
         
+    // Creating root/data/site/caterpillar.png
+    curfile = new DSIWebFile(fs, root_data_site_caterpillar_png);
+    curdir.addfile("caterpillar.png", curfile);
+    
+    
     // Creating root/data/site/concursion.dsmd
     curfile = new DSIWebFile(fs, root_data_site_concursion_dsmd);
     curdir.addfile("concursion.dsmd", curfile);
+    
+    
+    // Creating root/data/site/dauntless.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_dauntless_dsmd);
+    curdir.addfile("dauntless.dsmd", curfile);
     
     
     // Traversing root/data/site/devlog
@@ -397,6 +718,29 @@ export function buildrootfs(): DSFileSystem {
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
     // Exited root/data/site/devlog/2025-03-16
+        
+    // Traversing root/data/site/devlog/2025-08-26
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2025-08-26');
+    
+    // Creating root/data/site/devlog/2025-08-26/20250826.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_08_26_20250826_dsmd);
+    curdir.addfile("20250826.dsmd", curfile);
+    
+    
+    // Creating root/data/site/devlog/2025-08-26/demo2.gif
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_08_26_demo2_gif);
+    curdir.addfile("demo2.gif", curfile);
+    
+    
+    // Creating root/data/site/devlog/2025-08-26/ozzyforest.png
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_08_26_ozzyforest_png);
+    curdir.addfile("ozzyforest.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/site/devlog/2025-08-26
         
     // Creating root/data/site/devlog/devlog.dsmd
     curfile = new DSIWebFile(fs, root_data_site_devlog_devlog_dsmd);

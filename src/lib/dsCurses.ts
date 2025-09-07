@@ -1,5 +1,3 @@
-import { DSStream } from "../dsStream";
-
 /* Super poor man's terminal control sequence support.
  * Shouldn't really be called curses but whatever.
  * TODO: Need to save existing settings and restore
@@ -71,3 +69,25 @@ export function scrollup(rows: number): string {
 export function setattr(attr: string): string {
     return (`\x1b[${attr}m`);
 }
+
+export const up = '\x1b[A'
+export const down = '\x1b[B'
+export const right = '\x1b[C'
+export const left = '\x1b[D'
+
+export function cursorup(rows: number): string {
+    return (`\x1b[${rows}A`)
+}
+export function cursordown(rows: number): string {
+    return (`\x1b[${rows}B`)
+}
+export function cursorright(cols: number): string {
+    return (`\x1b[${cols}C`)
+}
+export function cursorleft(cols: number): string {
+    return (`\x1b[${cols}D`)
+}
+export function cursornextline(): string {
+    return (`\x1b[E`)
+}
+
