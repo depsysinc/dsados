@@ -5,13 +5,16 @@ NAME
 
 SYNOPSIS
 
-    ls *argument* *argument*
+    ls 
 
 DESCRIPTION
 
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    Ls (short for list) outputs the contents of the current directory. Each 
+    file or directory within the current will be outputted on a new line. 
+    For each file, the permissions will be displayed first, followed by the
+    file/directory name. Passing any arguments will cause ls to return an
+    error.
 
 SEE ALSO
 
-    cmd1, cmd2
+    cat, chmod

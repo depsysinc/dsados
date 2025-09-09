@@ -5,13 +5,14 @@ NAME
 
 SYNOPSIS
 
-    chmod *argument* *argument*
+    chmod *filename* *perms*
 
 DESCRIPTION
 
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    Will attempt to change the permissions of a file. The permissions should
+    be passed in an rwx format, with with dashes denoting permissions not available,
+    and letters ones that are. Permissions are viewable with ls. 
 
 SEE ALSO
 
-    cmd1, cmd2
+    ls

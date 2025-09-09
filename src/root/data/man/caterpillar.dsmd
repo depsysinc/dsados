@@ -1,17 +1,15 @@
 NAME
 
-  **caterpillar** - lib/dsCurses
+  **caterpillar** - play a game of Caterpillar
 
 
 SYNOPSIS
 
-    caterpillar *argument* *argument*
+    caterpillar 
 
 DESCRIPTION
 
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    Run this command to play a game of Caterpillar. Any arguments supplied will be ignored.
 
-SEE ALSO
 
-    cmd1, cmd2
+    

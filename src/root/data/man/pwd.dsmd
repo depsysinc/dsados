@@ -5,13 +5,15 @@ NAME
 
 SYNOPSIS
 
-    pwd *argument* *argument*
+    pwd 
 
 DESCRIPTION
 
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    Pwd (Print Working Directory) will print the path to the current
+    working directory. This directory can be changed using cd. No 
+    arguments should be passed to pwd.
+
 
 SEE ALSO
 
-    cmd1, cmd2
+    ls

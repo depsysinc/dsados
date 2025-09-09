@@ -5,13 +5,16 @@ NAME
 
 SYNOPSIS
 
-    imgview *argument* *argument*
+    imgview *filename*
 
 DESCRIPTION
 
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    Imgview will display an image. It should be passed one 
+    argument, an image file (specified by name). If passed anything 
+    else, it will output "not an image file" to the terminal. The 
+    image file will be added to the sprite system and then the 
+    process will return.
 
 SEE ALSO
 
-    cmd1, cmd2
+    cat, file

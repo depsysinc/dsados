@@ -1,17 +1,16 @@
 NAME
 
-  **init** - lib/dsLib
+  **init** - initialize DSKernel
 
 
 SYNOPSIS
 
-    init *argument* *argument*
+    init 
 
 DESCRIPTION
 
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    Running init will throw an error - it's the base process and must 
+    always be at the bottom of the process stack. On startup, init 
+    calls the next process in the process stack, and repeats that whenever 
+    a process unexpectedly exits.
 
-SEE ALSO
-
-    cmd1, cmd2

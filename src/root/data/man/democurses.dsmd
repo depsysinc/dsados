@@ -1,17 +1,18 @@
 NAME
 
-  **democurses** - a markdown browser
+  **democurses** - test curses module
 
 
 SYNOPSIS
 
-    democurses *argument* *argument*
+    democurses 
 
 DESCRIPTION
 
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    Democurses is a test of the curses module. Curses are shortcuts that change
+    text formatting, cursor location and the like. Click any key to move through
+    the demonstrations.
 
 SEE ALSO
 
-    cmd1, cmd2
+    demoanim, demomarkdown, demomousetouch

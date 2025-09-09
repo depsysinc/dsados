@@ -5,13 +5,17 @@ NAME
 
 SYNOPSIS
 
-    demoanim *argument* *argument*
+    demoanim 
 
 DESCRIPTION
 
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    Will display a demonstrative animation, to test if the sprite
+    system is working properly. If it is, the command should display
+    a sprite that rapidly cycles through the letters A, B, and C.
+    Will throw an error if given any arguments. Hit any key to exit 
+    the process when running. 
+
 
 SEE ALSO
 
-    cmd1, cmd2
+    democurses, demomarkdown, demomousetouch
