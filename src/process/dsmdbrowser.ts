@@ -3,6 +3,7 @@ import { DSOptionParser } from "../lib/dsOptionParser";
 import { DSMDDoc, ImageBlock, LinkToken } from "../lib/dsMarkdown";
 import { gotoxy, reset, setattr, textattrs } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
+import { getDirPath } from "../lib/dsPath"
 import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent, MouseMoveAppEvent, MouseButtonDownEvent as MouseButtonDownAppEvent, MouseButtonUpEvent as MouseButtonUpAppEvent, TouchEndAppEvent, LeftArrowAppEvent, HistoryAppEvent } from "../dsApp";
 
 export type HistoryState =
@@ -23,7 +24,7 @@ export class PRDSMDBrowser extends DSApp {
     private _savedrowsbypage: Map<string, number> = new Map<string, number>();
 
     private get currentdir() {
-        return this.cwd.getdir(this.getDirPath(this._currentfilename))
+        return this.cwd.getdir(getDirPath(this._currentfilename))
     }
 
     protected async main(): Promise<void> {
@@ -184,26 +185,24 @@ export class PRDSMDBrowser extends DSApp {
         // Check for external link
         if (url.startsWith("http")) {
             window.open(url, '_blank');
-        } 
+        }
         else if (url.startsWith('cmd: ')) {
             let commands = url.split(' ');
             commands.shift(); //remove cmd:
             let process = commands[0];
             await DSKernel.exec(process, commands);
             this._redraw();
-        
+
         } else {
             this._savedrowsbypage.set(this._currentfilename, this._rowidx);
             this._rowidx = 0;
-            const newdir = this.currentdir.getdir(this.getDirPath(url));
-            const newpath = newdir.path + '/' + this.getFileName(url);
-            history.pushState({ filepath: newpath }, '');
-
+            const newpath = this.currentdir.getGlobalPath(url)
+            history.pushState({ filepath:  newpath}, '');
             await this._loadDoc(url);
             this._currentfilename = newpath;
         }
     }
-    
+
     private async _loadDoc(filepath: string) {
 
         // Clear screen place loading message
@@ -214,7 +213,8 @@ export class PRDSMDBrowser extends DSApp {
             const text = await inode.contentAsText().read();
             this._curdoc = new DSMDDoc();
             this._curdoc.parse(text);
-            await this._curdoc.loadContent(this.currentdir);
+            let newdir = this.currentdir.getdir(getDirPath(filepath))
+            await this._curdoc.loadContent(newdir);
         } catch (e) {
             this._curdoc = new DSMDDoc();
             this._curdoc.parse(this._err404 + `\n\n[${e}]`);
@@ -222,24 +222,7 @@ export class PRDSMDBrowser extends DSApp {
 
         this.eventQueue.enqueue(new ResizeAppEvent());
     }
-    
-    private getDirPath(filepath: string): string {
-        if (filepath.lastIndexOf('/') != -1) {
-            return filepath.slice(0, filepath.lastIndexOf('/'));
-        }
-        else {
-            return '.'
-        }
-    }
 
-    private getFileName(filepath: string): string {
-        if (filepath.lastIndexOf('/') != -1) {
-            return filepath.slice(filepath.lastIndexOf('/') + 1);
-        }
-        else {
-            return filepath
-        }
-    }
 
     private highlightLink(openlink: LinkToken) {
         const closelink = openlink.closingtoken;
