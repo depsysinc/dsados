@@ -5,13 +5,18 @@ NAME
 
 SYNOPSIS
 
-    mkdir *argument* *argument*
+    mkdir *dirname*
 
 DESCRIPTION
 
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    The mkdir command creates a directory in the current working directory, 
+    with its name given by the *dirname* argument. Note that the command 
+    requires write permissions, and cannot be done on a readonly filesystem.
+    The directory name must not be the same as another directory within the 
+    same parent directory, and cannot contain backslashes or spaces.
+    The new directory will  be empty, and by default have full permissions.
+    
 
 SEE ALSO
 
-    cmd1, cmd2
+    chmod, ls

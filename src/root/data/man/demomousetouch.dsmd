@@ -5,13 +5,14 @@ NAME
 
 SYNOPSIS
 
-    demomousetouch *argument* *argument*
+    demomousetouch 
 
 DESCRIPTION
 
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    The demomousetouch command is a test of your mouse. If working correctly, the 
+    cursor image should follow your mouse around, and wherever you click leave an
+    M. On mobile, the command should leave a T instead.  
 
 SEE ALSO
 
-    cmd1, cmd2
+    demoanim, democurses, demomarkdown

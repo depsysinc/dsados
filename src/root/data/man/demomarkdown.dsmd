@@ -5,13 +5,17 @@ NAME
 
 SYNOPSIS
 
-    demomarkdown *argument* *argument*
+    demomarkdown 
 
 DESCRIPTION
 
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    The demomarkdown command displays demomarkdown.dsmd. It's a test command
+    for text wrapping and dsmd document displaying. However, since you can't 
+    scroll the document, it's recommended to instead use `dsmdbrowser 
+    data/demo/markdown/demomarkdown.dsmd` if you wish to view the markdown syntax
+    examples. 
+
 
 SEE ALSO
 
-    cmd1, cmd2
+    demoanim, democurses, demomousetouch, dsmdbrowser

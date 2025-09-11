@@ -9,7 +9,7 @@ export class PRMan extends DSProcess {
             this.procname,
             true,
             "   display the documentation for a process",
-            "[...]"
+            "<procname>"
         );
         let nextarg = optparser.parseWithUsageAndHelp(this.argv);
         if (nextarg == -1)

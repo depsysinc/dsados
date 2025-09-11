@@ -14,3 +14,6 @@ DESCRIPTION
     calls the next process in the process stack, and repeats that whenever 
     a process unexpectedly exits.
 
+SEE ALSO
+    
+    dssh

@@ -5,13 +5,17 @@ NAME
 
 SYNOPSIS
 
-    man *argument* *argument*
+    man *procname*
 
 DESCRIPTION
 
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    The man page outputs the documentation for a process, in the form
+    of a man page like the one you're reading right now. *procname* 
+    should be a single word, which is the name of the command you
+    wish to see the manual for. Note that internally, man simply calls 
+    dsmdbrowser on `data /man /procname.dsmd` file.
+
 
 SEE ALSO
 
-    cmd1, cmd2
+    dsmdbrowser, ps
