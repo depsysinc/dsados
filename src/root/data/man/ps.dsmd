@@ -5,13 +5,15 @@ NAME
 
 SYNOPSIS
 
-    ps *argument* *argument*
+    ps
 
 DESCRIPTION
 
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    The ps command outputs the current process stack. Each process in
+    the stack is listed on a new line, and both the process id and 
+    process name are given. Note that in most cases, the first two processes 
+    are init and dssh, and the final process is ps.
 
 SEE ALSO
 
-    cmd1, cmd2
+    env, pwd

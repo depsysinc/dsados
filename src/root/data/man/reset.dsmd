@@ -5,13 +5,13 @@ NAME
 
 SYNOPSIS
 
-    reset *argument* *argument*
+    reset 
 
 DESCRIPTION
 
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    The reset command resets the terminal, clearing text formatting, displayed
+    text, and sprites. Any arguments supplied will be ignored.
 
 SEE ALSO
 
-    cmd1, cmd2
+    dssh, sleep

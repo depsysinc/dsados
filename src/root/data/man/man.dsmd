@@ -9,7 +9,7 @@ SYNOPSIS
 
 DESCRIPTION
 
-    The man page outputs the documentation for a process, in the form
+    The man command outputs the documentation for a process, in the form
     of a man page like the one you're reading right now. *procname* 
     should be a single word, which is the name of the command you
     wish to see the manual for. Note that internally, man simply calls 

@@ -5,13 +5,15 @@ NAME
 
 SYNOPSIS
 
-    sleep *argument* *argument*
+    sleep *milliseconds*
 
 DESCRIPTION
 
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-    do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+    The sleep command waits for *milliseconds* milliseconds, and then returns. While waiting,
+    text inputs, mouse inputs and the like will be ignored. This will freeze any other processes
+    running. If milliseconds is not a positive number, sleep will throw an error.
+
 
 SEE ALSO
 
-    cmd1, cmd2
+    splash

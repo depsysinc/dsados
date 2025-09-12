@@ -8,8 +8,7 @@ export class PRReset extends DSProcess {
         const optparser = new DSOptionParser(
             this.procname,
             true,
-            "   Reset the terminal",
-            "<filename>"
+            "   Reset the terminal"
         );
         let nextarg = optparser.parseWithUsageAndHelp(this.argv);
 
