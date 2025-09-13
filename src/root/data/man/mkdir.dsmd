@@ -2,7 +2,6 @@ NAME
 
   **mkdir** - create a new directory
 
-
 SYNOPSIS
 
     mkdir *dirname*
@@ -16,10 +15,9 @@ DESCRIPTION
     same parent directory, and cannot contain backslashes or spaces.
     The new directory will  be empty, and by default have full permissions.
     
-
 OPTIONS
 
-  -h, --help:  output usage information and exit
+    -h, --help:  output usage information and exit
 
 SEE ALSO
 

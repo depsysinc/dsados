@@ -2,7 +2,6 @@ NAME
 
   **name** - description
 
-
 SYNOPSIS
 
     name *argument* *argument*
@@ -15,6 +14,7 @@ DESCRIPTION
 OPTIONS
 
     -h, --help:  output usage information and exit
+    
 SEE ALSO
 
     cmd1, cmd2

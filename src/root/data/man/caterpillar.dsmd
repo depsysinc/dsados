@@ -1,9 +1,7 @@
 
-  -h, --help:  output usage information and exit
 NAME
-    [](/data/man/.dsmd)
-  **caterpillar** - play a game of Caterpillar
 
+  **caterpillar** - play a game of Caterpillar
 
 SYNOPSIS
 
@@ -12,8 +10,8 @@ SYNOPSIS
 DESCRIPTION
 
     Run this command to play a game of Caterpillar. Any arguments supplied will be ignored.
-
-
+    The game will take control of the screen, and play until the user presses q.
 
 OPTIONS
     
+    -h, --help:  output usage information and exit

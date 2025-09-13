@@ -2,7 +2,6 @@ NAME
 
   **ls** - output contents of directory
 
-
 SYNOPSIS
 
     ls 
@@ -17,7 +16,7 @@ DESCRIPTION
 
 OPTIONS
 
-  -h, --help:  output usage information and exit
+    -h, --help:  output usage information and exit
 
 SEE ALSO
 

@@ -2,7 +2,6 @@ NAME
 
   **cat** - output contents of a file to the terminal
 
-
 SYNOPSIS
 
     cat *filename*
@@ -18,7 +17,7 @@ DESCRIPTION
 
 OPTIONS
 
-  -h, --help:  output usage information and exit
+    -h, --help:  output usage information and exit
 
 SEE ALSO
 

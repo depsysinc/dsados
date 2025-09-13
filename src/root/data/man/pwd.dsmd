@@ -2,7 +2,6 @@ NAME
 
   **pwd** - print working directory
 
-
 SYNOPSIS
 
     pwd 
@@ -10,13 +9,16 @@ SYNOPSIS
 DESCRIPTION
 
     Pwd (Print Working Directory) will print the path to the current
-    working directory. This directory can be changed using cd. No 
-    arguments should be passed to pwd.
-
+    working directory (cwd) on a newline. The cwd is the directory in which
+    commands are called, allowing you to use local paths. This directory can 
+    be changed using cd while in dssh. For instance, if the cwd is `/data /test`, and 
+    there is a file test.png in /data/test/image, you could call `imgview image/test.png`
+    rather than `imgview /data/test/image/test.png`. No arguments should be passed to 
+    pwd.
 
 OPTIONS
 
-  -h, --help:  output usage information and exit
+    -h, --help:  output usage information and exit
 
 SEE ALSO
 

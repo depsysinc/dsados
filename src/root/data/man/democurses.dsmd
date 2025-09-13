@@ -2,7 +2,6 @@ NAME
 
   **democurses** - test curses module
 
-
 SYNOPSIS
 
     democurses 
@@ -15,7 +14,7 @@ DESCRIPTION
 
 OPTIONS
 
-  -h, --help:  output usage information and exit
+    -h, --help:  output usage information and exit
 
 SEE ALSO
 

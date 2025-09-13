@@ -2,7 +2,6 @@ NAME
 
   **imgview** - output an image to the terminal
 
-
 SYNOPSIS
 
     imgview *filename*
@@ -17,7 +16,7 @@ DESCRIPTION
 
 OPTIONS
 
-  -h, --help:  output usage information and exit
+    -h, --help:  output usage information and exit
 
 SEE ALSO
 

@@ -2,7 +2,6 @@ NAME
 
   **ps** - output current process stack
 
-
 SYNOPSIS
 
     ps
@@ -16,7 +15,7 @@ DESCRIPTION
 
 OPTIONS
 
-  -h, --help:  output usage information and exit
+    -h, --help:  output usage information and exit
 
 SEE ALSO
 

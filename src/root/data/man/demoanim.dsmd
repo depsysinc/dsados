@@ -2,7 +2,6 @@ NAME
 
   **demoanim** - test sprite subsystem
 
-
 SYNOPSIS
 
     demoanim 
@@ -15,10 +14,9 @@ DESCRIPTION
     Will throw an error if given any arguments. Hit any key to exit 
     the process when running. 
 
-
 OPTIONS
 
-  -h, --help:  output usage information and exit
+    -h, --help:  output usage information and exit
 
 SEE ALSO
 

@@ -2,7 +2,6 @@ NAME
 
   **echo** - echo command line args to the terminal
 
-
 SYNOPSIS
 
     echo [...]
@@ -16,7 +15,7 @@ DESCRIPTION
 
 OPTIONS
 
-  -h, --help:  output usage information and exit
+    -h, --help:  output usage information and exit
 
 SEE ALSO
 

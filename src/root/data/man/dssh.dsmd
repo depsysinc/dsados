@@ -5,7 +5,7 @@ NAME
 
 SYNOPSIS
 
-    dssh [-l]
+    dssh
 
 DESCRIPTION
 
@@ -18,12 +18,10 @@ DESCRIPTION
 
 OPTIONS
 
-    If the login flag [-l] is active, dssh will run autoexec.dssh before letting the
-    user use the shell. This flag is passed in on website startup.
+    -l, --login: Start by reading autoexec.dssh and calling every command, then prompt 
+    for input as normal. Passed when the website starts up.
 
-OPTIONS
-
-  -h, --help:  output usage information and exit
+    -h, --help:  output usage information and exit
 
 SEE ALSO
 
