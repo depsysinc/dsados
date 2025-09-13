@@ -17,6 +17,10 @@ DESCRIPTION
     The new directory will  be empty, and by default have full permissions.
     
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    chmod, ls
+    [chmod](/data/man/chmod.dsmd), [ls](/data/man/ls.dsmd)

@@ -15,6 +15,10 @@ DESCRIPTION
     file/directory name. Passing any arguments will cause ls to return an
     error.
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    chmod, file, pwd
+    [chmod](/data/man/chmod.dsmd), [file](/data/man/file.dsmd), [pwd](/data/man/pwd.dsmd)

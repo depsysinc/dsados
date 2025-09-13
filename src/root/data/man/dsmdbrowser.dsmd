@@ -20,6 +20,10 @@ DESCRIPTION
     is invalid, dsmdbrowser will display a 404 screen (data /app /dsmdbrowser /404.dsmd) 
     instead of crashing.
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    imgview, cat
+    [imgview](/data/man/imgview.dsmd), [cat](/data/man/cat.dsmd)

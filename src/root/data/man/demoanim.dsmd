@@ -16,6 +16,10 @@ DESCRIPTION
     the process when running. 
 
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    democurses, demomarkdown, demomousetouch
+    [democurses](/data/man/democurses.dsmd), [demomarkdown](/data/man/demomarkdown.dsmd), [demomousetouch](/data/man/demomousetouch.dsmd)

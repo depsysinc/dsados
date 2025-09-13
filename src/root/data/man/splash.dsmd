@@ -15,6 +15,10 @@ DESCRIPTION
     Splash will reset the screen when run, before displaying text, and will 
     ignore any arguments passed. The command cannot be paused while being run.
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    dsmdbrowser, echo, reset
+    [dsmdbrowser](/data/man/dsmdbrowser.dsmd), [echo](/data/man/echo.dsmd), [reset](/data/man/reset.dsmd)

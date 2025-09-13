@@ -13,6 +13,10 @@ DESCRIPTION
     text formatting, cursor location and the like. Click any key to move through
     the demonstrations.
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    demoanim, demomarkdown, demomousetouch
+    [demoanim](/data/man/demoanim.dsmd), [demomarkdown](/data/man/demomarkdown.dsmd), [demomousetouch](/data/man/demomousetouch.dsmd)

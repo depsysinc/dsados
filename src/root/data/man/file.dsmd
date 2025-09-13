@@ -13,6 +13,10 @@ DESCRIPTION
     `directory`, and any webfiles will provide information about their 
     file type and encoding.  
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    cat, dsmdbrowser, imgview
+    [cat](/data/man/cat.dsmd), [dsmdbrowser](/data/man/dsmdbrowser.dsmd), [imgview](/data/man/imgview.dsmd)

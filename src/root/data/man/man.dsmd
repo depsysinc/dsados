@@ -16,6 +16,10 @@ DESCRIPTION
     dsmdbrowser on `data /man /procname.dsmd` file.
 
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    dsmdbrowser, ps
+    [dsmdbrowser](/data/man/dsmdbrowser.dsmd), [ps](/data/man/ps.dsmd)

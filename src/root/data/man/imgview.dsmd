@@ -15,6 +15,10 @@ DESCRIPTION
     image file will be added to the sprite system and then the 
     process will return.
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    cat, file
+    [cat](/data/man/cat.dsmd), [file](/data/man/file.dsmd)

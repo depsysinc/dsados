@@ -14,6 +14,10 @@ DESCRIPTION
     separated, and the last argument will be followed by a newline.
     When passed no arguments, echo will raise an error.
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    cat, splash
+    [cat](/data/man/cat.dsmd), [splash](/data/man/splash.dsmd)

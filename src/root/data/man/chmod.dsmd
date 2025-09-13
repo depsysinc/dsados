@@ -13,6 +13,10 @@ DESCRIPTION
     be passed in an rwx format, with with dashes denoting permissions not available,
     and letters ones that are. Permissions are viewable with ls. 
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    ls, file
+    [ls](/data/man/ls.dsmd), [file](/data/man/file.dsmd)

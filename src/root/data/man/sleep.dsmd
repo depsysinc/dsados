@@ -14,6 +14,10 @@ DESCRIPTION
     running. If milliseconds is not a positive number, sleep will throw an error.
 
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    splash
+    [splash](/data/man/splash.dsmd)

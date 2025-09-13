@@ -21,6 +21,10 @@ OPTIONS
     If the login flag [-l] is active, dssh will run autoexec.dssh before letting the
     user use the shell. This flag is passed in on website startup.
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    ls, init
+    [ls](/data/man/ls.dsmd), [init](/data/man/init.dsmd)

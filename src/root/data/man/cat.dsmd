@@ -16,6 +16,10 @@ DESCRIPTION
     will be ignored. When the filename does not exist, cat will throw a 
     DSProcessError.
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    imgview, dsmdbrowser
+    [imgview](/data/man/imgview.dsmd), [dsmdbrowser](/data/man/dsmdbrowser.dsmd)

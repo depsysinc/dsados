@@ -16,6 +16,10 @@ DESCRIPTION
     examples. 
 
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    demoanim, democurses, demomousetouch, dsmdbrowser
+    [demoanim](/data/man/demoanim.dsmd), [democurses](/data/man/democurses.dsmd), [demomousetouch](/data/man/demomousetouch.dsmd), [dsmdbrowser](/data/man/dsmdbrowser.dsmd)

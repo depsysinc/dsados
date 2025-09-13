@@ -14,6 +14,10 @@ DESCRIPTION
     process name are given. Note that in most cases, the first two processes 
     are init and dssh, and the final process is ps.
 
+OPTIONS
+
+  -h, --help:  output usage information and exit
+
 SEE ALSO
 
-    env, pwd
+    [env](/data/man/env.dsmd), [pwd](/data/man/pwd.dsmd)
