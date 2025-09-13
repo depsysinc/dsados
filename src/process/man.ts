@@ -16,8 +16,17 @@ export class PRMan extends DSProcess {
             throw new DSProcessError(optparser.usage());
 
 
-        const filepath = '/data/man/'+this.argv[nextarg]+'.dsmd'
-        await DSKernel.exec('bin/dsmdbrowser',['',filepath])
+        const filepath = '/data/man/' + this.argv[nextarg] + '.dsmd'
+        try {
+            this.cwd.getfile(filepath);
+        }
+        catch (DSIDirectoryInvalidPathError) {
+            throw new DSProcessError(optparser.usage())
+        }
+
+        await DSKernel.exec('bin/dsmdbrowser', ['', filepath])
+
+
         return;
     }
 }

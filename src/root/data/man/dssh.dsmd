@@ -10,7 +10,7 @@ SYNOPSIS
 DESCRIPTION
 
     This command runs dssh (Deprecated Systems SHell), the command prompt line.
-    When run from dssh, it runs dssh, causing dssh to dssh. In more normal words, 
+    When run from dssh, it runs dssh, causing dssh to dssh. In normal words, 
     the command is usually only run by the backend, and does nothing if the shell 
     (where commands are usually run) is not active. When dssh is running, the 
     prompt before a command indicates which directory the shell is currently running in.
