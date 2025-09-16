@@ -28,6 +28,7 @@ import { PRLess } from "./process/less";
 import { PRLs } from "./process/ls";
 import { PRMan } from "./process/man";
 import { PRMkdir } from "./process/mkdir";
+import { PRMount } from "./process/mount";
 import { PRPixelAssault } from "./process/pixelassault";
 import { PRPs } from "./process/ps";
 import { PRPwd } from "./process/pwd";
@@ -210,6 +211,9 @@ export function buildrootfs(): DSFileSystem {
     
     binfile = new DSIProcessFile(fs, PRMkdir);
     bindir.addfile("mkdir", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRMount);
+    bindir.addfile("mount", binfile);
     
     binfile = new DSIProcessFile(fs, PRPixelAssault);
     bindir.addfile("pixelassault", binfile);
