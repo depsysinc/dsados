@@ -1,0 +1,24 @@
+NAME
+
+  **demomarkdown** - run a markdown demo
+
+SYNOPSIS
+
+    demomarkdown 
+
+DESCRIPTION
+
+    The demomarkdown command displays demomarkdown.dsmd. It's a test command
+    for text wrapping and dsmd document displaying. However, since you can't 
+    scroll the document, it's recommended to instead use `dsmdbrowser 
+    data/demo/markdown/demomarkdown.dsmd` if you wish to view the markdown syntax
+    examples. 
+
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [demoanim](/data/man/demoanim.dsmd), [democurses](/data/man/democurses.dsmd), [demomousetouch](/data/man/demomousetouch.dsmd), [dsmdbrowser](/data/man/dsmdbrowser.dsmd)
