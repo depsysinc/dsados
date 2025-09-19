@@ -2,7 +2,7 @@ import { DSKernel } from "../dsKernel";
 import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSPointerEvent } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
-import { gotoxy, clear_text, setattr, textattrs } from "../lib/dsCurses";
+import { gotoxy, reset_text, setattr, textattrs } from "../lib/dsCurses";
 import { load_image } from "../lib/dsImg";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
@@ -28,7 +28,7 @@ export class PRDemoMouseTouch extends DSProcess {
 
         // Create the sprite
         this.sprite = DSKernel.terminal.newSprite([{ image: img, height: img.height, width: img.width }]);
-        w(clear_text());
+        w(reset_text());
 
         // Draw border
         let fillstr: string = "+";

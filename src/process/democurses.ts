@@ -1,6 +1,6 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSOptionParser } from "../lib/dsOptionParser";
-import { gotoxy, clear_text, scrolldown, scrollup, set_cursor, setattr, textattrs } from "../lib/dsCurses";
+import { gotoxy, reset_text, scrolldown, scrollup, set_cursor, setattr, textattrs } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
 
 export class PRDemoCurses extends DSProcess {
@@ -58,7 +58,7 @@ export class PRDemoCurses extends DSProcess {
         await this._wait("[PRESS TO CONTINUE]", rows);
 
         // TEST writing to corners
-        w(clear_text());
+        w(reset_text());
         w(gotoxy(1, 1));
         stdout.write("T");
         w(gotoxy(cols, 1));
@@ -70,7 +70,7 @@ export class PRDemoCurses extends DSProcess {
         await this._wait("[PRESS TO CONTINUE]");
 
         // TEST SCROLLUP
-        w(clear_text());
+        w(reset_text());
         this.fillViewport();
 
         for (let i = 1; i < 4; i++) {
@@ -80,7 +80,7 @@ export class PRDemoCurses extends DSProcess {
         await this._wait("[PRESS TO CONTINUE]");
 
         // TEST SCROLLDOWN
-        w(clear_text());
+        w(reset_text());
         this.fillViewport();
 
         for (let i = 1; i < 4; i++) {

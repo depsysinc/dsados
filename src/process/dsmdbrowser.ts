@@ -2,7 +2,7 @@ import { DSProcessError } from "../dsProcess";
 import { DSOptionParser } from "../lib/dsOptionParser";
 import { DSMDDoc, ImageBlock, DSMDToken, LinkToken } from "../lib/dsMarkdown";
 import { DSIDirectory } from "../dsFileSystem";
-import { gotoxy, clear_text, setattr, textattrs } from "../lib/dsCurses";
+import { gotoxy, reset_text, setattr, textattrs } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
 import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent, MouseMoveAppEvent, MouseButtonDownEvent as MouseButtonDownAppEvent, MouseButtonUpEvent as MouseButtonUpAppEvent, TouchEndAppEvent, LeftArrowAppEvent, HistoryAppEvent } from "../dsApp";
 
@@ -281,7 +281,7 @@ export class PRDSMDBrowser extends DSApp {
     private _redraw() {
         const t = DSKernel.terminal;
         const doc = this._curdoc;
-        this.stdout.write(clear_text());
+        this.stdout.write(reset_text());
         this.stdout.write(setattr(`${this._curdoc.fgcolor};${this._curdoc.bgcolor}`));
         for (let j = 0; j < t.rows && j + this._rowidx < doc.rows.length; j++) {
             const row = doc.rows[this._rowidx + j];
