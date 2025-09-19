@@ -3,7 +3,7 @@ import { DSOptionParser } from "../lib/dsOptionParser";
 import { DSMDDoc, ImageBlock, LinkToken } from "../lib/dsMarkdown";
 import { gotoxy, reset, setattr, textattrs } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
-import { getDirPath } from "../lib/dsPath"
+import { getAbsolutePath, getDirPath } from "../lib/dsPath"
 import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent, MouseMoveAppEvent, MouseButtonDownEvent as MouseButtonDownAppEvent, MouseButtonUpEvent as MouseButtonUpAppEvent, TouchEndAppEvent, LeftArrowAppEvent, HistoryAppEvent } from "../dsApp";
 
 export type HistoryState =
@@ -196,7 +196,7 @@ export class PRDSMDBrowser extends DSApp {
         } else {
             this._savedrowsbypage.set(this._currentfilename, this._rowidx);
             this._rowidx = 0;
-            const newpath = this.currentdir.getGlobalPath(url)
+            const newpath = getAbsolutePath(this.currentdir,url)
             history.pushState({ filepath:  newpath}, '');
             await this._loadDoc(url);
             this._currentfilename = newpath;

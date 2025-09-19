@@ -1,3 +1,4 @@
+import { DSIDirectory } from "../dsFileSystem";
 
 export function getDirPath(filepath: string): string {
     if (filepath.lastIndexOf('/') != -1) {
@@ -17,3 +18,13 @@ export function getFileName(filepath: string): string {
         }
     }
 
+export function getAbsolutePath(localdir:DSIDirectory, path: string) {
+        const dirpath = getDirPath(path);
+        const globaldirpath = localdir.getdir(dirpath).path;
+        const filename = getFileName(path);
+        
+        if (globaldirpath == '/') {
+            return '/' + filename;
+        }
+        return globaldirpath + '/' + filename;
+    }

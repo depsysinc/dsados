@@ -488,15 +488,7 @@ export class DSIDirectory extends DSInode {
             curdir = fileinfo.inode;
         }
         return curdir;
-    }
-
-    getGlobalPath(path: string) {
-        const dirpath = getDirPath(path);
-        const globaldirpath = this.getdir(dirpath).path;
-        const filename = getFileName(path);
-        return globaldirpath + '/' + filename;
-    }
-    
+    }    
 
     // Overload signatures
     getfileinfo(name: string): DSFileInfo | undefined;
