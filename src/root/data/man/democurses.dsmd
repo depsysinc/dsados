@@ -1,0 +1,21 @@
+NAME
+
+  **democurses** - test curses module
+
+SYNOPSIS
+
+    democurses 
+
+DESCRIPTION
+
+    Democurses is a test of the curses module. Curses are shortcuts that change
+    text formatting, cursor location and the like. Click any key to move through
+    the demonstrations.
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [demoanim](/data/man/demoanim.dsmd), [demomarkdown](/data/man/demomarkdown.dsmd), [demomousetouch](/data/man/demomousetouch.dsmd)

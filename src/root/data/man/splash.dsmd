@@ -1,0 +1,23 @@
+NAME
+
+  **splash** - print the depsys splash screen
+
+SYNOPSIS
+
+    splash 
+
+DESCRIPTION
+
+    The splash command will progressively print the depsys logo over the course of
+    about 3.5 seconds. The logo is sourced from `/data/depsys.txt`.
+    This command is the first the user sees by default when they open the site. 
+    Splash will reset the screen when run, before displaying text, and will 
+    ignore any arguments passed. The command cannot be paused while being run.
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [dsmdbrowser](/data/man/dsmdbrowser.dsmd), [echo](/data/man/echo.dsmd), [reset](/data/man/reset.dsmd)
