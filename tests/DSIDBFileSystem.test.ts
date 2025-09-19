@@ -68,3 +68,20 @@ test('DSIDBFS changed mkdir', async () => {
     expect(fs2.fsck()).toEqual({inodecount: 7, directorycount: 7});
     
 });
+
+test('DSIDBFS mkdir persisting', async () => {
+    const dbname = getRandDBName();
+    const fs1 = new DSIDBFileSystem(dbname,1);
+    await fs1.open();
+
+    fs1.root.mkdir("directory");
+    console.log(fs1.root.filelist);
+    expect(fs1.root.filelist.length).toEqual(3);
+    expect(fs1.root.filelist[2].name == 'directory');
+    
+    const fs2 = new DSIDBFileSystem(dbname,1);
+    await fs2.open();
+    expect(fs2.root.filelist.length).toEqual(3);
+    expect(fs1.root.filelist[2].name == 'directory');
+
+});

@@ -1,0 +1,22 @@
+NAME
+
+  **chmod** - change permissions of a file
+
+
+SYNOPSIS
+
+    chmod *filename* *perms*
+
+DESCRIPTION
+
+    Will attempt to change the permissions of a file. The permissions should
+    be passed in an rwx format, with with dashes denoting permissions not available,
+    and letters ones that are. Permissions are viewable with ls. 
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [ls](/data/man/ls.dsmd), [file](/data/man/file.dsmd)

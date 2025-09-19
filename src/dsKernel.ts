@@ -1,7 +1,7 @@
 import '@xterm/xterm/css/xterm.css';
 
-import { DSPointerEvent, DSTerminal } from "./dsTerminal";
-import { DSFileInfo, DSFileSystem, DSIDirectory } from "./dsFileSystem";
+import { DSFileInfo, DSFileSystem, DSIDirectory, DSIDirectoryInvalidPathError } from "./dsFileSystem";
+import { DSKeyEvent, DSPointerEvent, DSTerminal } from "./dsTerminal";
 import { DSIDBFileSystem } from "./filesystem/dsIDBFileSystem";
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
 import { buildrootfs } from "./dsRootFS";
@@ -155,16 +155,16 @@ export class DSKernel {
             await t.baudWrite(`mount: rootfs\n`)
             DSKernel.mount('/', rootfs);
 
-            /*
+
             await t.baudWrite(`fsck: localfs\n`)
             const localfs = new DSIDBFileSystem("depsys_local_fs", 1);
             await localfs.open();
+
             fsckresults = localfs.fsck();
             await t.baudWrite(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
 
             await t.baudWrite(`mount: localfs\n`)
             DSKernel.mount('/local', localfs);
-            */
 
             if (bootcount == 0) {
                 await t.baudWrite("nvram: enable fastboot");
@@ -326,9 +326,15 @@ export class DSKernel {
         this.curproc.handlePointer(e);
     }
 
+    static handleKeyEvent(e:DSKeyEvent) {
+        if (!this.curproc)
+            return;
+        this.curproc.handleKeyEvent(e);
+    }
+
     static handleHistoryEvents(e: PopStateEvent) {
         if (!this.curproc)
             return;
-        this.curproc.handleHistory(e);        
+        this.curproc.handleHistory(e);
     }
 }

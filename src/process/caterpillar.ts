@@ -2,6 +2,7 @@ import { DSKernel } from "../dsKernel";
 import { DSProcess } from "../dsProcess";
 import { up, down, left, right, cursordown, cursorleft, cursornextline, cursorright, reset_text, set_cursor } from "../lib/dsCurses";
 import { sleep } from "../lib/dsLib";
+import { DSOptionParser } from "../lib/dsOptionParser";
 
 class CGameData {
     public static rock: string = 'Θ';
@@ -79,7 +80,15 @@ export class PRCaterpillar extends DSProcess {
     private paused: boolean = false;
 
     protected async main(): Promise<void> {
+         const optparser = new DSOptionParser(
+            this.procname,
+            true,
+            "   play a game of Caterpillar",
+        );
+        optparser.parseWithUsageAndHelp(this.argv);
+
         DSKernel.terminal.reset();
+        
         while (!this.screencorrectsize()) {
             this.stdout.write(reset_text());
             this.stdout.write('Please resize your screen');
