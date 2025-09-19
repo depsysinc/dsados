@@ -1,0 +1,21 @@
+# Code to demonstrate the features of dssh
+
+#This is a comment, these lines will be ignored
+
+var=123 #this line sets a variable
+var="text"
+
+echo $var #will output "text"
+echo var  #will output "var"
+
+if [-true] #if statement
+    var="true" #will evaluate
+endif
+
+if [-false] #will not evaluate
+    var="false"
+endif
+
+if [-$var]
+    var = "I was true" 
+endif

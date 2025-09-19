@@ -228,6 +228,7 @@ export class DSShell extends DSProcess {
                 this.cwd.getfile(filepath);
                 return DSKernel.exec(filepath, tokens, this.envp);
             } catch (e) {
+                throw new DSShellError(`${command}: command not found\n`);
                 return this.stdout.write(`${command}: command not found\n`);
             }
         }
@@ -245,6 +246,7 @@ export class DSShell extends DSProcess {
                 }
             }
         }
+        throw new DSShellError(`${command}: command not found\n`);
         return this.stdout.write(`${command}: command not found\n`);
     }
 
