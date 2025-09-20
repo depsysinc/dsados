@@ -2,6 +2,7 @@ import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSKernel } from "../dsKernel";
 import { DSStream, DSStreamClosedError } from "../dsStream";
 import { DSOptionParser } from "../lib/dsOptionParser";
+import { sleep } from "../lib/dsLib";
 
 export class DSShellError extends DSProcessError {
     constructor(message: string) {
@@ -64,7 +65,6 @@ export class DSShell extends DSProcess {
 
         while (true) {
             instream = this.currentexecfile;
-            console.log(instream, this._filestack)
             try {
                 let originput = "";
                 if (instream.isatty) {
@@ -75,10 +75,9 @@ export class DSShell extends DSProcess {
                         originput = await instream.read();
                     } catch (e) {
                         if (e instanceof DSStreamClosedError) {
-
+                            this._filestack.pop()
                             if (this._filestack.length == 0)
                                 return;
-                            this._filestack.pop()
                             instream = this.currentexecfile;
                             continue;
                         }
@@ -86,7 +85,11 @@ export class DSShell extends DSProcess {
                     }
                 }
 
-                console.log(originput)
+                if (originput.split(/\r?\n|\r/).length != 1) {
+                    this._filestack.push(this.getLineStream(originput));
+                    continue;
+                }
+
                 // Strip comments
                 let strippedinput = originput.split("#")[0];
 
@@ -288,14 +291,13 @@ export class DSShell extends DSProcess {
         if (tokens[1].split('.')[1] != 'dssh')
             return this._usage("exec", ["<execfile>"], `expected dssh file\n`);
         const file = this.cwd.getfile(tokens[1])
-        const stream = file.contentAsText()
-        this._filestack.push(await this.getLineStream(stream))
+        const text = await file.contentAsText().read()
+        this._filestack.push(this.getLineStream(text))
 
     }
 
-    private async getLineStream(stream: DSStream): Promise<DSStream> {
-        let contents = await stream.read();
-        let listcontents = contents.split(/\r?\n|\r/);
+    private getLineStream(text: string): DSStream {
+        let listcontents = text.split(/\r?\n|\r/);
         let outstream = new DSStream();
         listcontents.forEach((line) => {
             outstream.write(line);

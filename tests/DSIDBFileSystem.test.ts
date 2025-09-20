@@ -75,7 +75,6 @@ test('DSIDBFS mkdir persisting', async () => {
     await fs1.open();
 
     fs1.root.mkdir("directory");
-    console.log(fs1.root.filelist);
     expect(fs1.root.filelist.length).toEqual(3);
     expect(fs1.root.filelist[2].name == 'directory');
     
