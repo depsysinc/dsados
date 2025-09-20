@@ -17,5 +17,13 @@ if [-false] #will not evaluate
 endif
 
 if [-$var]
-    var = "I was true" 
+    var="I was true" 
 endif
+
+sleep 2000 #run command sleep
+
+#execute another file
+exec /etc/autoexec.dssh
+
+echo done other file #once users exits dsmdbrowser (from autoexec), will run
+sleep 2000

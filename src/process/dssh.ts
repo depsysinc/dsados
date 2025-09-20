@@ -2,6 +2,7 @@ import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSKernel } from "../dsKernel";
 import { DSStream, DSStreamClosedError } from "../dsStream";
 import { DSOptionParser } from "../lib/dsOptionParser";
+import { sleep } from "../lib/dsLib";
 
 export class DSShellError extends DSProcessError {
     constructor(message: string) {
@@ -23,6 +24,7 @@ export class DSShell extends DSProcess {
     private _prompt: CommandLinePrompt;
     private _ifstack: IFBlock[] = [];
     private _loginshell: boolean = false;
+    private _filestack: DSStream[] = [];
 
     history: string[] = [];
 
@@ -47,45 +49,45 @@ export class DSShell extends DSProcess {
         return this._commandLoop();
     }
 
+    get currentexecfile() {
+        return this._filestack[this._filestack.length-1]
+    }
+
     private async _commandLoop() {
-        let linebuffer: string[] = [];
         // autoexecfile: DSInode | undefined = undefined;
-        let instream: DSStream;
+        this._filestack.push(this.stdin);
+        let instream:DSStream;
+
         if (this._loginshell) {
             // try opening autoexec
-            const autoexecfile = this.cwd.getfile("/etc/autoexec.dssh");
-            instream = autoexecfile.contentAsText();
-        } else {
-            instream = this.stdin;
-        }
+            this._commandExec(["","/etc/autoexec.dssh"])
+        } 
 
         while (true) {
+            instream = this.currentexecfile;
+            console.log(instream, this._filestack)
             try {
                 let originput = "";
                 if (instream.isatty) {
                     // FIXME: prompt assumes stdin
                     originput = await this._prompt.promptForInput();
                 } else {
-                    if (linebuffer.length == 0) {
-                        let buffer: string;
                         try {
-                            buffer = await instream.read();
+                            originput = await instream.read();
                         } catch (e) {
                             if (e instanceof DSStreamClosedError) {
-                                // if not a loginshell then we're done
-                                if (!this._loginshell)
+                                
+                                if (this._filestack.length == 0)
                                     return;
-                                // need to swap in stdin
-                                instream = this.stdin;
+                                this._filestack.pop()            
+                                instream = this.currentexecfile;
                                 continue;
                             }
                             throw e;
                         }
-                        linebuffer = linebuffer.concat(buffer.split(/\r?\n|\r/));
                     }
-                    originput = linebuffer.shift();
-                }
-
+                
+                console.log(originput)
                 // Strip comments
                 let strippedinput = originput.split("#")[0];
 
@@ -175,7 +177,9 @@ export class DSShell extends DSProcess {
                         case "history":
                             await this._commandHistory(tokens);
                             break;
-
+                        case "exec":
+                            await this._commandExec(tokens);
+                            break
                         default:
                             await this._findAndExec(tokens);
                     }
@@ -228,7 +232,7 @@ export class DSShell extends DSProcess {
                 this.cwd.getfile(filepath);
                 return DSKernel.exec(filepath, tokens, this.envp);
             } catch (e) {
-                throw new DSShellError(`${command}: command not found\n`);
+                //throw new DSShellError(`${command}: command not found\n`);
                 return this.stdout.write(`${command}: command not found\n`);
             }
         }
@@ -246,7 +250,7 @@ export class DSShell extends DSProcess {
                 }
             }
         }
-        throw new DSShellError(`${command}: command not found\n`);
+        //throw new DSShellError(`${command}: command not found\n`);
         return this.stdout.write(`${command}: command not found\n`);
     }
 
@@ -268,7 +272,29 @@ export class DSShell extends DSProcess {
 
         this.chdir(dirname);
     }
+
+    private async _commandExec(tokens: string[]) {
+        if (tokens.length != 2)
+            return this._usage("exec", ["<execfile>"], `expected 1 argument (${tokens.length - 1} given)\n`);
+        
+        const file = this.cwd.getfile(tokens[1])
+        const stream = file.contentAsText()
+        this._filestack.push(await this.getLineStream(stream))
+
+    }
+
+    private async getLineStream(stream:DSStream):Promise<DSStream> {
+        let contents = await stream.read();
+        let listcontents = contents.split(/\r?\n|\r/);
+        let outstream = new DSStream();
+        listcontents.forEach((line) => {
+            outstream.write(line);
+        })
+        outstream.close();
+        return outstream;
+    }
 }
+
 
 function splitRespectingQuotes(input: string): string[] {
     const regex = /"([^"]*)"|'([^']*)'|[^\s]+/g;

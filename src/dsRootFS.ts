@@ -76,6 +76,7 @@ import root_data_app_pixel_assault_shieldpiece6_png from "./root/data/app/pixel_
 import root_data_demo_animation_32x32_A_png from "./root/data/demo/animation/32x32_A.png";
 import root_data_demo_animation_32x32_B_png from "./root/data/demo/animation/32x32_B.png";
 import root_data_demo_animation_32x32_C_png from "./root/data/demo/animation/32x32_C.png";
+import root_data_demo_demo_dssh from "./root/data/demo/demo.dssh";
 import root_data_demo_markdown_32x32_testpattern_png from "./root/data/demo/markdown/32x32_testpattern.png";
 import root_data_demo_markdown_demomarkdown_dsmd from "./root/data/demo/markdown/demomarkdown.dsmd";
 import root_data_demo_mousetouch_pointer_png from "./root/data/demo/mousetouch/pointer.png";
@@ -513,6 +514,11 @@ export function buildrootfs(): DSFileSystem {
     curdir = dirstack.pop();
     // Exited root/data/demo/animation
         
+    // Creating root/data/demo/demo.dssh
+    curfile = new DSIWebFile(fs, root_data_demo_demo_dssh);
+    curdir.addfile("demo.dssh", curfile);
+    
+    
     // Traversing root/data/demo/markdown
     dirstack.push(curdir);
     curdir = curdir.mkdir('markdown');
