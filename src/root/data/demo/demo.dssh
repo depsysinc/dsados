@@ -20,7 +20,36 @@ if [-$var]
     var="I was true" 
 endif
 
+navpath=data
+
+#if navpath exists, navigate to it
+if [-d $navpath]
+    datapathexists="true"
+else
+    datapathexists="false"
+endif
+
+if [-$datapathexists]
+    cd $navpath
+endif
+
+pwd
+
+navpath=notapath
+if [-d navpath]
+    datapathexists="true"
+else
+    datapathexists="false"
+endif
+
+if [-$datapathexists]
+    cd navpath
+endif
+
+pwd
+
 sleep 2000 #run command sleep
+
 
 #execute another file
 exec /etc/autoexec.dssh
