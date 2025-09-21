@@ -290,6 +290,7 @@ export class DSShell extends DSProcess {
             return this._usage("exec", ["<execfile>"], `expected 1 argument (${tokens.length - 1} given)\n`);
         if (tokens[1].split('.')[1] != 'dssh')
             return this._usage("exec", ["<execfile>"], `expected dssh file\n`);
+
         const file = this.cwd.getfile(tokens[1])
         const text = await file.contentAsText().read()
         this._filestack.push(this.getLineStream(text))
@@ -297,11 +298,13 @@ export class DSShell extends DSProcess {
     }
 
     private getLineStream(text: string): DSStream {
-        let listcontents = text.split(/\r?\n|\r/);
-        let outstream = new DSStream();
+        const listcontents = text.split(/\r?\n|\r/);
+        const outstream = new DSStream();
+
         listcontents.forEach((line) => {
             outstream.write(line);
         })
+
         outstream.close();
         return outstream;
     }

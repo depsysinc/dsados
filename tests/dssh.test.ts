@@ -31,16 +31,13 @@ function resetKernel() {
     const init = new TestProcess(fs.root);
     DSKernel.procstack.push(init);
 
-    const bindir = fs.root.mkdir("bin",DSFilePerms.full());
+    const bindir = fs.root.mkdir("bin",DSFilePerms.rx());
     let binfile: DSInode = new DSIProcessFile(DSKernel.rootfs, DSShell);
     bindir.addfile("dssh", binfile);
 
     binfile = new DSIProcessFile(DSKernel.rootfs, PREcho);
     bindir.addfile("echo", binfile);
 
-    const subdir = bindir.mkdir("subdir",DSFilePerms.rx())
-
-    bindir.chmod(DSFilePerms.rx())
     return init;
 }
 
