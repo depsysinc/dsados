@@ -1,0 +1,21 @@
+NAME
+
+  **demomousetouch** - test mouse and touch input
+
+SYNOPSIS
+
+    demomousetouch 
+
+DESCRIPTION
+
+    The demomousetouch command is a test of your mouse. If working correctly, the 
+    cursor image should follow your mouse around, and wherever you click leave an
+    M. On mobile, the command should leave a T instead.  
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [demoanim](/data/man/demoanim.dsmd), [democurses](/data/man/democurses.dsmd), [demomarkdown](/data/man/demomarkdown.dsmd)

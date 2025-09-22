@@ -25,6 +25,7 @@ import { PRFile } from "./process/file";
 import { PRImgview } from "./process/imgview";
 import { PRInit } from "./process/init";
 import { PRLs } from "./process/ls";
+import { PRMan } from "./process/man";
 import { PRMkdir } from "./process/mkdir";
 import { PRPixelAssault } from "./process/pixelassault";
 import { PRPs } from "./process/ps";
@@ -82,6 +83,29 @@ import root_data_demo_markdown_demomarkdown_dsmd from "./root/data/demo/markdown
 import root_data_demo_mousetouch_pointer_png from "./root/data/demo/mousetouch/pointer.png";
 import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
 import root_data_depsys_txt from "./root/data/depsys.txt";
+import root_data_man__template_dsmd from "./root/data/man/_template.dsmd";
+import root_data_man_cat_dsmd from "./root/data/man/cat.dsmd";
+import root_data_man_caterpillar_dsmd from "./root/data/man/caterpillar.dsmd";
+import root_data_man_chmod_dsmd from "./root/data/man/chmod.dsmd";
+import root_data_man_demoanim_dsmd from "./root/data/man/demoanim.dsmd";
+import root_data_man_democurses_dsmd from "./root/data/man/democurses.dsmd";
+import root_data_man_demomarkdown_dsmd from "./root/data/man/demomarkdown.dsmd";
+import root_data_man_demomousetouch_dsmd from "./root/data/man/demomousetouch.dsmd";
+import root_data_man_dsmdbrowser_dsmd from "./root/data/man/dsmdbrowser.dsmd";
+import root_data_man_dssh_dsmd from "./root/data/man/dssh.dsmd";
+import root_data_man_echo_dsmd from "./root/data/man/echo.dsmd";
+import root_data_man_env_dsmd from "./root/data/man/env.dsmd";
+import root_data_man_file_dsmd from "./root/data/man/file.dsmd";
+import root_data_man_imgview_dsmd from "./root/data/man/imgview.dsmd";
+import root_data_man_init_dsmd from "./root/data/man/init.dsmd";
+import root_data_man_ls_dsmd from "./root/data/man/ls.dsmd";
+import root_data_man_man_dsmd from "./root/data/man/man.dsmd";
+import root_data_man_mkdir_dsmd from "./root/data/man/mkdir.dsmd";
+import root_data_man_ps_dsmd from "./root/data/man/ps.dsmd";
+import root_data_man_pwd_dsmd from "./root/data/man/pwd.dsmd";
+import root_data_man_reset_dsmd from "./root/data/man/reset.dsmd";
+import root_data_man_sleep_dsmd from "./root/data/man/sleep.dsmd";
+import root_data_man_splash_dsmd from "./root/data/man/splash.dsmd";
 import root_data_site_130x46_godot_png from "./root/data/site/130x46_godot.png";
 import root_data_site_181x64_godot_png from "./root/data/site/181x64_godot.png";
 import root_data_site_DSADOS_dsmd from "./root/data/site/DSADOS.dsmd";
@@ -171,6 +195,9 @@ export function buildrootfs(): DSFileSystem {
     
     binfile = new DSIProcessFile(fs, PRLs);
     bindir.addfile("ls", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRMan);
+    bindir.addfile("man", binfile);
     
     binfile = new DSIProcessFile(fs, PRMkdir);
     bindir.addfile("mkdir", binfile);
@@ -564,6 +591,129 @@ export function buildrootfs(): DSFileSystem {
     curdir.addfile("depsys.txt", curfile);
     
     
+    // Traversing root/data/man
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('man');
+    
+    // Creating root/data/man/_template.dsmd
+    curfile = new DSIWebFile(fs, root_data_man__template_dsmd);
+    curdir.addfile("_template.dsmd", curfile);
+    
+    
+    // Creating root/data/man/cat.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_cat_dsmd);
+    curdir.addfile("cat.dsmd", curfile);
+    
+    
+    // Creating root/data/man/caterpillar.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_caterpillar_dsmd);
+    curdir.addfile("caterpillar.dsmd", curfile);
+    
+    
+    // Creating root/data/man/chmod.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_chmod_dsmd);
+    curdir.addfile("chmod.dsmd", curfile);
+    
+    
+    // Creating root/data/man/demoanim.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_demoanim_dsmd);
+    curdir.addfile("demoanim.dsmd", curfile);
+    
+    
+    // Creating root/data/man/democurses.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_democurses_dsmd);
+    curdir.addfile("democurses.dsmd", curfile);
+    
+    
+    // Creating root/data/man/demomarkdown.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_demomarkdown_dsmd);
+    curdir.addfile("demomarkdown.dsmd", curfile);
+    
+    
+    // Creating root/data/man/demomousetouch.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_demomousetouch_dsmd);
+    curdir.addfile("demomousetouch.dsmd", curfile);
+    
+    
+    // Creating root/data/man/dsmdbrowser.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_dsmdbrowser_dsmd);
+    curdir.addfile("dsmdbrowser.dsmd", curfile);
+    
+    
+    // Creating root/data/man/dssh.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_dssh_dsmd);
+    curdir.addfile("dssh.dsmd", curfile);
+    
+    
+    // Creating root/data/man/echo.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_echo_dsmd);
+    curdir.addfile("echo.dsmd", curfile);
+    
+    
+    // Creating root/data/man/env.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_env_dsmd);
+    curdir.addfile("env.dsmd", curfile);
+    
+    
+    // Creating root/data/man/file.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_file_dsmd);
+    curdir.addfile("file.dsmd", curfile);
+    
+    
+    // Creating root/data/man/imgview.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_imgview_dsmd);
+    curdir.addfile("imgview.dsmd", curfile);
+    
+    
+    // Creating root/data/man/init.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_init_dsmd);
+    curdir.addfile("init.dsmd", curfile);
+    
+    
+    // Creating root/data/man/ls.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_ls_dsmd);
+    curdir.addfile("ls.dsmd", curfile);
+    
+    
+    // Creating root/data/man/man.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_man_dsmd);
+    curdir.addfile("man.dsmd", curfile);
+    
+    
+    // Creating root/data/man/mkdir.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_mkdir_dsmd);
+    curdir.addfile("mkdir.dsmd", curfile);
+    
+    
+    // Creating root/data/man/ps.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_ps_dsmd);
+    curdir.addfile("ps.dsmd", curfile);
+    
+    
+    // Creating root/data/man/pwd.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_pwd_dsmd);
+    curdir.addfile("pwd.dsmd", curfile);
+    
+    
+    // Creating root/data/man/reset.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_reset_dsmd);
+    curdir.addfile("reset.dsmd", curfile);
+    
+    
+    // Creating root/data/man/sleep.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_sleep_dsmd);
+    curdir.addfile("sleep.dsmd", curfile);
+    
+    
+    // Creating root/data/man/splash.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_splash_dsmd);
+    curdir.addfile("splash.dsmd", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/man
+        
     // Traversing root/data/site
     dirstack.push(curdir);
     curdir = curdir.mkdir('site');

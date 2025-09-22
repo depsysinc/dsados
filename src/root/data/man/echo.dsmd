@@ -1,0 +1,22 @@
+NAME
+
+  **echo** - echo command line args to the terminal
+
+SYNOPSIS
+
+    echo [...]
+
+DESCRIPTION
+
+    The echo command will immediately output all of its arguments
+    to the terminal, then return. Each argument will be space-
+    separated, and the last argument will be followed by a newline.
+    When passed no arguments, echo will raise an error.
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [cat](/data/man/cat.dsmd), [splash](/data/man/splash.dsmd)

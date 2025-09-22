@@ -1,0 +1,23 @@
+NAME
+
+  **demoanim** - test sprite subsystem
+
+SYNOPSIS
+
+    demoanim 
+
+DESCRIPTION
+
+    Will display a demonstrative animation, to test if the sprite
+    system is working properly. If it is, the command should display
+    a sprite that rapidly cycles through the letters A, B, and C.
+    Will throw an error if given any arguments. Hit any key to exit 
+    the process when running. 
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [democurses](/data/man/democurses.dsmd), [demomarkdown](/data/man/demomarkdown.dsmd), [demomousetouch](/data/man/demomousetouch.dsmd)

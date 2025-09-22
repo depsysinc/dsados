@@ -1,7 +1,7 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSOptionParser } from "../lib/dsOptionParser";
 import { DSMDDoc, ImageBlock } from "../lib/dsMarkdown";
-import { gotoxy, reset, setattr, textattrs } from "../lib/dsCurses";
+import { gotoxy, setattr, textattrs } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
 
 export class PRDemoMarkdown extends DSProcess {
@@ -46,7 +46,7 @@ export class PRDemoMarkdown extends DSProcess {
             fillstr = fillstr.padEnd(width + 1, "-");
             fillstr += "+";
 
-            w(reset());
+            DSKernel.terminal.reset();
             w(setattr(textattrs.fg_green));
 
             // Draw border
@@ -100,7 +100,6 @@ export class PRDemoMarkdown extends DSProcess {
                 break;
             }
         }
-        w(reset());
-        DSKernel.terminal.resetSprites();
+        DSKernel.terminal.reset();
     }
 }

@@ -2,7 +2,7 @@ import { DSKernel } from "../dsKernel";
 import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSPointerEvent } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
-import { gotoxy, reset, setattr, textattrs } from "../lib/dsCurses";
+import { gotoxy, reset_text, setattr, textattrs } from "../lib/dsCurses";
 import { load_image } from "../lib/dsImg";
 import { DSOptionParser } from "../lib/dsOptionParser";
 
@@ -27,8 +27,8 @@ export class PRDemoMouseTouch extends DSProcess {
         const img = await load_image(webnode.url);
 
         // Create the sprite
-        this.sprite = DSKernel.terminal.newSprite([{image:img,height:img.height,width:img.width}]);
-        w(reset());
+        this.sprite = DSKernel.terminal.newSprite([{ image: img, height: img.height, width: img.width }]);
+        w(reset_text());
 
         // Draw border
         let fillstr: string = "+";
@@ -49,8 +49,7 @@ export class PRDemoMouseTouch extends DSProcess {
             if (input == 'q')
                 done = true;
         }
-        w(reset());
-        DSKernel.terminal.resetSprites();
+        DSKernel.terminal.reset();
         return;
     }
 
