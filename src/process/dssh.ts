@@ -60,7 +60,7 @@ export class DSShell extends DSProcess {
 
         if (this._loginshell) {
             // try opening autoexec
-            await this._commandExec(["", "/etc/autoexec.dssh"])
+            await this._commandSource(["", "/etc/autoexec.dssh"])
         }
 
         while (true) {
@@ -179,8 +179,8 @@ export class DSShell extends DSProcess {
                         case "history":
                             await this._commandHistory(tokens);
                             break;
-                        case "exec":
-                            await this._commandExec(tokens);
+                        case "source":
+                            await this._commandSource(tokens);
                             break
                         default:
                             await this._findAndExec(tokens);
@@ -285,11 +285,9 @@ export class DSShell extends DSProcess {
         this.chdir(dirname);
     }
 
-    private async _commandExec(tokens: string[]) {
+    private async _commandSource(tokens: string[]) {
         if (tokens.length != 2)
             return this._usage("exec", ["<execfile>"], `expected 1 argument (${tokens.length - 1} given)\n`);
-        if (tokens[1].split('.')[1] != 'dssh')
-            return this._usage("exec", ["<execfile>"], `expected dssh file\n`);
 
         const file = this.cwd.getfile(tokens[1])
         const text = await file.contentAsText().read()
