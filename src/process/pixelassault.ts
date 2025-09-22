@@ -3,7 +3,7 @@ import { DSKernel } from "../dsKernel";
 import { DSProcess } from "../dsProcess";
 import { DSKeyEvent, DSSprite } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
-import { cursornextline, cursorright, gotoxy, reset, right, set_cursor } from "../lib/dsCurses";
+import { cursornextline, cursorright, gotoxy, reset_text, right, set_cursor } from "../lib/dsCurses";
 import { DSTexture, get_image_textures } from "../lib/dsImg";
 import { sleep } from "../lib/dsLib";
 
@@ -461,7 +461,7 @@ export class PRPixelAssault extends DSProcess {
     }
 
     private reset() {
-        this.stdout.write(reset());
+        this.stdout.write(reset_text());
         DSKernel.terminal.resetSprites();
         this.stdout.write(set_cursor(false));
         this.updateGameBounds();

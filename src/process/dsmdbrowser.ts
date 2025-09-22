@@ -209,7 +209,7 @@ export class PRDSMDBrowser extends DSApp {
 
         // Clear screen place loading message
         DSKernel.terminal.resetSprites();
-        this.stdout.write(reset() + `LOADING [${filepath}]\n`);
+        this.stdout.write(reset_text() + `LOADING [${filepath}]\n`);
         try {
             const inode = this.currentdir.getfile(filepath);
             const text = await inode.contentAsText().read();
@@ -328,24 +328,5 @@ export class PRDSMDBrowser extends DSApp {
             }
         }
 
-    }
-
-    private async _loadDoc(filepath: string) {
-
-        // Clear screen place loading message
-        DSKernel.terminal.reset();
-        this.stdout.write(`LOADING [${filepath}]\n`);
-        try {
-            const inode = this.cwd.getfile(filepath);
-            const text = await inode.contentAsText().read();
-            this._curdoc = new DSMDDoc();
-            this._curdoc.parse(text);
-            await this._curdoc.loadContent(this.cwd);
-        } catch (e) {
-            this._curdoc = new DSMDDoc();
-            this._curdoc.parse(this._err404 + `\n\n[${e}]`);
-        }
-
-        this.eventQueue.enqueue(new ResizeAppEvent());
     }
 }
