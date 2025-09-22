@@ -1,9 +1,9 @@
 import { DSProcessError } from "../dsProcess";
 import { DSOptionParser } from "../lib/dsOptionParser";
-import { DSMDDoc, ImageBlock, DSMDToken, LinkToken } from "../lib/dsMarkdown";
-import { DSIDirectory } from "../dsFileSystem";
+import { DSMDDoc, ImageBlock, LinkToken } from "../lib/dsMarkdown";
 import { gotoxy, reset, setattr, textattrs } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
+import { getAbsolutePath, getDirPath } from "../lib/dsPath"
 import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent, MouseMoveAppEvent, MouseButtonDownEvent as MouseButtonDownAppEvent, MouseButtonUpEvent as MouseButtonUpAppEvent, TouchEndAppEvent, LeftArrowAppEvent, HistoryAppEvent } from "../dsApp";
 
 export type HistoryState =
@@ -22,6 +22,10 @@ export class PRDSMDBrowser extends DSApp {
     private _err404: string;
     private _currentfilename: string;
     private _savedrowsbypage: Map<string, number> = new Map<string, number>();
+
+    private get currentdir() {
+        return this.cwd.getdir(getDirPath(this._currentfilename))
+    }
 
     protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
@@ -43,7 +47,7 @@ export class PRDSMDBrowser extends DSApp {
         this._currentfilename = filename;
         history.replaceState({ filepath: filename }, "");
         await this._loadDoc(filename);
-        
+
         const t = DSKernel.terminal;
         while (!this.done) {
             const e = await this.eventQueue.dequeue();
@@ -182,22 +186,44 @@ export class PRDSMDBrowser extends DSApp {
         // Check for external link
         if (url.startsWith("http")) {
             window.open(url, '_blank');
-        } 
+        }
         else if (url.startsWith('cmd: ')) {
             let commands = url.split(' ');
             commands.shift(); //remove cmd:
             let process = commands[0];
             await DSKernel.exec(process, commands);
             this._redraw();
-        
+
         } else {
             this._savedrowsbypage.set(this._currentfilename, this._rowidx);
             this._rowidx = 0;
-            history.pushState({ filepath: url }, '');
-            this._currentfilename = url;
+            const newpath = getAbsolutePath(this.currentdir,url)
+            history.pushState({ filepath:  newpath}, '');
             await this._loadDoc(url);
+            this._currentfilename = newpath;
         }
     }
+
+    private async _loadDoc(filepath: string) {
+
+        // Clear screen place loading message
+        DSKernel.terminal.resetSprites();
+        this.stdout.write(reset() + `LOADING [${filepath}]\n`);
+        try {
+            const inode = this.currentdir.getfile(filepath);
+            const text = await inode.contentAsText().read();
+            this._curdoc = new DSMDDoc();
+            this._curdoc.parse(text);
+            let newdir = this.currentdir.getdir(getDirPath(filepath))
+            await this._curdoc.loadContent(newdir);
+        } catch (e) {
+            this._curdoc = new DSMDDoc();
+            this._curdoc.parse(this._err404 + `\n\n[${e}]`);
+        }
+
+        this.eventQueue.enqueue(new ResizeAppEvent());
+    }
+
 
     private highlightLink(openlink: LinkToken) {
         const closelink = openlink.closingtoken;
@@ -301,24 +327,5 @@ export class PRDSMDBrowser extends DSApp {
             }
         }
 
-    }
-
-    private async _loadDoc(filepath: string) {
-
-        // Clear screen place loading message
-        DSKernel.terminal.resetSprites();
-        this.stdout.write(reset() + `LOADING [${filepath}]\n`);
-        try {
-            const inode = this.cwd.getfile(filepath);
-            const text = await inode.contentAsText().read();
-            this._curdoc = new DSMDDoc();
-            this._curdoc.parse(text);
-            await this._curdoc.loadContent(this.cwd);
-        } catch (e) {
-            this._curdoc = new DSMDDoc();
-            this._curdoc.parse(this._err404 + `\n\n[${e}]`);
-        }
-
-        this.eventQueue.enqueue(new ResizeAppEvent());
     }
 }
