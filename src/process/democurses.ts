@@ -1,6 +1,6 @@
 import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSOptionParser } from "../lib/dsOptionParser";
-import { gotoxy, reset, scrolldown, scrollup, set_cursor, setattr, textattrs } from "../lib/dsCurses";
+import { gotoxy, reset_text, scrolldown, scrollup, set_cursor, setattr, textattrs } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
 
 export class PRDemoCurses extends DSProcess {
@@ -17,7 +17,7 @@ export class PRDemoCurses extends DSProcess {
         const stdout = this.stdout;
         const w = (str: string) => { stdout.write(str); };
 
-        w(reset());
+        DSKernel.terminal.reset();
         w(set_cursor(false));
 
         const cols = DSKernel.terminal.cols;
@@ -58,7 +58,7 @@ export class PRDemoCurses extends DSProcess {
         await this._wait("[PRESS TO CONTINUE]", rows);
 
         // TEST writing to corners
-        w(reset());
+        w(reset_text());
         w(gotoxy(1, 1));
         stdout.write("T");
         w(gotoxy(cols, 1));
@@ -70,7 +70,7 @@ export class PRDemoCurses extends DSProcess {
         await this._wait("[PRESS TO CONTINUE]");
 
         // TEST SCROLLUP
-        w(reset());
+        w(reset_text());
         this.fillViewport();
 
         for (let i = 1; i < 4; i++) {
@@ -80,18 +80,17 @@ export class PRDemoCurses extends DSProcess {
         await this._wait("[PRESS TO CONTINUE]");
 
         // TEST SCROLLDOWN
-        w(reset());
+        w(reset_text());
         this.fillViewport();
 
         for (let i = 1; i < 4; i++) {
             await this._wait(`[PRESS TO SCROLLDOWN ${i}]`, rows);
-            w(scrolldown( i));
+            w(scrolldown(i));
         }
         await this._wait("[PRESS TO EXIT]");
 
         // All done, clean up
-        w(set_cursor(true));
-        w(reset());
+        DSKernel.terminal.reset();
     }
 
     private fillViewport() {
@@ -116,7 +115,7 @@ export class PRDemoCurses extends DSProcess {
         this.stdout.write(gotoxy(x, y));
         this.stdout.write(setattr(textattrs.inverted));
         this.stdout.write(msg);
-        this.stdout.write(setattr( textattrs.noninverted));
+        this.stdout.write(setattr(textattrs.noninverted));
         return this.stdin.read();
     }
 }

@@ -12,6 +12,6 @@ export class PRReset extends DSProcess {
         );
         let nextarg = optparser.parseWithUsageAndHelp(this.argv);
 
-        this.stdout.write("\x1bc");
+        DSKernel.terminal.reset();
     }
 }
