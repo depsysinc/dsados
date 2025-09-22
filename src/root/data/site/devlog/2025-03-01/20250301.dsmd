@@ -21,7 +21,7 @@ The speed of the developer iteration loop is very important to a dev's productiv
 
 With external compiled code it's a little different.  It's a very tricky thing to change compiled code and expect it to affect a running instance of your game, but knowing how important a tight edit/build/run loop is to their devs, the godot team did the next best thing and recently implemented editor hot reload for [GDExtensions](https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/what_is_gdextension.html), the modular framework that I'm using to glue my custom compiled code and some 3rd party libraries into the godot editor and games.  This lets you at least not have to restart the editor on every recompile.  Except in my case hot reload caused the editor to crash to desktop with one of these in the console:
 
-![Signal 11](/data/site/devlog/2025-03-01/Signal11.png)
+![Signal 11](Signal11.png)
 
 So my extension was working in the game client and as I said, it is a fairly tricky thing to hot reload compiled binary code into a running process, so maybe I should just live with it?  No, for a couple reasons.
 

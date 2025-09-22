@@ -1,6 +1,7 @@
 // Exceptions
 
 import { DSStream } from "./dsStream";
+import { getDirPath, getFileName } from "./lib/dsPath";
 
 export class DSFileSystemError extends Error {
     constructor(message: string) {
@@ -496,7 +497,7 @@ export class DSIDirectory extends DSInode {
             curdir = fileinfo.inode;
         }
         return curdir;
-    }
+    }    
 
     // Overload signatures
     getfileinfo(name: string): DSFileInfo | undefined;
