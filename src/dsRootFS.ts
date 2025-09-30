@@ -101,6 +101,7 @@ import root_data_man_init_dsmd from "./root/data/man/init.dsmd";
 import root_data_man_ls_dsmd from "./root/data/man/ls.dsmd";
 import root_data_man_man_dsmd from "./root/data/man/man.dsmd";
 import root_data_man_mkdir_dsmd from "./root/data/man/mkdir.dsmd";
+import root_data_man_pixelassault_dsmd from "./root/data/man/pixelassault.dsmd";
 import root_data_man_ps_dsmd from "./root/data/man/ps.dsmd";
 import root_data_man_pwd_dsmd from "./root/data/man/pwd.dsmd";
 import root_data_man_reset_dsmd from "./root/data/man/reset.dsmd";
@@ -691,6 +692,11 @@ export function buildrootfs(): DSFileSystem {
     // Creating root/data/man/mkdir.dsmd
     curfile = new DSIWebFile(fs, root_data_man_mkdir_dsmd);
     curdir.addfile("mkdir.dsmd", curfile);
+    
+    
+    // Creating root/data/man/pixelassault.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_pixelassault_dsmd);
+    curdir.addfile("pixelassault.dsmd", curfile);
     
     
     // Creating root/data/man/ps.dsmd
