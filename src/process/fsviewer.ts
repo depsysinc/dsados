@@ -1,9 +1,12 @@
-import { DownArrowAppEvent, DSApp, LeftArrowAppEvent, MouseButtonDownEvent, MouseButtonUpEvent, MouseMoveAppEvent, ResizeAppEvent, RightArrowAppEvent, TextAppEvent, TouchEndAppEvent, TouchMoveAppEvent, TouchStartAppEvent, UpArrowAppEvent } from "../dsApp";
-import { DSIDirectory } from "../dsFileSystem";
+import { DownArrowAppEvent, DSApp, LeftArrowAppEvent, MouseButtonDownEvent, MouseButtonUpEvent, MouseMoveAppEvent, ResizeAppEvent, RightArrowAppEvent, TextAppEvent, TouchEndAppEvent, TouchMoveAppEvent, TouchStartAppEvent, UpArrowAppEvent, WheelAppEvent } from "../dsApp";
+import { DSIDirectory, DSInode } from "../dsFileSystem";
 import { DSKernel } from "../dsKernel";
+import { DSIWebFile } from "../filesystem/dsIWebFile";
 import { reset_text, set_cursor, setattr, textattrs } from "../lib/dsCurses";
+import { DSTexture, get_image_textures } from "../lib/dsImg";
 import { sleep } from "../lib/dsLib";
 import { DSOptionParser } from "../lib/dsOptionParser";
+import { getAbsolutePath } from "../lib/dsPath";
 
 //TODO
 //support for lists longer than the screen is tall
@@ -18,6 +21,10 @@ export class PRFSViewer extends DSApp {
     private currentdir: DSIDirectory;
     private selectedrow: number = 0;
     private topmost: number = 0;
+
+    private foldertexture: DSTexture[];
+    private txttexture: DSTexture[];
+    private imgtexture: DSTexture[];
 
     protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
@@ -40,7 +47,6 @@ export class PRFSViewer extends DSApp {
         await sleep(50)
         while (!this.done) {
             const e = await this.eventQueue.dequeue();
-            console.log(e)
             if (e instanceof ResizeAppEvent) {
                 this.drawdisplay()
             }
@@ -52,7 +58,7 @@ export class PRFSViewer extends DSApp {
                     this.changeactiverow(3);
                 }
                 else if (e.text == '\r') {
-                    this.opencurrentfile()
+                    await this.opencurrentfile()
                 }
                 else if (e.text == '\t') {
                     this.changeactiverow(1)
@@ -73,12 +79,12 @@ export class PRFSViewer extends DSApp {
             }
 
             else if (e instanceof TouchEndAppEvent) {
-                this.opencurrentfile();
+                await this.opencurrentfile();
             }
 
             else if (e instanceof MouseButtonUpEvent) {
                 if (e.button == 0) {
-                    this.opencurrentfile();
+                    await this.opencurrentfile();
                 }
                 else if (e.button == 2) {
                     this.currentdir = this.currentdir.parent;
@@ -89,7 +95,7 @@ export class PRFSViewer extends DSApp {
                 this.goback()
             }
             else if (e instanceof RightArrowAppEvent) {
-                this.opencurrentfile();
+                await this.opencurrentfile();
             }
 
         }
@@ -98,7 +104,16 @@ export class PRFSViewer extends DSApp {
         return;
     }
 
-    private drawdisplay() {
+    protected async init() {
+        super.init()
+        this.foldertexture = await get_image_textures((this.cwd.getfile('/data/app/fsviewer/foldericon.png') as DSIWebFile).url)
+        this.txttexture = await get_image_textures((this.cwd.getfile('/data/app/fsviewer/texticon.png') as DSIWebFile).url)
+        this.imgtexture = await get_image_textures((this.cwd.getfile('/data/app/fsviewer/imageicon.png') as DSIWebFile).url)
+        this.drawdisplay()
+    }
+
+    private async drawdisplay() {
+        DSKernel.terminal.resetSprites();
         this.stdout.write(reset_text() + set_cursor(false));
 
         this.stdout.write(setattr(textattrs.bold) + setattr(textattrs.bg_green) + setattr(textattrs.fg_black));
@@ -110,24 +125,59 @@ export class PRFSViewer extends DSApp {
 
         for (let i = this.topmost; i < Math.min(this.currentdir.filelist.length, DSKernel.terminal.rows - 2); i++) {
             let file = this.currentdir.filelist[i];
-
             if (i == this.selectedrow) {
                 this.stdout.write(setattr(textattrs.italic))
             }
+            let icon = await this.getIcon(file.inode as DSIWebFile);
+            if (icon) {
+                let sprite = DSKernel.terminal.newSprite(icon);
+                sprite.x = DSKernel.terminal.cellwidth/4;
+                sprite.y = (i+1.2) * DSKernel.terminal.cellheight;
+                sprite.enabled = true;
+            }
+
             this.stdout.write('  ' + file.name + '\n');
             this.stdout.write(setattr(textattrs.noitalic))
 
         }
     }
 
-    private opencurrentfile() {
+    private async opencurrentfile() {
         if (this.selectedrow < 0 || this.selectedrow >= this.currentdir.filelist.length)
             return;
 
-        let inode = this.currentdir.filelist[this.selectedrow].inode
+        let fileinfo = this.currentdir.filelist[this.selectedrow]
+        let inode = fileinfo.inode
+        let filepath = getAbsolutePath(this.currentdir,fileinfo.name);
+
+        console.log(filepath);
         if (inode instanceof DSIDirectory) {
             this.currentdir = inode;
             this.drawdisplay();
+        }
+        else if (inode instanceof DSIWebFile) {
+            let filetype = await this.getFileType(inode);
+            
+            if (filetype.includes('dsmd')) {
+                await DSKernel.exec('bin/dsmdbrowser', ['', filepath])
+                this.drawdisplay();
+                return
+            }
+            DSKernel.terminal.reset();
+            if (filetype.includes('image')) {
+                await DSKernel.exec('bin/imgview',['',filepath])
+            }
+            else {
+                await DSKernel.exec('bin/cat',['',filepath])
+            }
+            while (true) {
+                let e = await this.eventQueue.dequeue()
+                if (!(e instanceof MouseMoveAppEvent|| e instanceof WheelAppEvent || e instanceof ResizeAppEvent || e instanceof MouseButtonDownEvent)) {
+                    this.drawdisplay();
+                    return;
+                }
+            }
+
         }
     }
 
@@ -165,4 +215,26 @@ export class PRFSViewer extends DSApp {
         this.drawdisplay();
     }
 
+    private async getFileType(inode:DSIWebFile): Promise<string> {
+        return await inode.filetype();
+    }
+
+    private async getIcon(inode: DSIWebFile): Promise<DSTexture[]> {
+        let filetype = await this.getFileType(inode)
+        let basetype = filetype.split('/')[0]
+
+        if (basetype == 'directory') {
+            return this.foldertexture
+        }
+        else if (basetype == 'text') {
+            return this.txttexture
+        }
+        else if (basetype == 'image') {
+            return this.imgtexture
+        }
+        else {
+            return null;
+        }
+
+    }
 }
