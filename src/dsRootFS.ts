@@ -37,6 +37,7 @@ import { PRSplash } from "./process/splash";
 // WEBFILE TRAVERSAL IMPORTS
 import root_data_app_dsmdbrowser_404_dsmd from "./root/data/app/dsmdbrowser/404.dsmd";
 import root_data_app_fsviewer_foldericon_png from "./root/data/app/fsviewer/foldericon.png";
+import root_data_app_fsviewer_fsvieweropen_dsmd from "./root/data/app/fsviewer/fsvieweropen.dsmd";
 import root_data_app_fsviewer_imageicon_png from "./root/data/app/fsviewer/imageicon.png";
 import root_data_app_fsviewer_texticon_png from "./root/data/app/fsviewer/texticon.png";
 import root_data_app_pixel_assault_Enemies_Alien1_tile000_png from "./root/data/app/pixel_assault/Enemies/Alien1/tile000.png";
@@ -269,6 +270,11 @@ export function buildrootfs(): DSFileSystem {
     // Creating root/data/app/fsviewer/foldericon.png
     curfile = new DSIWebFile(fs, root_data_app_fsviewer_foldericon_png);
     curdir.addfile("foldericon.png", curfile);
+    
+    
+    // Creating root/data/app/fsviewer/fsvieweropen.dsmd
+    curfile = new DSIWebFile(fs, root_data_app_fsviewer_fsvieweropen_dsmd);
+    curdir.addfile("fsvieweropen.dsmd", curfile);
     
     
     // Creating root/data/app/fsviewer/imageicon.png
