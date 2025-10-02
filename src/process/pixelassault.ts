@@ -6,6 +6,7 @@ import { DSIWebFile } from "../filesystem/dsIWebFile";
 import { cursornextline, cursorright, gotoxy, reset_text, right, set_cursor } from "../lib/dsCurses";
 import { DSTexture, get_image_textures } from "../lib/dsImg";
 import { sleep } from "../lib/dsLib";
+import { DSOptionParser } from "../lib/dsOptionParser";
 
 class PAGameData {
     public static framerate: number = 40;
@@ -203,6 +204,9 @@ export class PRPixelAssault extends DSProcess {
 
 
     protected async main(): Promise<void> {
+        const optparser = new DSOptionParser(this.procname,true,"   play a game of Pixel Assault",);
+        optparser.parseWithUsageAndHelp(this.argv);
+
         this.reset();
         this.splash();
         await this.mainloop();
