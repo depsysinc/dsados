@@ -2,6 +2,7 @@ import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSKernel } from "../dsKernel";
 import { DSStream, DSStreamClosedError } from "../dsStream";
 import { DSOptionParser } from "../lib/dsOptionParser";
+import { sleep } from "../lib/dsLib";
 
 export class DSShellError extends DSProcessError {
     constructor(message: string) {
@@ -23,6 +24,7 @@ export class DSShell extends DSProcess {
     private _prompt: CommandLinePrompt;
     private _ifstack: IFBlock[] = [];
     private _loginshell: boolean = false;
+    private _filestack: DSStream[] = [];
 
     history: string[] = [];
 
@@ -47,43 +49,45 @@ export class DSShell extends DSProcess {
         return this._commandLoop();
     }
 
+    get currentexecfile() {
+        return this._filestack[this._filestack.length - 1]
+    }
+
     private async _commandLoop() {
-        let linebuffer: string[] = [];
         // autoexecfile: DSInode | undefined = undefined;
+        this._filestack.push(this.stdin);
         let instream: DSStream;
+
         if (this._loginshell) {
             // try opening autoexec
-            const autoexecfile = this.cwd.getfile("/etc/autoexec.dssh");
-            instream = autoexecfile.contentAsText();
-        } else {
-            instream = this.stdin;
+            await this._commandSource(["", "/etc/autoexec.dssh"])
         }
 
         while (true) {
+            instream = this.currentexecfile;
             try {
                 let originput = "";
                 if (instream.isatty) {
                     // FIXME: prompt assumes stdin
                     originput = await this._prompt.promptForInput();
                 } else {
-                    if (linebuffer.length == 0) {
-                        let buffer: string;
-                        try {
-                            buffer = await instream.read();
-                        } catch (e) {
-                            if (e instanceof DSStreamClosedError) {
-                                // if not a loginshell then we're done
-                                if (!this._loginshell)
-                                    return;
-                                // need to swap in stdin
-                                instream = this.stdin;
-                                continue;
-                            }
-                            throw e;
+                    try {
+                        originput = await instream.read();
+                    } catch (e) {
+                        if (e instanceof DSStreamClosedError) {
+                            this._filestack.pop()
+                            if (this._filestack.length == 0)
+                                return;
+                            instream = this.currentexecfile;
+                            continue;
                         }
-                        linebuffer = linebuffer.concat(buffer.split(/\r?\n|\r/));
+                        throw e;
                     }
-                    originput = linebuffer.shift();
+                }
+
+                if (originput.split(/\r?\n|\r/).length != 1) {
+                    this._filestack.push(this.getLineStream(originput));
+                    continue;
                 }
 
                 // Strip comments
@@ -175,7 +179,9 @@ export class DSShell extends DSProcess {
                         case "history":
                             await this._commandHistory(tokens);
                             break;
-
+                        case "source":
+                            await this._commandSource(tokens);
+                            break
                         default:
                             await this._findAndExec(tokens);
                     }
@@ -207,6 +213,16 @@ export class DSShell extends DSProcess {
                 return true;
             case "-false":
                 return false;
+            case "-d":
+                if (expr.length != 2)
+                    throw new DSShellError("no argument given for -d")
+                try {
+                    this.cwd.getdir(expr[1]);
+                    return true;
+                }
+                catch (DSIDirectoryInvalidPathError) {
+                    return false;
+                }
             default:
                 throw new DSShellError("invalid if condition");
         }
@@ -228,6 +244,7 @@ export class DSShell extends DSProcess {
                 this.cwd.getfile(filepath);
                 return DSKernel.exec(filepath, tokens, this.envp);
             } catch (e) {
+                //throw new DSShellError(`${command}: command not found\n`);
                 return this.stdout.write(`${command}: command not found\n`);
             }
         }
@@ -245,6 +262,7 @@ export class DSShell extends DSProcess {
                 }
             }
         }
+        //throw new DSShellError(`${command}: command not found\n`);
         return this.stdout.write(`${command}: command not found\n`);
     }
 
@@ -266,7 +284,30 @@ export class DSShell extends DSProcess {
 
         this.chdir(dirname);
     }
+
+    private async _commandSource(tokens: string[]) {
+        if (tokens.length != 2)
+            return this._usage("exec", ["<execfile>"], `expected 1 argument (${tokens.length - 1} given)\n`);
+
+        const file = this.cwd.getfile(tokens[1])
+        const text = await file.contentAsText().read()
+        this._filestack.push(this.getLineStream(text))
+
+    }
+
+    private getLineStream(text: string): DSStream {
+        const listcontents = text.split(/\r?\n|\r/);
+        const outstream = new DSStream();
+
+        listcontents.forEach((line) => {
+            outstream.write(line);
+        })
+
+        outstream.close();
+        return outstream;
+    }
 }
+
 
 function splitRespectingQuotes(input: string): string[] {
     const regex = /"([^"]*)"|'([^']*)'|[^\s]+/g;
@@ -503,7 +544,7 @@ class CommandLinePrompt {
 
         if (data == '') { //CTRL-V
             navigator.clipboard.readText().then((clipboardcontents) => {
-                let text = clipboardcontents.replace('\r','\n'); //Clipboard stores linebreaks as \r, when \n should be displayed
+                let text = clipboardcontents.replace('\r', '\n'); //Clipboard stores linebreaks as \r, when \n should be displayed
                 let newuserinput = this._userinput.slice(0, this._cursor) +
                     text +
                     this._userinput.slice(this._cursor);
