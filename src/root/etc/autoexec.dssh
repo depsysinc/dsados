@@ -3,5 +3,5 @@
 #
 
 PATH=/bin
-/bin/splash
-/bin/dsmdbrowser /data/site/index.dsmd
+splash
+dsmdbrowser /data/site/index.dsmd
