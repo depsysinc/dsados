@@ -4,6 +4,7 @@ import { DSProcess } from "../src/dsProcess";
 import { DSStream } from "../src/dsStream";
 import { DSIProcessFile } from "../src/filesystem/dsIProcessFile";
 import { DSIStaticTextFile } from "../src/filesystem/dsIStaticFile";
+import { DSIWebFile } from "../src/filesystem/dsIWebFile";
 import { DSShell, DSShellError } from "../src/process/dssh";
 import { PREcho } from "../src/process/echo";
 
@@ -475,6 +476,82 @@ test('relative path exists', async () => {
     resetKernel();
     const stmt =
         `if [-d bin]\n`
+        + `    IFVAR=true\n`
+        +`endif`
+    dssh.stdin.write(stmt);
+    dssh.stdin.close();
+    await expect(dsshpromise).resolves.toBeUndefined();
+    expect(dssh.envp["IFVAR"]).toEqual("true");
+});
+
+
+test('dssh /fullpathexe.dssh', async () => {
+    resetKernel();
+    const init = resetKernel();
+
+    const scriptfile = new DSIStaticTextFile(DSKernel.rootfs,
+        `#!/bin/dssh\n
+        /bin/echo "success"\n
+        \n`
+    )
+    scriptfile.chmod(DSFilePerms.rx());
+    DSKernel.rootdir.addfile("fullpathexe.dssh", scriptfile)
+
+    await DSKernel.exec("/fullpathexe.dssh", ['dssh'], { PATH: "/"});
+
+    await expect(
+        init.stdout.read()
+    ).resolves.toEqual("success\n");
+});
+
+test('dssh /localpathexe.dssh', async () => {
+    resetKernel();
+    const init = resetKernel();
+
+    const scriptfile = new DSIStaticTextFile(DSKernel.rootfs,
+        `#!/bin/dssh\n
+        cd bin\n
+        ./echo "success"\n
+        \n`
+    )
+    scriptfile.chmod(DSFilePerms.rx());
+    DSKernel.rootdir.addfile("localpathexe.dssh", scriptfile)
+
+    await DSKernel.exec("/localpathexe.dssh", ['dssh'], { PATH: "/"});
+
+    await expect(
+        init.stdout.read()
+    ).resolves.toEqual("success\n");
+});
+
+test('-f fully qualified path exists', async () => {
+    const dssh = makedssh();
+    const dsshpromise = dssh.start();
+    const fs = dssh.cwd.fs
+    const subdir = fs.root.mkdir('subdir')
+    subdir.addfile("file.dsmd",new DSIWebFile(fs,''))
+    resetKernel();
+    const stmt =
+        `cd subdir\n`
+        +`if [-f /subdir/file.dsmd]\n`
+        + `    IFVAR=true\n`
+        +`endif`
+    dssh.stdin.write(stmt);
+    dssh.stdin.close();
+    await expect(dsshpromise).resolves.toBeUndefined();
+    expect(dssh.envp["IFVAR"]).toEqual("true");
+});
+
+test('-f relative path exists', async () => {
+    const dssh = makedssh();
+    const dsshpromise = dssh.start();
+    const fs = dssh.cwd.fs
+    const subdir = fs.root.mkdir('subdir')
+    subdir.addfile("file.dsmd",new DSIWebFile(fs,''))
+    resetKernel();
+    const stmt =
+        `cd subdir\n`
+        +`if [-f file.dsmd]\n`
         + `    IFVAR=true\n`
         +`endif`
     dssh.stdin.write(stmt);

@@ -213,6 +213,16 @@ export class DSShell extends DSProcess {
                 return true;
             case "-false":
                 return false;
+            case "-f":
+                if (expr.length != 2)
+                    throw new DSShellError("wrong number of arguments given for -f")
+                try {
+                    this.cwd.getfile(expr[1]);
+                    return true;
+                }
+                catch (DSIDirectoryInvalidPathError) {
+                    return false;
+                }
             case "-d":
                 if (expr.length != 2)
                     throw new DSShellError("no argument given for -d")
