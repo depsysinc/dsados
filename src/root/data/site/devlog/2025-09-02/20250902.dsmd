@@ -1,0 +1,52 @@
+![globnobulous](/data/site/avatars/posterized_globnobulous.png)
+Globnobulous
+
+# [02-09-2025] - Back to School!
+
+So I have embarked on this endeavour to build what is in all honestly an
+entirely too ambitious, networked multiplayer game engine backend.  The
+work is already testing the limits of my C++ knowledge and skill, so 
+what better way to brush up than a university level engineering course!
+
+Taking a course is a great way to get the hang of a subject, but if you
+really want to develop a deep understanding of a thing, *teaching* 
+it is the way to go.  So I've signed myself up to teach 
+**ECE244 - Programming Fundamentals** as a
+
+```
+Stipend Lecturer
+Department of Electrical and Computer Engineering
+Faculty of Applied Science
+```
+![UofT](UofT.png)
+
+This isn't the first time I've lectured at my alma mater, nor the first time I've
+taught this course, but still it's very exciting, challenging, and rewarding
+to have the opportunity to speak regularly in front of the next generation
+of electrical and computer engineers.
+
+Things have changed a little over the quarter century since I was a student
+here.  Last I taught the course, it was with chalk and paper exams.  Now I've got an
+iPad, iPencil, MacBook, and a million cables I need to plug in for 
+every lecture :P  But in the main I'm still teaching in buildings that were
+there long before I was born, and aside from a couple of new facilities, 
+the campus looks much the same as I remember.
+
+![UofT Campus](UofTcampus.png)
+
+If you're interested, you can find my lectures [here](https://youtu.be/cT0XXCBGyhQ?si=zy8Ae3u0DRv_iy-G).
+Apologies for the audio quality, but I'm at the mercy of the podium mics :D
+
+------
+
+After a month I feel like I'm getting into the swing of lecturing and am starting
+to think about the Concursion engine again.  My next steps are to
+
+  - design the movement system
+  - implement pathfinding
+  - drive movement with gameobject AI
+
+I feel like all that has been marinating in the back of my mind long enough 
+that it should be just a matter of banging it out.
+
+Famous last words...
