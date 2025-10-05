@@ -1,5 +1,5 @@
 import { DownArrowAppEvent, DSApp, HistoryAppEvent, LeftArrowAppEvent, MouseButtonDownEvent, MouseButtonUpEvent, MouseMoveAppEvent, ResizeAppEvent, RightArrowAppEvent, TextAppEvent, TouchEndAppEvent, TouchMoveAppEvent, TouchStartAppEvent, UpArrowAppEvent, WheelAppEvent } from "../dsApp";
-import { DSIDirectory, DSInode } from "../dsFileSystem";
+import { DSIDirectory } from "../dsFileSystem";
 import { DSKernel } from "../dsKernel";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
 import { reset_text, set_cursor, setattr, textattrs } from "../lib/dsCurses";
@@ -8,12 +8,6 @@ import { sleep } from "../lib/dsLib";
 import { DSOptionParser } from "../lib/dsOptionParser";
 import { getAbsolutePath } from "../lib/dsPath";
 
-//TODO
-//support for lists longer than the screen is tall
-//~~File type checking + opening~~
-//~~Icons based on file type~~
-//History queue
-//Renaming
 
 export class PRFSViewer extends DSApp {
 
@@ -25,7 +19,7 @@ export class PRFSViewer extends DSApp {
     private txttexture: DSTexture[];
     private imgtexture: DSTexture[];
 
-    private historystack: string[] = [];
+    private historystack: { filepath: string, rowidx: number }[] = [];
     private historystackpoint: number;
 
     protected async main(): Promise<void> {
@@ -123,7 +117,6 @@ export class PRFSViewer extends DSApp {
                 }
                 this.drawdisplay();
             }
-
         }
 
         DSKernel.terminal.reset()
@@ -135,7 +128,7 @@ export class PRFSViewer extends DSApp {
         this.foldertexture = await get_image_textures((this.cwd.getfile('/data/app/fsviewer/foldericon.png') as DSIWebFile).url);
         this.txttexture = await get_image_textures((this.cwd.getfile('/data/app/fsviewer/texticon.png') as DSIWebFile).url);
         this.imgtexture = await get_image_textures((this.cwd.getfile('/data/app/fsviewer/imageicon.png') as DSIWebFile).url);
-        this.historystack.push(this.currentdir.path);
+        this.historystack.push({ filepath: this.currentdir.path, rowidx: 0 });
         this.historystackpoint = 0;
         this.drawdisplay();
     }
@@ -160,7 +153,7 @@ export class PRFSViewer extends DSApp {
             if (icon) {
                 let sprite = DSKernel.terminal.newSprite(icon);
                 sprite.x = DSKernel.terminal.cellwidth / 4;
-                sprite.y = (i + 1.2) * DSKernel.terminal.cellheight;
+                sprite.y = ((i - this.rowidx) + 1.2) * DSKernel.terminal.cellheight;
                 sprite.enabled = true;
             }
 
@@ -183,7 +176,8 @@ export class PRFSViewer extends DSApp {
 
             this.historystackpoint++;
             this.historystack = this.historystack.slice(0, this.historystackpoint);
-            this.historystack.push(this.currentdir.path);
+            this.historystack.push({ filepath: this.currentdir.path, rowidx: this.rowidx });
+            this.rowidx = 0;
 
             this.drawdisplay();
         }
@@ -236,23 +230,21 @@ export class PRFSViewer extends DSApp {
     }
 
     private changeactiverow(amount: number) {
-        if (this.selectedrow + amount < 0) {
+        this.selectedrow += amount;
+        if (this.selectedrow < 0) {
             this.selectedrow = 0;
         }
-        else if (this.selectedrow + amount >= this.currentdir.filelist.length - 1) {
+        if (this.selectedrow < this.rowidx) {
+            this.rowidx = this.selectedrow;
+        }
+        if (this.selectedrow >= this.currentdir.filelist.length - 1) {
             this.selectedrow = this.currentdir.filelist.length - 1;
         }
-        else {
-            this.selectedrow += amount;
 
-
-            if (this.selectedrow + amount >= this.rowidx + DSKernel.terminal.rows - 2) {
-                this.rowidx += amount
-            }
-            else if (this.selectedrow + amount < this.rowidx - 1) {
-                this.rowidx += amount
-            }
+        if (this.selectedrow > this.rowidx + DSKernel.terminal.rows - 3) {
+            this.rowidx = this.selectedrow - DSKernel.terminal.rows + 3
         }
+
         this.drawdisplay();
 
     }
@@ -263,7 +255,8 @@ export class PRFSViewer extends DSApp {
             return;
         }
         this.historystackpoint--;
-        this.currentdir = this.cwd.getdir(this.historystack[this.historystackpoint])
+        this.currentdir = this.cwd.getdir(this.historystack[this.historystackpoint].filepath);
+        this.rowidx = this.historystack[this.historystackpoint].rowidx;
         this.drawdisplay();
     }
 
@@ -272,7 +265,8 @@ export class PRFSViewer extends DSApp {
             return;
         }
         this.historystackpoint++;
-        this.currentdir = this.cwd.getdir(this.historystack[this.historystackpoint])
+        this.currentdir = this.cwd.getdir(this.historystack[this.historystackpoint].filepath);
+        this.rowidx = this.historystack[this.historystackpoint].rowidx;
         this.drawdisplay();
     }
 
