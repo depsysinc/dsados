@@ -146,9 +146,6 @@ export class PRFSViewer extends DSApp {
 
         for (let i = this.rowidx; i < Math.min(this.currentdir.filelist.length, DSKernel.terminal.rows - 2 + this.rowidx); i++) {
             let file = this.currentdir.filelist[i];
-            if (i == this.selectedrow) {
-                this.stdout.write(setattr(textattrs.italic))
-            }
             let icon = await this.getIcon(file.inode as DSIWebFile);
             if (icon) {
                 let sprite = DSKernel.terminal.newSprite(icon);
@@ -156,10 +153,16 @@ export class PRFSViewer extends DSApp {
                 sprite.y = ((i - this.rowidx) + 1.2) * DSKernel.terminal.cellheight;
                 sprite.enabled = true;
             }
+            if (i == this.selectedrow) {
+                this.stdout.write(setattr(textattrs.bg_black))
+            }
+            this.stdout.write('  ' + file.inode.perms.permString()+' ');
+            if (i == this.selectedrow) {
+                this.stdout.write(setattr(textattrs.italic))
+            }
 
-            this.stdout.write('  ' + file.name + '\n');
-            this.stdout.write(setattr(textattrs.noitalic))
-
+            this.stdout.write(file.name + '\n');
+            this.stdout.write(setattr(textattrs.noitalic)+setattr(textattrs.bg_default))
         }
     }
 

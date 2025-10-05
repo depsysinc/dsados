@@ -100,6 +100,7 @@ import root_data_man_dssh_dsmd from "./root/data/man/dssh.dsmd";
 import root_data_man_echo_dsmd from "./root/data/man/echo.dsmd";
 import root_data_man_env_dsmd from "./root/data/man/env.dsmd";
 import root_data_man_file_dsmd from "./root/data/man/file.dsmd";
+import root_data_man_fsviewer_dsmd from "./root/data/man/fsviewer.dsmd";
 import root_data_man_imgview_dsmd from "./root/data/man/imgview.dsmd";
 import root_data_man_init_dsmd from "./root/data/man/init.dsmd";
 import root_data_man_ls_dsmd from "./root/data/man/ls.dsmd";
@@ -688,6 +689,11 @@ export function buildrootfs(): DSFileSystem {
     // Creating root/data/man/file.dsmd
     curfile = new DSIWebFile(fs, root_data_man_file_dsmd);
     curdir.addfile("file.dsmd", curfile);
+    
+    
+    // Creating root/data/man/fsviewer.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_fsviewer_dsmd);
+    curdir.addfile("fsviewer.dsmd", curfile);
     
     
     // Creating root/data/man/imgview.dsmd
