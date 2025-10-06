@@ -40,8 +40,8 @@ export class PRFSViewer extends DSApp {
 
         DSKernel.terminal.reset();
         history.pushState({ filepath: '/data/app/fsviewer/fsvieweropen.dsmd' }, '')
-        this.init();
-        this.drawdisplay();
+        await this.init();
+        await this.drawdisplay();
         await sleep(50);
         while (!this.done) {
             const e = await this.eventQueue.dequeue();
@@ -130,9 +130,9 @@ export class PRFSViewer extends DSApp {
         this.imgtexture = await get_image_textures((this.cwd.getfile('/data/app/fsviewer/imageicon.png') as DSIWebFile).url);
         this.historystack.push({ filepath: this.currentdir.path, rowidx: 0 });
         this.historystackpoint = 0;
-        this.drawdisplay();
     }
 
+    
     private async drawdisplay() {
         DSKernel.terminal.resetSprites();
         this.stdout.write(reset_text() + set_cursor(false));
