@@ -1,6 +1,6 @@
 import '@xterm/xterm/css/xterm.css';
 
-import { DSFileInfo, DSFileSystem, DSIDirectory, DSIDirectoryInvalidPathError } from "./dsFileSystem";
+import { DSFileInfo, DSFilePerms, DSFileSystem, DSIDirectory, DSIDirectoryInvalidPathError } from "./dsFileSystem";
 import { DSKeyEvent, DSPointerEvent, DSTerminal } from "./dsTerminal";
 import { DSIDBFileSystem } from "./filesystem/dsIDBFileSystem";
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
@@ -163,8 +163,18 @@ export class DSKernel {
             fsckresults = localfs.fsck();
             await t.baudWrite(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
 
-            await t.baudWrite(`mount: localfs\n`)
+            await t.baudWrite(`mount: localfs\n`);
             DSKernel.mount('/local', localfs);
+
+            if (!localfs.root.getfileinfo('home')) {
+                await t.baudWrite('localfs not initialized\n');
+                await t.baudWrite('  create: /local/home\n')
+                localfs.root.mkdir('home', DSFilePerms.full());
+                await sleep(500);
+            }
+            else {
+                await t.baudWrite('localfs initialized\n')
+            }
 
             if (bootcount == 0) {
                 await t.baudWrite("nvram: enable fastboot");

@@ -59,8 +59,7 @@ export class DSShell extends DSProcess {
         let instream: DSStream;
 
         if (this._loginshell) {
-            // try opening autoexec
-            await this._commandSource(["", "/etc/autoexec.dssh"])
+            await this._commandSource(["", this.getAutoexecPath()])
         }
 
         while (true) {
@@ -297,7 +296,7 @@ export class DSShell extends DSProcess {
 
     private async _commandSource(tokens: string[]) {
         if (tokens.length != 2)
-            return this._usage("exec", ["<execfile>"], `expected 1 argument (${tokens.length - 1} given)\n`);
+            return this._usage("source", ["<execfile>"], `expected 1 argument (${tokens.length - 1} given)\n`);
 
         const file = this.cwd.getfile(tokens[1])
         const text = await file.contentAsText().read()
@@ -315,6 +314,16 @@ export class DSShell extends DSProcess {
 
         outstream.close();
         return outstream;
+    }
+
+    private getAutoexecPath():string {
+        const home = this.cwd.getdir("/local/home");
+        if (home.getfileinfo('.dsshrc')) {
+            return "/local/home/.dsshrc"
+        }
+        else {
+            return "/etc/autoexec.dssh"
+        }
     }
 }
 
