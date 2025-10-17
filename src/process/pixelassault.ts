@@ -486,7 +486,6 @@ export class PRPixelAssault extends DSProcess {
 
     handleKeyEvent(e: DSKeyEvent): void {
         if (e.key == "KeyQ") {
-            console.log("leave")
             this.exited = true;
         }
         if (this.splashing && e.key == "KeyY") {
