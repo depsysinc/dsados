@@ -12,23 +12,29 @@ export class PRMount extends DSProcess {
             this.procname,
             true,
             "   mount a filesystem",
-            ""
+            "<path> <fs>"
         );
         let nextarg = optparser.parseWithUsageAndHelp(this.argv);
         if (nextarg == -1) {
-            let fsname = ""; let path = ""; let type = "";
+            let fsname = ""; let path = ""; let type = ""; let mode = "";
 
             DSKernel.fstable.forEach(fsinfo => {
                 if (fsinfo.fs instanceof DSRAMFileSystem) {
                     fsname = 'dsramfs';
-                    type = 'Depsys RAM FileSystem';
+                    type = 'DSRAM Filesystem';
                 }
                 else if (fsinfo.fs instanceof DSIDBFileSystem) {
                     fsname = fsinfo.fs.dbname;
-                    type = 'Depsys IDB FileSystem'
+                    type = 'DSIDB Filesystem'
+                }
+                if (fsinfo.fs.readonly) {
+                    mode = 'rw'
+                }
+                else {
+                    mode = 'ro'
                 }
                 path = fsinfo.mount.path;
-                let string = fsname + ' at ' + path +' of type '+ type;
+                let string = fsname + ' on ' + path +' of type '+ type + ' ('+mode+')';
                 this.stdout.write(string + '\n');
 
             })
