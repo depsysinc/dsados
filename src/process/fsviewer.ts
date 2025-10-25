@@ -201,8 +201,9 @@ export class PRFSViewer extends DSApp {
             }
             while (true) {
                 let e = await this.eventQueue.dequeue();
-                if ((e instanceof TextAppEvent && e.text == 'q') || e instanceof HistoryAppEvent) {
+                if (e instanceof HistoryAppEvent) {
                     this.done = true;
+                    return;
                 }
                 if (!(e instanceof MouseMoveAppEvent ||
                     e instanceof WheelAppEvent ||
