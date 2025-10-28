@@ -24,6 +24,7 @@ import { PREnv } from "./process/env";
 import { PRFile } from "./process/file";
 import { PRImgview } from "./process/imgview";
 import { PRInit } from "./process/init";
+import { PRLess } from "./process/less";
 import { PRLs } from "./process/ls";
 import { PRMan } from "./process/man";
 import { PRMkdir } from "./process/mkdir";
@@ -196,6 +197,9 @@ export function buildrootfs(): DSFileSystem {
     
     binfile = new DSIProcessFile(fs, PRInit);
     bindir.addfile("init", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRLess);
+    bindir.addfile("less", binfile);
     
     binfile = new DSIProcessFile(fs, PRLs);
     bindir.addfile("ls", binfile);
