@@ -25,16 +25,27 @@ DESCRIPTION
 FSVIEWER COMMANDS
 
     *q* - quit
+
     *t* - down 3 rows
+
     *enter* - open current file
+
     *tab* - down 1 row
+
     *down arrow* - down 1 row
+
     *up arrow* - up one row
+
     *left arrow* - back to previous entry
+
     *right arrow* - forward to next entry
+
     *drag* - move to row with mouse pointer
+
     *left click* - open file under mouse pointer
+
     *right click* - go to parent directory of current
+    
     *scroll* - scroll the list of files
 
 
