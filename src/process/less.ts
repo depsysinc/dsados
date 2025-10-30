@@ -1,8 +1,7 @@
-import { DownArrowAppEvent, DSApp, PageDownAppEvent, PageUpAppEvent, TextAppEvent, TouchMoveAppEvent, UpArrowAppEvent, WheelAppEvent } from "../dsApp";
+import { DownArrowAppEvent, DSApp, MouseButtonDownEvent, MouseButtonUpEvent, MouseMoveAppEvent, PageDownAppEvent, PageUpAppEvent, TextAppEvent, TouchEndAppEvent, TouchMoveAppEvent, TouchStartAppEvent, UpArrowAppEvent, WheelAppEvent } from "../dsApp";
 import { DSKernel } from "../dsKernel";
-import { DSProcess, DSProcessError } from "../dsProcess";
+import { DSProcessError } from "../dsProcess";
 import { cursornextline, reset_text, right, set_cursor, setattr, textattrs } from "../lib/dsCurses";
-import { sleep } from "../lib/dsLib";
 import { DSOptionParser } from "../lib/dsOptionParser";
 import { getFileName } from "../lib/dsPath";
 
@@ -14,16 +13,14 @@ export class PRLess extends DSApp {
     private rowidx: number = 0;
     private filepath: string;
 
-    get maxrowidx() {
-        return Math.max(0, this.lines.length - DSKernel.terminal.rows + 2);
-    }
+    private mouserow:number = null;
 
     protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
             this.procname,
             true,
-            "   less is more - browse text files",
-            ""
+            "  reader for text files",
+            "<filename>"
         );
         let nextarg = optparser.parseWithUsageAndHelp(this.argv);
         if (nextarg == -1) {
@@ -48,7 +45,7 @@ export class PRLess extends DSApp {
 
         while (!this.done) {
             let e = await this.eventQueue.dequeue();
-            if (e instanceof WheelAppEvent || e instanceof TouchMoveAppEvent) {
+            if (e instanceof WheelAppEvent) {
                 let change = e.deltaY < 0 ? -1 : 1
                 this.setrowidx(this.rowidx + change);
                 this.display();
@@ -72,7 +69,6 @@ export class PRLess extends DSApp {
                 }
             }
 
-
             if (e instanceof PageDownAppEvent) {
                 this.setrowidx(this.rowidx + DSKernel.terminal.rows - 2);
                 this.display();
@@ -89,10 +85,29 @@ export class PRLess extends DSApp {
                 this.setrowidx(this.rowidx - 1);
                 this.display();
             }
-        }
 
+            if (e instanceof MouseButtonDownEvent || e instanceof TouchStartAppEvent) {
+                this.mouserow = e.row;
+            }
+            if (e instanceof MouseButtonUpEvent || e instanceof TouchEndAppEvent) {
+                this.mouserow = null;
+            }
+            if (e instanceof MouseMoveAppEvent || e instanceof TouchMoveAppEvent) {
+                if (this.mouserow != null) {
+                    this.setrowidx(this.rowidx - e.row + this.mouserow);
+                    this.mouserow = e.row;
+                    this.display();
+                }
+            }
+        }
         return;
     }
+
+
+    get maxrowidx() {
+        return Math.max(0, this.lines.length - DSKernel.terminal.rows + 2);
+    }
+
 
     display() {
         this.stdout.write(set_cursor(false));
@@ -106,7 +121,7 @@ export class PRLess extends DSApp {
         })
 
         this.stdout.write(reset_text())
-        this.setrowidx(this.rowidx);
+        this.setrowidx(this.rowidx); //Ensure rowidx is on screen
 
         this.stdout.write(setattr(textattrs.bg_green) + setattr(textattrs.fg_black))
         this.dashlinecentered(getFileName(this.filepath));
@@ -134,17 +149,16 @@ export class PRLess extends DSApp {
         this.stdout.write(setattr(textattrs.bg_green) + setattr(textattrs.fg_black));
         this.dashlinecentered(message);
         this.stdout.write(setattr(textattrs.bg_default) + setattr(textattrs.fg_default));
-
-
     }
+
 
     private dashlinecentered(message: string) {
         let middlecol = DSKernel.terminal.cols / 2;
         this.stdout.write('-'.repeat(Math.floor(middlecol - message.length / 2)));
         this.stdout.write(message);
         this.stdout.write('-'.repeat(Math.ceil(middlecol - message.length / 2)));
-
     }
+
 
     private setrowidx(row: number) {
         let maxrow = this.maxrowidx;
@@ -155,7 +169,6 @@ export class PRLess extends DSApp {
         if (row < 0) {
             row = 0;
         }
-
         this.rowidx = row;
     }
 
