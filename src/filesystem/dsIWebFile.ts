@@ -26,12 +26,16 @@ export class DSIWebFile extends DSInode {
                     throw new Error(`HTTP status ${response.status}`);
                 } else {
                     this._filetype = response.headers.get('Content-Type') || "null";
+                    //Fallback if filetype not found or not found correctly:
+                    if (this._filetype == 'null' || this._filetype == 'binary/octet-stream') {
+                        let spliturl = this.url.split('.');
+                        this._filetype = spliturl[spliturl.length-1]
+                    }
                 }
             } catch (e) {
                 if (e.cause)
                     e = e.cause;
                 this._lasterror = `${e.name} : ${e.message}`;
-
                 this._filetype = "null";
             }
         }
