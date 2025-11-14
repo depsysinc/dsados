@@ -29,7 +29,7 @@ export class DSIWebFile extends DSInode {
                     //Fallback if filetype not found or not found correctly:
                     if (this._filetype == 'null' || this._filetype == 'binary/octet-stream') {
                         let spliturl = this.url.split('.');
-                        this._filetype = spliturl[spliturl.length-1]
+                        this._filetype = 'text/'+spliturl[spliturl.length-1]
                     }
                 }
             } catch (e) {
