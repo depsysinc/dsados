@@ -3,9 +3,10 @@ import { DSKernel } from "../dsKernel";
 import { DSProcess } from "../dsProcess";
 import { DSKeyEvent, DSSprite } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
-import { cursornextline, cursorright, gotoxy, reset, right, set_cursor } from "../lib/dsCurses";
+import { cursornextline, cursorright, gotoxy, reset_text, right, set_cursor } from "../lib/dsCurses";
 import { DSTexture, get_image_textures } from "../lib/dsImg";
 import { sleep } from "../lib/dsLib";
+import { DSOptionParser } from "../lib/dsOptionParser";
 
 class PAGameData {
     public static framerate: number = 40;
@@ -203,6 +204,9 @@ export class PRPixelAssault extends DSProcess {
 
 
     protected async main(): Promise<void> {
+        const optparser = new DSOptionParser(this.procname,true,"   play a game of Pixel Assault",);
+        optparser.parseWithUsageAndHelp(this.argv);
+
         this.reset();
         this.splash();
         await this.mainloop();
@@ -461,7 +465,7 @@ export class PRPixelAssault extends DSProcess {
     }
 
     private reset() {
-        this.stdout.write(reset());
+        this.stdout.write(reset_text());
         DSKernel.terminal.resetSprites();
         this.stdout.write(set_cursor(false));
         this.updateGameBounds();
@@ -482,7 +486,6 @@ export class PRPixelAssault extends DSProcess {
 
     handleKeyEvent(e: DSKeyEvent): void {
         if (e.key == "KeyQ") {
-            console.log("leave")
             this.exited = true;
         }
         if (this.splashing && e.key == "KeyY") {

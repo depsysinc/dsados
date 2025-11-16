@@ -1,0 +1,23 @@
+NAME
+
+  **man** - display the documentation for a process
+
+SYNOPSIS
+
+    man *procname*
+
+DESCRIPTION
+
+    The man command outputs the documentation for a process, in the form
+    of a man page like the one you're reading right now. *procname* 
+    should be a single word, which is the name of the command you
+    wish to see the manual for. Note that internally, man simply calls 
+    dsmdbrowser on `data /man /procname.dsmd` file.
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [dsmdbrowser](/data/man/dsmdbrowser.dsmd), [ps](/data/man/ps.dsmd)

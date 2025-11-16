@@ -1,0 +1,20 @@
+NAME
+
+  **reset** - Reset the terminal
+
+SYNOPSIS
+
+    reset 
+
+DESCRIPTION
+
+    The reset command resets the terminal, clearing text formatting, displayed
+    text, and sprites. Any arguments supplied will be ignored.
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [dssh](/data/man/dssh.dsmd), [sleep](/data/man/sleep.dsmd)

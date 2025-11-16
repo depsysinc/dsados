@@ -13,6 +13,7 @@ import { DSSpriteRenderer } from "./renderer/dsSpriteRenderer";
 
 import { TextureArray, createTexture, deleteTexture } from './renderer/renderUtils';
 import { sleep } from './lib/dsLib';
+import { set_cursor } from './lib/dsCurses';
 import { DSTexture } from './lib/dsImg';
 
 function isMobileDevice(): boolean {
@@ -387,6 +388,18 @@ export class DSTerminal {
 
     reset() {
         this._terminal.reset();
+        this.resetSprites();
+        this.write(set_cursor(true));
+
+        //Slightly more hardcore options
+        this._terminal.options.theme = {
+            foreground: '#00ff00',
+            background: '#000000',
+            brightGreen: '#a0ffa0',
+            green: '#00ff00'
+        };
+        this.setCursor("default");
+
     }
 
     handleResize() {

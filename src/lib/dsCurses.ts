@@ -51,7 +51,7 @@ export function set_cursor(visible: boolean): string {
         return ("\x1b[?25l");
 }
 
-export function reset(): string {
+export function reset_text(): string {
     return ("\x1bc");     // RESET
 }
 export function gotoxy(x: number, y: number): string {

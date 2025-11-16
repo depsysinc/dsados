@@ -1,0 +1,28 @@
+NAME
+
+  **dsmdbrowser** - a markdown browser
+
+SYNOPSIS
+
+    dsmdbrowser *mdfile*
+
+DESCRIPTION
+
+    Dsmdbrowser is the command that displays dsmd markdown files. When the website
+    is first loaded, by default, dsmdbrowser is run on the main page. The command
+    will open any links the user clicks on, as well as handling scrolling, highlighting
+    text, and the like. 
+    
+    *mdfile* should be a single path. Note that when called from inside a folder, it will 
+    have the same effect as when called from the root- the path of mdfile may be specified
+    through a local or global link, but otherwise will be handled identically. When mdfile 
+    is invalid, dsmdbrowser will display a 404 screen (data /app /dsmdbrowser /404.dsmd) 
+    instead of crashing.
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [imgview](/data/man/imgview.dsmd), [cat](/data/man/cat.dsmd)
