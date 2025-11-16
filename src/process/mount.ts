@@ -12,7 +12,7 @@ export class PRMount extends DSProcess {
             this.procname,
             true,
             "   mount a filesystem",
-            "<path> <fs>"
+            "<type> <name> <mountpoint>"
         );
         let nextarg = optparser.parseWithUsageAndHelp(this.argv);
         if (nextarg == -1) {
@@ -28,10 +28,10 @@ export class PRMount extends DSProcess {
                     type = 'DSIDB Filesystem'
                 }
                 if (fsinfo.fs.readonly) {
-                    mode = 'rw'
+                    mode = 'ro'
                 }
                 else {
-                    mode = 'ro'
+                    mode = 'rw'
                 }
                 path = fsinfo.mount.path;
                 let string = fsname + ' on ' + path +' of type '+ type + ' ('+mode+')';
@@ -40,9 +40,19 @@ export class PRMount extends DSProcess {
             })
         }
         else {
-            throw new DSProcessError('Not implemented')
+            if (this.argv.length != 4) {
+                throw new DSProcessError(optparser.usage())
+            }
+            const type = this.argv[nextarg]
+            const name = this.argv[nextarg+1]
+            const mountpoint = this.argv[nextarg+2]
+            const dsidbaliases = ['dsidb','idb','dsidbfs','dsidbfilesystem']
+            if (!dsidbaliases.includes(type.toLowerCase())) {
+                throw new DSProcessError('Invalid filesystem type')
+            }
+            let fs = new DSIDBFileSystem(name, 1);
+            await fs.open();
+            DSKernel.mount(mountpoint, fs)
         }
-
-
     }
 }
