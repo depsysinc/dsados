@@ -1,0 +1,45 @@
+NAME
+
+  **less** - reader for text files
+
+SYNOPSIS
+
+    less *filename*
+
+DESCRIPTION
+
+    Less is a viewer for text files. The filename argument must be a text file, and the 
+    less command will open a viewer for that file. If given a non-text file, it will throw an error.
+    The file can be scrolled through, and the 
+    number of lines will be displayed on the bottom, as well as the filename on the top. 
+
+
+LESS COMMANDS
+
+    q - quit
+
+    Scroll wheel - scroll
+
+    Click and drag - scroll
+
+    Up arrow - scroll up one line
+
+    Down arrow - scroll down one line
+
+    Page Up - scroll up one page
+
+    Page Down - scroll down one page
+
+    g - jump to top
+
+    G - jump to bottom
+
+    Space - jump down the page
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [cat](/data/man/cat), [dsmdbrowser](/data/man/dsmdbrowser), [echo](/data/man/echo)
