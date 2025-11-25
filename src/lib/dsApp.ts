@@ -1,15 +1,30 @@
-import { DSConcurrentQueue } from "./dsConcurrentQueue";
-import { DSProcess } from "./dsProcess";
-import { DSPointerEvent } from "./dsTerminal";
+import { DSConcurrentQueue } from "../dsConcurrentQueue";
+import { DSKernel } from "../dsKernel";
+import { DSProcess } from "../dsProcess";
+import { DSPointerEvent } from "../dsTerminal";
 
 
 export abstract class DSApp extends DSProcess {
     protected eventQueue: DSConcurrentQueue<DSAppEvent> = new DSConcurrentQueue<DSAppEvent>();
     protected done: boolean = false;
+    protected currentfilename: string = '';
+
+    get currentstate(): HistoryState {
+        return {
+            process: this.procname,
+            filepath: this.currentfilename
+        }
+    }
 
     protected init() {
+        //Add history entry if none exists
+        if (history.state == null)
+            history.replaceState(this.currentstate, '');
+
+
         // start keystroke handling
         this._startStdinHandler();
+
     }
 
     private async _startStdinHandler() {
@@ -80,7 +95,7 @@ export abstract class DSApp extends DSProcess {
                 0,
                 e.button
             ));
-        }else if (e.type == "mouseup") {
+        } else if (e.type == "mouseup") {
             this.eventQueue.enqueue(new MouseButtonUpEvent(
                 e.x,
                 e.y,
@@ -102,7 +117,14 @@ export abstract class DSApp extends DSProcess {
     }
 
     handleHistory(e: PopStateEvent): void {
+        let state: HistoryState = e.state;
+        this.terminate();
+        DSKernel.exec(state.process, [state.filepath])
         this.eventQueue.enqueue(new HistoryAppEvent(e));
+    }
+
+    pushHistory() {
+        history.pushState(this.currentstate, '');
     }
 
 }
@@ -115,6 +137,11 @@ export class HistoryAppEvent extends DSAppEvent {
         super();
     }
 }
+export type HistoryState =
+    {
+        process: string;
+        filepath: string;
+    }
 
 // Keys
 export class UpArrowAppEvent extends DSAppEvent { }

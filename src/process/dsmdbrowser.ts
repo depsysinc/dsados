@@ -1,17 +1,11 @@
 import { DSProcessError } from "../dsProcess";
 import { DSOptionParser } from "../lib/dsOptionParser";
 import { DSMDDoc, ImageBlock, DSMDToken, LinkToken } from "../lib/dsMarkdown";
-import { DSIDirectory } from "../dsFileSystem";
 import { gotoxy, reset_text, setattr, textattrs } from "../lib/dsCurses";
 import { DSKernel } from "../dsKernel";
 import { getAbsolutePath, getDirPath } from "../lib/dsPath"
-import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent, MouseMoveAppEvent, MouseButtonDownEvent as MouseButtonDownAppEvent, MouseButtonUpEvent as MouseButtonUpAppEvent, TouchEndAppEvent, LeftArrowAppEvent, HistoryAppEvent } from "../dsApp";
+import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent, MouseMoveAppEvent, MouseButtonDownEvent as MouseButtonDownAppEvent, MouseButtonUpEvent as MouseButtonUpAppEvent, TouchEndAppEvent, LeftArrowAppEvent, HistoryAppEvent } from "../lib/dsApp";
 
-export type HistoryState =
-    {
-        filepath: string;
-        row: number;
-    }
 
 
 export class PRDSMDBrowser extends DSApp {
@@ -21,11 +15,10 @@ export class PRDSMDBrowser extends DSApp {
     private _touchstart: { col: number; row: number; idx: number };
     private _hoverlink: LinkToken;
     private _err404: string;
-    private _currentfilename: string;
     private _savedrowsbypage: Map<string, number> = new Map<string, number>();
-
+    
     private get currentdir() {
-        return this.cwd.getdir(getDirPath(this._currentfilename))
+        return this.cwd.getdir(getDirPath(this.currentfilename))
     }
 
     protected async main(): Promise<void> {
@@ -39,14 +32,16 @@ export class PRDSMDBrowser extends DSApp {
         if (nextarg == -1)
             throw new DSProcessError(optparser.usage());
 
-        // Load assets
-        this._err404 = await this.cwd.getfile("/data/app/dsmdbrowser/404.dsmd").contentAsText().read();
+
+        let filename = this.argv[nextarg];
+        this.currentfilename = filename;
+
         // Start up AppEvent processing
         this.init();
 
-        let filename = this.argv[nextarg];
-        this._currentfilename = filename;
-        history.replaceState({ filepath: filename }, "");
+        // Load assets
+        this._err404 = await this.cwd.getfile("/data/app/dsmdbrowser/404.dsmd").contentAsText().read();
+
         await this._loadDoc(filename);
 
         const t = DSKernel.terminal;
@@ -58,10 +53,10 @@ export class PRDSMDBrowser extends DSApp {
 
             } else if (e instanceof HistoryAppEvent) {
                 if (history.state != null) {
-                    this._savedrowsbypage.set(this._currentfilename, this._rowidx);
-                    this._currentfilename = history.state.filepath;
-                    if (this._savedrowsbypage.has(this._currentfilename)) {
-                        this._rowidx = this._savedrowsbypage.get(this._currentfilename);
+                    this._savedrowsbypage.set(this.currentfilename, this._rowidx);
+                    this.currentfilename = history.state.filepath;
+                    if (this._savedrowsbypage.has(this.currentfilename)) {
+                        this._rowidx = this._savedrowsbypage.get(this.currentfilename);
                     }
                     else {
                         this._rowidx = 0;
@@ -196,12 +191,12 @@ export class PRDSMDBrowser extends DSApp {
             this._redraw();
 
         } else {
-            this._savedrowsbypage.set(this._currentfilename, this._rowidx);
+            this._savedrowsbypage.set(this.currentfilename, this._rowidx);
             this._rowidx = 0;
             const newpath = getAbsolutePath(this.currentdir,url)
-            history.pushState({ filepath:  newpath}, '');
+            //history.pushState({ filepath:  newpath}, '');
             await this._loadDoc(url);
-            this._currentfilename = newpath;
+            this.currentfilename = newpath;
         }
     }
 

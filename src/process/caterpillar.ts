@@ -1,8 +1,7 @@
 import { DSKernel } from "../dsKernel";
-import { DSProcess } from "../dsProcess";
-import { up, down, left, right, cursordown, cursorleft, cursornextline, cursorright, reset_text, set_cursor } from "../lib/dsCurses";
+import { DSArcadeGame } from "../lib/dsArcadeGame";
+import { up, down, left, right, cursordown, cursorleft, cursornextline, cursorright, reset_text, set_cursor, cursorup } from "../lib/dsCurses";
 import { sleep } from "../lib/dsLib";
-import { DSOptionParser } from "../lib/dsOptionParser";
 
 class CGameData {
     public static rock: string = 'Θ';
@@ -56,9 +55,9 @@ class CGameData {
 }
 
 
-export class PRCaterpillar extends DSProcess {
+export class PRCaterpillar extends DSArcadeGame {
 
-    private caterpillar: Caterpillar;
+    private caterpillar: Caterpillar = new Caterpillar(this);
 
     private leftoffset: number = 1;
     private topoffset: number = 1;
@@ -70,39 +69,35 @@ export class PRCaterpillar extends DSProcess {
     private caterpillarlength: number = CGameData.defaultcaterpillarlength;
     private rockcount: number = 22;
 
-    private topleft: string;
-    private nextline: string;
+    private topleft!: string;
+    private nextline!: string;
+
+    private time: number = 0;
+    private time_since_caterpillar: number = -1000;
+    private time_since_bullet: number = 0;
+
 
     private playerx: number = Math.floor(CGameData.cols / 2)
 
-    private exit: boolean = false;
-    private levelend: boolean = false;
-    private paused: boolean = false;
 
-    protected async main(): Promise<void> {
-         const optparser = new DSOptionParser(
-            this.procname,
-            true,
-            "   play a game of Caterpillar",
-        );
-        optparser.parseWithUsageAndHelp(this.argv);
-
-        DSKernel.terminal.reset();
-        
-        while (!this.screencorrectsize()) {
-            this.stdout.write(reset_text());
-            this.stdout.write('Please resize your screen');
-            await sleep(50);
+    protected async waitForGameStart(): Promise<void> {
+        while (true) {
+            let txt = await this.stdin.read();
+            if (txt == 'q' || txt == 'n') {
+                this.done = true;
+                return
+            }
+            if (txt == ' ') {
+                continue
+            }
+            if (txt == up || txt == down || txt == left || txt == right) {
+                continue
+            }
+            return;
         }
-        this.stdout.write(set_cursor(false));
-        this.caterpillar = new Caterpillar(this);
-
-        this.splash();
-
-        await this.gameloop();
-
     }
-    private splash() {
+
+    splash() {
         this.stdout.write(reset_text());
         this.writelinecentered('#        ┏┓┏┓┏┳┓┏┓┳┓┏┓┳┓ ┓ ┏┓┳┓         #');
         this.writelinecentered('#        ┃ ┣┫ ┃ ┣ ┣┫┃┃┃┃ ┃ ┣┫┣┫         #');
@@ -130,55 +125,37 @@ export class PRCaterpillar extends DSProcess {
 
     }
 
-    private async gameloop() {
-        while (!this.exit) {
 
-            this.exit = await this.exitorrestart();
 
-            if (this.exit) {
-                return;
-            }
+    async runFrame() {
+        let deltatime = performance.now() - this.time;
+        this.time = performance.now();
+        this.time_since_caterpillar += deltatime;
+        this.time_since_bullet += deltatime;
 
-            this.refreshscreen();
-            await sleep(50); //Make sure the splash screen is cleared before letting the gameplay start
-
-            let time = performance.now(); 
-            let deltatime;
-            let time_since_caterpillar = -1000; //-1000 so the caterpillar will pause at the start
-            let time_since_bullet = 0;
-
-            while (!this.levelend) {
-                deltatime = performance.now() - time;
-                time = performance.now();
-                time_since_caterpillar += deltatime;
-                time_since_bullet += deltatime;
-
-                if (time_since_caterpillar > this.caterpillartime) {
-                    time_since_caterpillar = 0;
-                    this.caterpillar.processscreen();
-                }
-
-                if (time_since_bullet > CGameData.bulletrefreshtime) {
-                    time_since_bullet = 0;
-                    this.processbullet();
-                }
-
-                this.inputloop();
-
-                if (this.haslost()) {
-                    this.loseGame();
-
-                }
-                else if (this.haswon()) {
-                    this.winGame();
-                }
-
-                await sleep(5);
-
-            }
+        if (this.time_since_caterpillar > this.caterpillartime) {
+            this.time_since_caterpillar = 0;
+            this.caterpillar.processscreen();
         }
-    }
 
+        if (this.time_since_bullet > CGameData.bulletrefreshtime) {
+            this.time_since_bullet = 0;
+            this.processbullet();
+        }
+
+        await this.inputloop();
+
+        if (this.haslost()) {
+            this.loseGame();
+
+        }
+        else if (this.haswon()) {
+            this.winGame();
+        }
+
+        await sleep(5);
+
+    }
 
     private async inputloop() {
         for (let i = 0; i < this.stdin.readsPending(); i++) {
@@ -189,7 +166,7 @@ export class PRCaterpillar extends DSProcess {
             catch (DSStreamClosedError) {
                 return;
             }
-            if (this.levelend) {
+            if (!this.playing) {
                 return
             }
             if (char == right && this.playerx < CGameData.cols - 1) {
@@ -219,21 +196,16 @@ export class PRCaterpillar extends DSProcess {
                 this.score -= 1;
             }
             if (char == 'q') {
-                this.levelend = true;
-                this.exit = true;
-                this.exitscreen();
+                this.done = true;
             }
 
             if (char == 'p') {
-                this.paused = true;
                 let unpausechar = ' ';
                 while (unpausechar != 'p') {
                     try {
                         unpausechar = await this.stdin.read();
                         if (unpausechar == 'q') {
-                            this.levelend = true;
-                            this.exit = true;
-                            this.exitscreen();
+                            this.done = true;
 
                         }
                     }
@@ -241,7 +213,6 @@ export class PRCaterpillar extends DSProcess {
                         return;
                     }
                 }
-                this.paused = false;
             }
         }
     }
@@ -305,9 +276,7 @@ export class PRCaterpillar extends DSProcess {
     }
 
 
-    private drawstartingboard() {
-
-        this.stdout.write(reset_text());
+    private async drawstartingboard() {
 
         //Draw the rocks
         for (let i = 0; i < this.rockcount; i++) {
@@ -376,7 +345,7 @@ export class PRCaterpillar extends DSProcess {
 
 
     private async loseGame() {
-        this.levelend = true;
+        this.playing = false;
         this.score = 100;
         this.replacechar(1, 0, ''); //Move cursor to first row
         this.writelinecentered('YOU LOSE')
@@ -385,7 +354,7 @@ export class PRCaterpillar extends DSProcess {
 
 
     private async winGame() {
-        this.levelend = true;
+        this.playing = false;
         this.setlevel(this.level + 1);
         this.replacechar(1, 0, ''); //Move cursor to first row
         this.writelinecentered('YOU WIN')
@@ -401,37 +370,25 @@ export class PRCaterpillar extends DSProcess {
     }
 
 
-    private refreshscreen() {
+    async createGame() {
+
+        DSKernel.terminal.reset();
+        this.stdout.write(set_cursor(false));
+
         this.adjustoffsets();
         this.drawstartingboard();
         this.drawdisplay();
+
+        //Allow time for terminal to draw the board before declaring it complete
+        await sleep(5);
+
         this.caterpillar.reset();
+        this.time_since_caterpillar = -1000;
+        this.time = performance.now();
+
     }
 
-    private exitscreen() {
-        DSKernel.terminal.reset();
-        this.stdout.write('Exiting...');
-    }
-
-
-    private async exitorrestart(): Promise<boolean> {
-        this.stdin.write('~'); //Get rid of listener in inputloop()
-        let key = ''
-        while (key != 'y' && key != 'n' && key != 'q') {
-            key = await this.stdin.read();
-        }
-
-        if (key == 'y') {
-            this.levelend = false;
-            return false;
-        }
-        else {
-            this.exitscreen();
-            return true;
-        }
-    }
-
-    private screencorrectsize(): boolean {
+    screenCorrectSize(): boolean {
         return DSKernel.terminal.cols > CGameData.cols + 2 && DSKernel.terminal.rows > CGameData.rows + 2
     }
 
@@ -488,15 +445,8 @@ export class PRCaterpillar extends DSProcess {
     }
 
     handleResize(): void {
-        this.levelend = true;
-        if (DSKernel.terminal.cols < CGameData.cols || DSKernel.terminal.rows < CGameData.rows + 2) {
-            this.stdout.write(reset_text());
-            this.stdout.write('Please resize your screen');
-        }
-        else {
-            this.score = 100;
-            this.splash();
-        }
+        super.handleResize()
+        this.score = 100;
     }
 }
 
@@ -504,13 +454,13 @@ export class PRCaterpillar extends DSProcess {
 class Caterpillar {
 
     public iscaterpillarremaining: boolean = true;
-    private hasmoved: boolean;
+    private hasmoved!: boolean;
 
     private rownum: number = -1;
     private currentcol: number = 0
-    private prevline: string;
-    private line: string;
-    private nextline: string;
+    private prevline!: string;
+    private line!: string;
+    private nextline!: string;
 
     private length: number;
 
