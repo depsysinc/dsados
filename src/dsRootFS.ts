@@ -82,6 +82,7 @@ import root_data_app_pixel_assault_shieldpiece6_png from "./root/data/app/pixel_
 import root_data_demo_animation_32x32_A_png from "./root/data/demo/animation/32x32_A.png";
 import root_data_demo_animation_32x32_B_png from "./root/data/demo/animation/32x32_B.png";
 import root_data_demo_animation_32x32_C_png from "./root/data/demo/animation/32x32_C.png";
+import root_data_demo_dssh_samplescript_dssh from "./root/data/demo/dssh/samplescript.dssh";
 import root_data_demo_markdown_32x32_testpattern_png from "./root/data/demo/markdown/32x32_testpattern.png";
 import root_data_demo_markdown_demomarkdown_dsmd from "./root/data/demo/markdown/demomarkdown.dsmd";
 import root_data_demo_mousetouch_pointer_png from "./root/data/demo/mousetouch/pointer.png";
@@ -106,6 +107,7 @@ import root_data_man_init_dsmd from "./root/data/man/init.dsmd";
 import root_data_man_ls_dsmd from "./root/data/man/ls.dsmd";
 import root_data_man_man_dsmd from "./root/data/man/man.dsmd";
 import root_data_man_mkdir_dsmd from "./root/data/man/mkdir.dsmd";
+import root_data_man_pixelassault_dsmd from "./root/data/man/pixelassault.dsmd";
 import root_data_man_ps_dsmd from "./root/data/man/ps.dsmd";
 import root_data_man_pwd_dsmd from "./root/data/man/pwd.dsmd";
 import root_data_man_reset_dsmd from "./root/data/man/reset.dsmd";
@@ -135,6 +137,9 @@ import root_data_site_devlog_2025_03_16_playarea_png from "./root/data/site/devl
 import root_data_site_devlog_2025_08_26_20250826_dsmd from "./root/data/site/devlog/2025-08-26/20250826.dsmd";
 import root_data_site_devlog_2025_08_26_demo2_gif from "./root/data/site/devlog/2025-08-26/demo2.gif";
 import root_data_site_devlog_2025_08_26_ozzyforest_png from "./root/data/site/devlog/2025-08-26/ozzyforest.png";
+import root_data_site_devlog_2025_09_02_20250902_dsmd from "./root/data/site/devlog/2025-09-02/20250902.dsmd";
+import root_data_site_devlog_2025_09_02_UofT_png from "./root/data/site/devlog/2025-09-02/UofT.png";
+import root_data_site_devlog_2025_09_02_UofTcampus_png from "./root/data/site/devlog/2025-09-02/UofTcampus.png";
 import root_data_site_devlog_devlog_dsmd from "./root/data/site/devlog/devlog.dsmd";
 import root_data_site_devlog_entry_template_dsmd from "./root/data/site/devlog/entry-template.dsmd";
 import root_data_site_games_dsmd from "./root/data/site/games.dsmd";
@@ -577,6 +582,19 @@ export function buildrootfs(): DSFileSystem {
     curdir = dirstack.pop();
     // Exited root/data/demo/animation
         
+    // Traversing root/data/demo/dssh
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('dssh');
+    
+    // Creating root/data/demo/dssh/samplescript.dssh
+    curfile = new DSIWebFile(fs, root_data_demo_dssh_samplescript_dssh);
+    curdir.addfile("samplescript.dssh", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/demo/dssh
+        
     // Traversing root/data/demo/markdown
     dirstack.push(curdir);
     curdir = curdir.mkdir('markdown');
@@ -719,6 +737,11 @@ export function buildrootfs(): DSFileSystem {
     // Creating root/data/man/mkdir.dsmd
     curfile = new DSIWebFile(fs, root_data_man_mkdir_dsmd);
     curdir.addfile("mkdir.dsmd", curfile);
+    
+    
+    // Creating root/data/man/pixelassault.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_pixelassault_dsmd);
+    curdir.addfile("pixelassault.dsmd", curfile);
     
     
     // Creating root/data/man/ps.dsmd
@@ -933,6 +956,29 @@ export function buildrootfs(): DSFileSystem {
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
     // Exited root/data/site/devlog/2025-08-26
+        
+    // Traversing root/data/site/devlog/2025-09-02
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2025-09-02');
+    
+    // Creating root/data/site/devlog/2025-09-02/20250902.dsmd
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_09_02_20250902_dsmd);
+    curdir.addfile("20250902.dsmd", curfile);
+    
+    
+    // Creating root/data/site/devlog/2025-09-02/UofT.png
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_09_02_UofT_png);
+    curdir.addfile("UofT.png", curfile);
+    
+    
+    // Creating root/data/site/devlog/2025-09-02/UofTcampus.png
+    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_09_02_UofTcampus_png);
+    curdir.addfile("UofTcampus.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited root/data/site/devlog/2025-09-02
         
     // Creating root/data/site/devlog/devlog.dsmd
     curfile = new DSIWebFile(fs, root_data_site_devlog_devlog_dsmd);

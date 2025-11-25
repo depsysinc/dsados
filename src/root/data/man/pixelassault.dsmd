@@ -1,0 +1,21 @@
+NAME
+
+  **pixelassault** - play a game of Pixel Assault
+
+SYNOPSIS
+
+    pixelassault
+
+DESCRIPTION
+
+    Run this command to play a game of Pixel Assault. The command will clear the screen,
+    and the game will run until the user presses q, after which the command exits. Any arguments
+    supplied will be ignored.
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [caterpillar](/bin/man/caterpillar)

@@ -15,3 +15,7 @@ DESCRIPTION
 OPTIONS
     
     -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [pixelassault](/bin/man/pixelassault)
