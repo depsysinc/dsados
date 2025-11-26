@@ -1,13 +1,14 @@
 import { DSConcurrentQueue } from "../dsConcurrentQueue";
 import { DSKernel } from "../dsKernel";
 import { DSProcess } from "../dsProcess";
-import { DSPointerEvent } from "../dsTerminal";
+import { DSKeyEvent, DSPointerEvent } from "../dsTerminal";
 
 
 export abstract class DSApp extends DSProcess {
     protected eventQueue: DSConcurrentQueue<DSAppEvent> = new DSConcurrentQueue<DSAppEvent>();
     protected done: boolean = false;
     protected currentfilename: string = '';
+    protected stdinEventQueue: boolean = true;
 
     get currentstate(): HistoryState {
         return {
@@ -20,24 +21,11 @@ export abstract class DSApp extends DSProcess {
         //Add history entry if none exists
         if (history.state == null)
             history.replaceState(this.currentstate, '');
-
-
-        // start keystroke handling
-        this._startStdinHandler();
-
     }
 
-    private async _startStdinHandler() {
-        while (!this.done) {
-            try {
-                const str = await this.stdin.read();
-                const events = createAppEventsFromStdin(str);
-                while (events.length > 0)
-                    this.eventQueue.enqueue(events.shift());
-            } catch (e) {
-                this.terminate();
-            }
-        }
+    protected addNewPage(filename:string) {
+        this.currentfilename = filename;
+        history.pushState(this.currentstate, '')
     }
 
     terminate() {
@@ -119,8 +107,15 @@ export abstract class DSApp extends DSProcess {
     handleHistory(e: PopStateEvent): void {
         let state: HistoryState = e.state;
         this.terminate();
-        DSKernel.exec(state.process, [state.filepath])
+        DSKernel.exec('/bin/'+state.process, [state.process,state.filepath])
         this.eventQueue.enqueue(new HistoryAppEvent(e));
+    }
+
+    handleKeyEvent(e: DSKeyEvent): void {
+        const event = createAppEventsFromKeyEvents(e);
+        if (event != undefined) {
+            this.eventQueue.enqueue(event);
+        }
     }
 
     pushHistory() {
@@ -152,11 +147,17 @@ export class PageDownAppEvent extends DSAppEvent { }
 export class PageUpAppEvent extends DSAppEvent { }
 export class DeleteAppEvent extends DSAppEvent { }
 export class BackspaceAppEvent extends DSAppEvent { }
+export class KeyUpAppEvent extends DSAppEvent {
+    constructor(readonly key: string) {
+        super();
+    }
+}
 export class TextAppEvent extends DSAppEvent {
     constructor(readonly text: string) {
         super();
     }
 }
+
 
 export abstract class PointerAppEvent extends DSAppEvent {
     constructor(
@@ -241,4 +242,39 @@ export function createAppEventsFromStdin(str: string): DSAppEvent[] {
         }
     }
     return events;
+}
+
+export function createAppEventsFromKeyEvents(event: DSKeyEvent): DSAppEvent {
+    if (!event.down) {
+        return new KeyUpAppEvent(event.key);
+    }
+    if (event.code == "ArrowLeft") {
+        return new LeftArrowAppEvent();
+    }
+    else if (event.code == "ArrowRight") {
+        return new RightArrowAppEvent();
+    }
+    else if (event.code == "ArrowDown") {
+        return new DownArrowAppEvent();
+    }
+    else if (event.code == "ArrowUp") {
+        return new UpArrowAppEvent();
+    }
+    else if (event.code == "Delete") {
+        return new DeleteAppEvent();
+    }
+    else if (event.code == "PageUp") {
+        return new PageUpAppEvent();
+    }
+    else if (event.code == "PageDown") {
+        return new PageUpAppEvent();
+    }
+    else if (event.code == "Escape") {
+    }
+    else if (event.code == "Backspace") {
+        return new BackspaceAppEvent();
+    }
+    else {
+        return new TextAppEvent(event.key)
+    }
 }

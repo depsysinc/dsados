@@ -193,10 +193,12 @@ export class PRDSMDBrowser extends DSApp {
         } else {
             this._savedrowsbypage.set(this.currentfilename, this._rowidx);
             this._rowidx = 0;
-            const newpath = getAbsolutePath(this.currentdir,url)
+            const newpath = getAbsolutePath(this.currentdir,url);
+            this.addNewPage(newpath);
             //history.pushState({ filepath:  newpath}, '');
             await this._loadDoc(url);
             this.currentfilename = newpath;
+            
         }
     }
 

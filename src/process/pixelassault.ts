@@ -485,19 +485,19 @@ export class PRPixelAssault extends DSProcess {
     }
 
     handleKeyEvent(e: DSKeyEvent): void {
-        if (e.key == "KeyQ") {
+        if (e.code == "KeyQ") {
             this.exited = true;
         }
-        if (this.splashing && e.key == "KeyY") {
+        if (this.splashing && e.code == "KeyY") {
             this.createGame();
             this.splashing = false;
         }
-        if (e.key == "KeyP" && e.down) {
+        if (e.code == "KeyP" && e.down) {
             this.playing = !this.playing;
         }
 
-        if (this.playing && e.key in PAGameData.keyresponses) {
-            this.spaceship.onkey(e.key, e.down);
+        if (this.playing && e.code in PAGameData.keyresponses) {
+            this.spaceship.onkey(e.code, e.down);
         }
     }
 
