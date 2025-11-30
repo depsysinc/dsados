@@ -46,8 +46,7 @@ export class PRMount extends DSProcess {
             const type = this.argv[nextarg]
             const name = this.argv[nextarg+1]
             const mountpoint = this.argv[nextarg+2]
-            const dsidbaliases = ['dsidb','idb','dsidbfs','dsidbfilesystem']
-            if (!dsidbaliases.includes(type.toLowerCase())) {
+            if ((type.toLowerCase()) != 'dsidbfs') {
                 throw new DSProcessError('Invalid filesystem type')
             }
             let fs = new DSIDBFileSystem(name, 1);

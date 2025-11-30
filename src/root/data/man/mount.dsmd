@@ -12,8 +12,8 @@ DESCRIPTION
     it simply outputs a list of the filesystems currently mounted. When arguments are 
     provided, the command mounts the filesystem.
 
-    The only type of filesystem currently supported is DSIDB fileystems. Pass dsidb, idb, dsidbfs, or 
-    dsidbfileystem (any casing) to use this type. If not used, mount will throw an error. 
+    The only type of filesystem currently supported is DSIDB fileystems. Pass  dsidbfs (any casing) to
+     use this type. If not used, mount will throw an error. 
     The name argument is the name of the filesystem/device to be mounted, which must not contain any 
     spaces. Mountpoint must be a global path (starting with /), and cannot already exist. This is
     the location in the root filesystem the mounted filesystem will be accessible at.
