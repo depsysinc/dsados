@@ -97,7 +97,7 @@ export class PRCaterpillar extends DSArcadeGame {
         }
     }
 
-    splash() {
+    async splash() {
         this.stdout.write(reset_text());
         this.writelinecentered('#        ┏┓┏┓┏┳┓┏┓┳┓┏┓┳┓ ┓ ┏┓┳┓         #');
         this.writelinecentered('#        ┃ ┣┫ ┃ ┣ ┣┫┃┃┃┃ ┃ ┣┫┣┫         #');

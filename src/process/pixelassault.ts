@@ -3,6 +3,7 @@ import { DSKernel } from "../dsKernel";
 import { DSProcess } from "../dsProcess";
 import { DSKeyEvent, DSSprite } from "../dsTerminal";
 import { DSIWebFile } from "../filesystem/dsIWebFile";
+import { DSArcadeGame } from "../lib/dsArcadeGame";
 import { cursornextline, cursorright, gotoxy, reset_text, right, set_cursor } from "../lib/dsCurses";
 import { DSTexture, get_image_textures } from "../lib/dsImg";
 import { sleep } from "../lib/dsLib";
@@ -180,12 +181,12 @@ const enemy_types: EnemyType[] = [
     }
 ]
 
-export class PRPixelAssault extends DSProcess {
+export class PRPixelAssault extends DSArcadeGame {
 
     public playing: boolean = false;
     public initialized: boolean = false;
-    public exited: boolean = false;
-    public splashing: boolean = true;
+    public waiting: boolean = true;
+    public paused: boolean = false;
 
 
     private enemycount: number = 0;
@@ -203,35 +204,24 @@ export class PRPixelAssault extends DSProcess {
     public score: number = 0;
 
 
-    protected async main(): Promise<void> {
-        const optparser = new DSOptionParser(this.procname,true,"   play a game of Pixel Assault",);
-        optparser.parseWithUsageAndHelp(this.argv);
+    async splash() {
+        DSKernel.terminal.reset();
+        this.updateGameBounds();
+        await this.createObject(PANonInteracting, "PixelAssaultSplash2.png", { x: 0, y: 0 });
+    }
 
+    protected async waitForGameStart(): Promise<void> {
         this.reset();
         this.splash();
-        await this.mainloop();
-        this.reset();
-        return;
-    }
-
-    private async splash() {
-        this.splashing = true;
-        this.reset();
-        if (!this.screenCorrectSize()) {
-            DSKernel.terminal.resetSprites();
-            this.stdout.write("Resize screen!")
-        }
-        else {
-            this.createObject(PANonInteracting, "PixelAssaultSplash2.png", { x: 0, y: 0 })
+        this.waiting = true;
+        while (this.waiting) {
+            await sleep(50);
         }
     }
 
-    private async createGame() {
+    protected async createGame() {
+        console.log("CREATING>")
         this.reset();
-        if (!this.screenCorrectSize()) {
-            this.splash();
-            return;
-        }
         this.initialized = true;
 
         //Background
@@ -256,38 +246,33 @@ export class PRPixelAssault extends DSProcess {
         await this.createEnemyWave(1);
 
         //Shields
-        this.createShield({ x: 300, y: 230 })
-        this.createShield({ x: 175, y: 230 })
-        this.createShield({ x: 50, y: 230 })
+        await this.createShield({ x: 300, y: 230 })
+        await this.createShield({ x: 175, y: 230 })
+        await this.createShield({ x: 50, y: 230 })
 
 
         this.playing = true;
 
     }
 
-    async mainloop() {
-        while (!this.exited) {
-            if (this.playing && !this.initialized) {
-                await this.createGame();
-            }
 
-            if (this.playing) {
-                this.stdout.write(cursorright(1)); //Sprites only update when xterm requests a refresh, when text is written to the terminal
+    protected async runFrame(): Promise<void> {
+        if (this.playing && !this.paused) {
+            this.stdout.write(cursorright(1)); //Sprites only update when xterm requests a refresh, when text is written to the terminal
 
-                this.frameNumber++;
-                this.updatescore();
+            this.frameNumber++;
+            this.updatescore();
 
-                this.runUpdateFunctions();
-                this.sendCollisionMessages();
-                this.sendOutOfBoundsMessages();
-                this.killObjects();
-            }
-            await sleep(1000 / PAGameData.framerate)
+            this.runUpdateFunctions();
+            this.sendCollisionMessages();
+            this.sendOutOfBoundsMessages();
+            this.killObjects();
         }
+        await sleep(1000 / PAGameData.framerate)
 
     }
 
-    private async createEnemyWave(difficulty: number) {
+    protected async createEnemyWave(difficulty: number) {
         PAEnemy.moving = false;
         PAEnemy.resetmotion();
         this.enemycount = PAGameData.enemycols * PAGameData.enemyrows;
@@ -313,7 +298,7 @@ export class PRPixelAssault extends DSProcess {
 
     }
 
-    public createShield(coords: Vector2) {
+    public async createShield(coords: Vector2) {
         const shieldpiecewidth = 5;
         const shielddrawing =
             `
@@ -337,7 +322,7 @@ export class PRPixelAssault extends DSProcess {
                 x: blockplaces[i].x * shieldpiecewidth + coords.x,
                 y: blockplaces[i].y * shieldpiecewidth + coords.y
             }
-            this.createObject(PAShield, "shieldpiece6.png", newcoords)
+            await this.createObject(PAShield, "shieldpiece6.png", newcoords)
         }
     }
 
@@ -428,7 +413,9 @@ export class PRPixelAssault extends DSProcess {
         if (this.enemycount == 0) {
             this.currentwavenumber += 1;
             await sleep(3000);
-            this.createEnemyWave(this.currentwavenumber)
+            if (!this.done) {
+                this.createEnemyWave(this.currentwavenumber)
+            }
         }
 
     }
@@ -438,7 +425,7 @@ export class PRPixelAssault extends DSProcess {
         lastheart.kill();
     }
 
-    public async loseGame() {
+    protected async onGameEnd(): Promise<void> {
         let score = this.score;
         this.reset();
 
@@ -447,9 +434,8 @@ export class PRPixelAssault extends DSProcess {
         this.writelinecentered("Your Score: " + score);
 
         await sleep(5000);
-        this.splash();
-    }
 
+    }
 
     private writelinecentered(message: string) {
         if (message.length > DSKernel.terminal.cols) {
@@ -471,7 +457,6 @@ export class PRPixelAssault extends DSProcess {
         this.updateGameBounds();
         this.currentwavenumber = 1;
         this.objects = [];
-        this.playing = false;
         this.initialized = false;
         this.score = 0;
         this.hearts = [];
@@ -486,23 +471,19 @@ export class PRPixelAssault extends DSProcess {
 
     handleKeyEvent(e: DSKeyEvent): void {
         if (e.code == "KeyQ") {
-            this.exited = true;
+            this.done = true;
+            this.waiting = false;
         }
-        if (this.splashing && e.code == "KeyY") {
-            this.createGame();
-            this.splashing = false;
+        if (this.waiting && e.code == "KeyY") {
+            this.waiting = false;
         }
         if (e.code == "KeyP" && e.down) {
-            this.playing = !this.playing;
+            this.paused = !this.paused;
         }
 
         if (this.playing && e.code in PAGameData.keyresponses) {
             this.spaceship.onkey(e.code, e.down);
         }
-    }
-
-    handleResize(): void {
-        this.splash();
     }
 
     private updateGameBounds() {
@@ -514,7 +495,7 @@ export class PRPixelAssault extends DSProcess {
         )
     }
 
-    private screenCorrectSize() {
+    screenCorrectSize() {
         return DSKernel.terminal.width >= PAGameData.width && DSKernel.terminal.height >= PAGameData.height;
     }
 }
@@ -616,7 +597,7 @@ class PANonInteracting extends PAGameObject {
         await super.initialize();
         let removedself = this.parent.objects.pop()
         if (removedself != this) {
-            throw new Error("Something went wrong")
+            throw new Error("Something went wrong when deleting self")
         };
     }
 }
@@ -753,7 +734,6 @@ class PAEnemy extends PAGameObject {
         if (PAEnemy.moving) {
             super.update();
         }
-
         if (Math.random() < this.type.shootchance) {
             this.createBullet();
         }
@@ -761,8 +741,8 @@ class PAEnemy extends PAGameObject {
 
     public onOutOfBounds(touching: boolean): void {
         PAEnemy.downstartframe = this.parent.frameNumber;
-        if (!this.bounds.ywithin(this.parent.gamebounds)) {
-            this.parent.loseGame();
+        if (!this.bounds.ywithin(this.parent.gamebounds)) { //If hits bottom edge of screen
+            this.parent.playing = false;
         }
     }
 }
@@ -926,12 +906,14 @@ class PASpaceship extends PAGameObject {
     public onCollision(other: PAGameObject): void {
         if (other instanceof PAEnemyBullet || other instanceof PAEnemy) {
             this.lives -= 1;
-            this.parent.loseHeart();
+            if (this.lives > 0) {
+                this.parent.loseHeart();
+            }
             this.flashanim();
 
             if (this.lives == 0) {
                 this.explode();
-                this.parent.loseGame();
+                this.parent.playing = false;
             }
         }
 

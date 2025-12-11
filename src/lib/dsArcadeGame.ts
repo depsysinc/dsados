@@ -8,6 +8,8 @@ export abstract class DSArcadeGame extends DSApp {
 
     protected playing: boolean = false;
 
+    private fromresize: boolean = false;
+
     protected async main(): Promise<void> {
 
         const optparser = new DSOptionParser(
@@ -19,24 +21,32 @@ export abstract class DSArcadeGame extends DSApp {
 
         DSKernel.terminal.reset();
 
+        await this.awaitScreenCorrectSize();
 
-        while (!this.screenCorrectSize()) {
-            DSKernel.terminal.reset();
-            this.stdout.write("Resize your screen to play.");
-            await sleep(50);
-        }
-
-        this.splash();
+        await this.splash();
 
         while (!this.done) {
+            await this.awaitScreenCorrectSize();
+            this.fromresize = false;
+
+            console.log("Playing game...");
+
             await this.waitForGameStart();
+            if (this.done || this.fromresize) {
+                continue;
+            }
             await this.createGame();
+
             this.playing = true;
             while (!this.done && this.playing) {
                 await this.runFrame();
             }
+
+            if (!this.fromresize && !this.done) {
+                await this.onGameEnd();
+            }
         }
-        console.log("exiting")
+
         sleep(10);
         DSKernel.terminal.reset();
 
@@ -44,15 +54,31 @@ export abstract class DSArcadeGame extends DSApp {
     }
 
     override handleResize(): void {
-        console.log("Handled")
         this.playing = false;
+        this.fromresize = true;
+
         if (!this.screenCorrectSize()) {
             DSKernel.terminal.reset();
             this.stdout.write("Resize your screen to play.");
+
         }
         else {
             this.splash();
+
         }
+    }
+
+    async awaitScreenCorrectSize() {
+        if (!this.screenCorrectSize()) {
+            DSKernel.terminal.reset();
+            this.stdout.write("Resize your screen to play.");
+
+            while (!this.screenCorrectSize()) {
+                await sleep(50);
+            }
+        }
+
+
     }
 
     //Wait for the game to begin (on splash screen, usually)
@@ -62,11 +88,14 @@ export abstract class DSArcadeGame extends DSApp {
     protected abstract screenCorrectSize(): boolean;
 
     //Display a static splash screen with the game's title + art
-    protected abstract splash(): void;
+    protected abstract splash(): Promise<void>;
 
     //Create all the objects + sprites needed for the game
     protected abstract createGame(): Promise<void>;
 
     //Run a frame
     protected abstract runFrame(): Promise<void>;
+
+    //Run when the game ends, display scores 
+    protected async onGameEnd(): Promise<void> { }
 }
