@@ -1,6 +1,6 @@
-import { DSFilePerms } from "../dsFileSystem";
-import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSOptionParser } from "../lib/dsOptionParser";
+import { DSFilePerms } from "../../../dsFileSystem";
+import { DSProcess, DSProcessError } from "../../../dsProcess";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
 
 export class PRCHMod extends DSProcess {
 

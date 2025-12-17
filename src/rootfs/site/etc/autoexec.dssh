@@ -18,4 +18,4 @@ if [-f /local/home/.dsshrc]
 endif
 
 splash
-dsmdbrowser /data/site/index.dsmd
+dsmdbrowser /data/site/page/index.dsmd

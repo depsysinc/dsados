@@ -1,5 +1,5 @@
-import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSOptionParser } from "../lib/dsOptionParser";
+import { DSProcess, DSProcessError } from "../../../dsProcess";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
 
 export class PRPwd extends DSProcess {
 

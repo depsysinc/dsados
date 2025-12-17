@@ -1,11 +1,11 @@
-import { DSProcessError } from "../dsProcess";
-import { DSOptionParser } from "../lib/dsOptionParser";
-import { DSMDDoc, ImageBlock, DSMDToken, LinkToken } from "../lib/dsMarkdown";
-import { DSIDirectory } from "../dsFileSystem";
-import { gotoxy, reset_text, setattr, textattrs } from "../lib/dsCurses";
-import { DSKernel } from "../dsKernel";
-import { getAbsolutePath, getDirPath } from "../lib/dsPath"
-import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent, MouseMoveAppEvent, MouseButtonDownEvent as MouseButtonDownAppEvent, MouseButtonUpEvent as MouseButtonUpAppEvent, TouchEndAppEvent, LeftArrowAppEvent, HistoryAppEvent } from "../dsApp";
+import { DSProcessError } from "../../../dsProcess";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
+import { DSMDDoc, ImageBlock, DSMDToken, LinkToken } from "../../../lib/dsMarkdown";
+import { DSIDirectory } from "../../../dsFileSystem";
+import { gotoxy, reset_text, setattr, textattrs } from "../../../lib/dsCurses";
+import { DSKernel } from "../../../dsKernel";
+import { getAbsolutePath, getDirPath } from "../../../lib/dsPath"
+import { DownArrowAppEvent, DSApp, WheelAppEvent, ResizeAppEvent, TextAppEvent, UpArrowAppEvent, PageUpAppEvent, PageDownAppEvent, TouchStartAppEvent, TouchMoveAppEvent, MouseMoveAppEvent, MouseButtonDownEvent as MouseButtonDownAppEvent, MouseButtonUpEvent as MouseButtonUpAppEvent, TouchEndAppEvent, LeftArrowAppEvent, HistoryAppEvent } from "../../../dsApp";
 
 export type HistoryState =
     {

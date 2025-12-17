@@ -1,8 +1,8 @@
-import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSOptionParser } from "../lib/dsOptionParser";
-import { DSMDDoc, ImageBlock } from "../lib/dsMarkdown";
-import { gotoxy, setattr, textattrs } from "../lib/dsCurses";
-import { DSKernel } from "../dsKernel";
+import { DSProcess, DSProcessError } from "../../../dsProcess";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
+import { DSMDDoc, ImageBlock } from "../../../lib/dsMarkdown";
+import { gotoxy, setattr, textattrs } from "../../../lib/dsCurses";
+import { DSKernel } from "../../../dsKernel";
 
 export class PRDemoMarkdown extends DSProcess {
 

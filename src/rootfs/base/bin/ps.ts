@@ -1,6 +1,6 @@
-import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSKernel } from "../dsKernel";
-import { DSOptionParser } from "../lib/dsOptionParser";
+import { DSProcess, DSProcessError } from "../../../dsProcess";
+import { DSKernel } from "../../../dsKernel";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
 
 export class PRPs extends DSProcess {
 

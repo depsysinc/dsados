@@ -1,8 +1,8 @@
-import { DSKernel } from "../dsKernel";
-import { DSProcess } from "../dsProcess";
-import { up, down, left, right, cursordown, cursorleft, cursornextline, cursorright, reset_text, set_cursor } from "../lib/dsCurses";
-import { sleep } from "../lib/dsLib";
-import { DSOptionParser } from "../lib/dsOptionParser";
+import { DSKernel } from "../../../dsKernel";
+import { DSProcess } from "../../../dsProcess";
+import { up, down, left, right, cursordown, cursorleft, cursornextline, cursorright, reset_text, set_cursor } from "../../../lib/dsCurses";
+import { sleep } from "../../../lib/dsLib";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
 
 class CGameData {
     public static rock: string = 'Θ';

@@ -1,8 +1,8 @@
-import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSKernel } from "../dsKernel";
-import { DSStream, DSStreamClosedError } from "../dsStream";
-import { DSOptionParser } from "../lib/dsOptionParser";
-import { sleep } from "../lib/dsLib";
+import { DSProcess, DSProcessError } from "../../../dsProcess";
+import { DSKernel } from "../../../dsKernel";
+import { DSStream, DSStreamClosedError } from "../../../dsStream";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
+import { sleep } from "../../../lib/dsLib";
 
 export class DSShellError extends DSProcessError {
     constructor(message: string) {

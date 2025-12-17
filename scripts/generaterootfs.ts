@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 const outputFile = './src/dsRootFS.ts';
-const webFileDir = './src/root';
+const webFileDir = './src/rootfs';
 const binFileDir = './src/process';
 
 let header = `/*
@@ -47,8 +47,18 @@ const webfile_traversal_header = `
     let dirstack: DSIDirectory[] = [];
     let curdir = fs.root;
     let curfile: DSIWebFile;
+    let binfile: DSInode;
 
 `;
+
+function processFilename(srcPath: string): string | null {
+    const file = fs.readFileSync(srcPath, 'utf-8');
+    let match = file.match(/export class (\w+) extends (DSProcess|DSApp|DSArcadeGame) {/);
+    if (!match)
+        return null;
+    else
+        return match[1];
+}
 
 let webfile_traversal_body = '    // WEBFILE TRAVERSAL BODY\n';
 
@@ -80,14 +90,31 @@ function webfileTraverseAndGenerate(dir: string) {
             const stats = fs.lstatSync(srcPath);
             const execperms = stats.mode & 0o111;
             const permstring = execperms ? `curfile.chmod(DSFilePerms.rx());` : "";
-            let varname = sanitize(relPath);
-            webfile_traversal_imports += `import ${varname} from "./${relPath}";\n`
-            webfile_traversal_body += `
+            const className = processFilename(srcPath);
+            //DSProcess
+            if (className) {
+                const importPath = srcPath.replace(/^src\//, '').replace(/.ts$/, '');
+                let match = importPath.match(/([^\/]+)$/);
+                if (!match)
+                    throw Error("could not extract bin filename");
+                const binFileName = match[1];
+                webfile_traversal_imports += `import { ${className} } from "./${importPath}";\n`
+                webfile_traversal_body += `
+    binfile = new DSIProcessFile(fs, ${className});
+    curdir.addfile("${binFileName}", binfile);
+     `;
+            }
+            //DSIWebFile
+            else {
+                let varname = sanitize(relPath);
+                webfile_traversal_imports += `import ${varname} from "./${relPath}";\n`
+                webfile_traversal_body += `
     // Creating ${relPath}
     curfile = new DSIWebFile(fs, ${varname});
     curdir.addfile("${entry.name}", curfile);
     ${permstring}
     `;
+            }
         } else {
             console.log(`skipping ${srcPath}`);
         }
@@ -96,53 +123,57 @@ function webfileTraverseAndGenerate(dir: string) {
 
 console.log(`Doing bin file generation from ${binFileDir}`);
 
-let bin_imports = '// BIN IMPORTS\n';
-const bin_header = `
-    // BIN HEADER
-    const bindir = fs.root.mkdir('bin');
-    let binfile: DSInode;
+// let bin_imports = '// BIN IMPORTS\n';
+// const bin_header = `
+//     // BIN HEADER
+//     const bindir = fs.root.mkdir('bin');
+//     let binfile: DSInode;
 
-`;
-let bin_body = '    // BIN BODY\n';
-const entries = fs.readdirSync(binFileDir, { withFileTypes: true });
-for (const entry of entries) {
-    const srcPath = path.join(entry.parentPath, entry.name);
-    const importPath = srcPath.replace(/^src\//, '').replace(/.ts$/, '');
-    let match = importPath.match(/([^\/]+)$/);
-    if (!match)
-        throw Error("could not extract bin filename");
-    const binFileName = match[1];
+// `;
+// let bin_body = '    // BIN BODY\n';
+// const entries = fs.readdirSync(binFileDir, { withFileTypes: true });
+// for (const entry of entries) {
+//     const srcPath = path.join(entry.parentPath, entry.name);
+//     const importPath = srcPath.replace(/^src\//, '').replace(/.ts$/, '');
+//     let match = importPath.match(/([^\/]+)$/);
+//     if (!match)
+//         throw Error("could not extract bin filename");
+//     const binFileName = match[1];
 
-    console.log(`Create ${binFileName} from ${srcPath}`);
-    const file = fs.readFileSync(srcPath, 'utf-8');
-    match = file.match(/export class (\w+) extends (DSProcess|DSApp) {/);
-    if (!match)
-        throw Error("could not find DSProcess class");
-    const className = match[1];
-    bin_imports += `import { ${className} } from "./${importPath}";\n`
-    bin_body += `
-    binfile = new DSIProcessFile(fs, ${className});
-    bindir.addfile("${binFileName}", binfile);
-    `;
+//     console.log(`Create ${binFileName} from ${srcPath}`);
+//     const file = fs.readFileSync(srcPath, 'utf-8');
+//     match = file.match(/export class (\w+) extends (DSProcess|DSApp) {/);
+//     if (!match)
+//         throw Error("could not find DSProcess class");
+//     const className = match[1];
+//     bin_imports += `import { ${className} } from "./${importPath}";\n`
+//     bin_body += `
+//     binfile = new DSIProcessFile(fs, ${className});
+//     bindir.addfile("${binFileName}", binfile);
+//     `;
 
-}
-const bin_footer = `
-    // BIN FOOTER
-    bindir.chmod(DSFilePerms.rx());
-`;
+// }
+// const bin_footer = `
+//     // BIN FOOTER
+//     bindir.chmod(DSFilePerms.rx());
+// `;
 
 console.log(`Doing web file traversal in ${webFileDir}`);
-webfileTraverseAndGenerate(webFileDir);
+let pages = fs.readdirSync(webFileDir);
+pages.forEach(element => {
+    webfileTraverseAndGenerate(webFileDir + '/' + element)
+});
+//webfileTraverseAndGenerate(webFileDir);
 
 console.log(`Writing ${outputFile}`);
 fs.writeFileSync(outputFile,
     header
-    + bin_imports
+    //+ bin_imports
     + webfile_traversal_imports
     + buildrootfs_header
-    + bin_header
-    + bin_body
-    + bin_footer
+    // + bin_header
+    //+ bin_body
+    //+ bin_footer
     + webfile_traversal_header
     + webfile_traversal_body
     + main_footer

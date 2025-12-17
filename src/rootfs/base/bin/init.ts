@@ -1,6 +1,6 @@
-import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSKernel } from "../dsKernel";
-import { sleep } from "../lib/dsLib";
+import { DSProcess, DSProcessError } from "../../../dsProcess";
+import { DSKernel } from "../../../dsKernel";
+import { sleep } from "../../../lib/dsLib";
 
 export class PRInit extends DSProcess {
 

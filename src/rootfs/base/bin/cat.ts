@@ -1,6 +1,6 @@
-import { DSFilePermsError } from "../dsFileSystem";
-import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSOptionParser } from "../lib/dsOptionParser";
+import { DSFilePermsError } from "../../../dsFileSystem";
+import { DSProcess, DSProcessError } from "../../../dsProcess";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
 
 export class PRCat extends DSProcess {
 

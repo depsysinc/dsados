@@ -1,7 +1,7 @@
-import { DSKernel } from "../dsKernel";
-import { DSProcess, DSProcessError } from "../dsProcess";
-import { sleep } from "../lib/dsLib";
-import { DSOptionParser } from "../lib/dsOptionParser";
+import { DSKernel } from "../../../dsKernel";
+import { DSProcess, DSProcessError } from "../../../dsProcess";
+import { sleep } from "../../../lib/dsLib";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
 
 export class PRSplash extends DSProcess {
 

@@ -1,5 +1,5 @@
-import { DSProcess } from "../dsProcess";
-import { DSOptionParser } from "../lib/dsOptionParser";
+import { DSProcess } from "../../../dsProcess";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
 
 export class PREcho extends DSProcess {
 

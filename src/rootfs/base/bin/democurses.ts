@@ -1,7 +1,7 @@
-import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSOptionParser } from "../lib/dsOptionParser";
-import { gotoxy, reset_text, scrolldown, scrollup, set_cursor, setattr, textattrs } from "../lib/dsCurses";
-import { DSKernel } from "../dsKernel";
+import { DSProcess, DSProcessError } from "../../../dsProcess";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
+import { gotoxy, reset_text, scrolldown, scrollup, set_cursor, setattr, textattrs } from "../../../lib/dsCurses";
+import { DSKernel } from "../../../dsKernel";
 
 export class PRDemoCurses extends DSProcess {
 

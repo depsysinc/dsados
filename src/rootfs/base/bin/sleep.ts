@@ -1,6 +1,6 @@
-import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSOptionParser } from "../lib/dsOptionParser";
-import { sleep } from "../lib/dsLib";
+import { DSProcess, DSProcessError } from "../../../dsProcess";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
+import { sleep } from "../../../lib/dsLib";
 
 export class PRSleep extends DSProcess {
 

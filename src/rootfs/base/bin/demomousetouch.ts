@@ -1,10 +1,10 @@
-import { DSKernel } from "../dsKernel";
-import { DSProcess, DSProcessError } from "../dsProcess";
-import { DSPointerEvent } from "../dsTerminal";
-import { DSIWebFile } from "../filesystem/dsIWebFile";
-import { gotoxy, reset_text, setattr, textattrs } from "../lib/dsCurses";
-import { load_image } from "../lib/dsImg";
-import { DSOptionParser } from "../lib/dsOptionParser";
+import { DSKernel } from "../../../dsKernel";
+import { DSProcess, DSProcessError } from "../../../dsProcess";
+import { DSPointerEvent } from "../../../dsTerminal";
+import { DSIWebFile } from "../../../filesystem/dsIWebFile";
+import { gotoxy, reset_text, setattr, textattrs } from "../../../lib/dsCurses";
+import { load_image } from "../../../lib/dsImg";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
 
 export class PRDemoMouseTouch extends DSProcess {
     sprite: import("/workspaces/depsysweb/src/dsTerminal").DSSprite;

@@ -1,12 +1,12 @@
-import { DSFileSystemError, DSIDirectory } from "../dsFileSystem";
-import { DSKernel } from "../dsKernel";
-import { DSProcess } from "../dsProcess";
-import { DSKeyEvent, DSSprite } from "../dsTerminal";
-import { DSIWebFile } from "../filesystem/dsIWebFile";
-import { cursornextline, cursorright, gotoxy, reset_text, right, set_cursor } from "../lib/dsCurses";
-import { DSTexture, get_image_textures } from "../lib/dsImg";
-import { sleep } from "../lib/dsLib";
-import { DSOptionParser } from "../lib/dsOptionParser";
+import { DSFileSystemError, DSIDirectory } from "../../../dsFileSystem";
+import { DSKernel } from "../../../dsKernel";
+import { DSProcess } from "../../../dsProcess";
+import { DSKeyEvent, DSSprite } from "../../../dsTerminal";
+import { DSIWebFile } from "../../../filesystem/dsIWebFile";
+import { cursornextline, cursorright, gotoxy, reset_text, right, set_cursor } from "../../../lib/dsCurses";
+import { DSTexture, get_image_textures } from "../../../lib/dsImg";
+import { sleep } from "../../../lib/dsLib";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
 
 class PAGameData {
     public static framerate: number = 40;

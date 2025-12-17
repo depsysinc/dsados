@@ -1,6 +1,6 @@
-import { DSKernel } from "../dsKernel";
-import { DSProcess } from "../dsProcess";
-import { DSOptionParser } from "../lib/dsOptionParser";
+import { DSKernel } from "../../../dsKernel";
+import { DSProcess } from "../../../dsProcess";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
 
 export class PRReset extends DSProcess {
 
