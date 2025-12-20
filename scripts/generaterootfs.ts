@@ -91,6 +91,7 @@ function webfileTraverseAndGenerate(dir: string) {
             const execperms = stats.mode & 0o111;
             const permstring = execperms ? `curfile.chmod(DSFilePerms.rx());` : "";
             const className = processFilename(srcPath);
+
             //DSProcess
             if (className) {
                 const importPath = srcPath.replace(/^src\//, '').replace(/.ts$/, '');
@@ -104,6 +105,7 @@ function webfileTraverseAndGenerate(dir: string) {
     curdir.addfile("${binFileName}", binfile);
      `;
             }
+            
             //DSIWebFile
             else {
                 let varname = sanitize(relPath);
@@ -121,59 +123,18 @@ function webfileTraverseAndGenerate(dir: string) {
     }
 }
 
-console.log(`Doing bin file generation from ${binFileDir}`);
-
-// let bin_imports = '// BIN IMPORTS\n';
-// const bin_header = `
-//     // BIN HEADER
-//     const bindir = fs.root.mkdir('bin');
-//     let binfile: DSInode;
-
-// `;
-// let bin_body = '    // BIN BODY\n';
-// const entries = fs.readdirSync(binFileDir, { withFileTypes: true });
-// for (const entry of entries) {
-//     const srcPath = path.join(entry.parentPath, entry.name);
-//     const importPath = srcPath.replace(/^src\//, '').replace(/.ts$/, '');
-//     let match = importPath.match(/([^\/]+)$/);
-//     if (!match)
-//         throw Error("could not extract bin filename");
-//     const binFileName = match[1];
-
-//     console.log(`Create ${binFileName} from ${srcPath}`);
-//     const file = fs.readFileSync(srcPath, 'utf-8');
-//     match = file.match(/export class (\w+) extends (DSProcess|DSApp) {/);
-//     if (!match)
-//         throw Error("could not find DSProcess class");
-//     const className = match[1];
-//     bin_imports += `import { ${className} } from "./${importPath}";\n`
-//     bin_body += `
-//     binfile = new DSIProcessFile(fs, ${className});
-//     bindir.addfile("${binFileName}", binfile);
-//     `;
-
-// }
-// const bin_footer = `
-//     // BIN FOOTER
-//     bindir.chmod(DSFilePerms.rx());
-// `;
 
 console.log(`Doing web file traversal in ${webFileDir}`);
 let pages = fs.readdirSync(webFileDir);
 pages.forEach(element => {
     webfileTraverseAndGenerate(webFileDir + '/' + element)
 });
-//webfileTraverseAndGenerate(webFileDir);
 
 console.log(`Writing ${outputFile}`);
 fs.writeFileSync(outputFile,
     header
-    //+ bin_imports
     + webfile_traversal_imports
     + buildrootfs_header
-    // + bin_header
-    //+ bin_body
-    //+ bin_footer
     + webfile_traversal_header
     + webfile_traversal_body
     + main_footer
