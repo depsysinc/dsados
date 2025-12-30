@@ -13,7 +13,7 @@ export class PRSplash extends DSProcess {
         );
         optparser.parseWithUsageAndHelp(this.argv);
 
-        const inode = this.cwd.getfile("/data/depsys.txt")
+        const inode = this.cwd.getfile("/etc/depsys.txt")
         const text = await inode.contentAsText().read();
 
         await DSKernel.terminal.baudWrite("");
