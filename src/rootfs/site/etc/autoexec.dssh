@@ -1,0 +1,21 @@
+#
+# DSADOS AUTOEXEC FILE
+#
+PATH=/bin
+
+
+if [-d /local/home]
+else
+    echo "localfs: create home directory"
+    cd local
+    mkdir home
+    sleep 1000
+    cd ..
+endif
+
+if [-f /local/home/.dsshrc]
+    source /local/home/.dsshrc
+endif
+
+splash
+dsmdbrowser /data/site/page/index.dsmd
