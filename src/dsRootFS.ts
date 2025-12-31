@@ -9,1072 +9,1055 @@ import { DSFilePerms, DSFileSystem, DSRAMFileSystem, DSIDirectory, DSInode } fro
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
 import { DSIWebFile } from "./filesystem/dsIWebFile";
 
-// BIN IMPORTS
-import { PRCat } from "./process/cat";
-import { PRCaterpillar } from "./process/caterpillar";
-import { PRCHMod } from "./process/chmod";
-import { PRTestAnim } from "./process/demoanim";
-import { PRDemoCurses } from "./process/democurses";
-import { PRDemoMarkdown } from "./process/demomarkdown";
-import { PRDemoMouseTouch } from "./process/demomousetouch";
-import { PRDSMDBrowser } from "./process/dsmdbrowser";
-import { DSShell } from "./process/dssh";
-import { PREcho } from "./process/echo";
-import { PREnv } from "./process/env";
-import { PRFile } from "./process/file";
-import { PRFSViewer } from "./process/fsviewer";
-import { PRImgview } from "./process/imgview";
-import { PRInit } from "./process/init";
-import { PRLess } from "./process/less";
-import { PRLs } from "./process/ls";
-import { PRMan } from "./process/man";
-import { PRMkdir } from "./process/mkdir";
-import { PRPixelAssault } from "./process/pixelassault";
-import { PRPs } from "./process/ps";
-import { PRPwd } from "./process/pwd";
-import { PRReset } from "./process/reset";
-import { PRSleep } from "./process/sleep";
-import { PRSplash } from "./process/splash";
 // WEBFILE TRAVERSAL IMPORTS
-import root_data_app_dsmdbrowser_404_dsmd from "./root/data/app/dsmdbrowser/404.dsmd";
-import root_data_app_fsviewer_foldericon_png from "./root/data/app/fsviewer/foldericon.png";
-import root_data_app_fsviewer_fsvieweropen_dsmd from "./root/data/app/fsviewer/fsvieweropen.dsmd";
-import root_data_app_fsviewer_imageicon_png from "./root/data/app/fsviewer/imageicon.png";
-import root_data_app_fsviewer_texticon_png from "./root/data/app/fsviewer/texticon.png";
-import root_data_app_pixel_assault_Enemies_Alien1_tile000_png from "./root/data/app/pixel_assault/Enemies/Alien1/tile000.png";
-import root_data_app_pixel_assault_Enemies_Alien1_tile001_png from "./root/data/app/pixel_assault/Enemies/Alien1/tile001.png";
-import root_data_app_pixel_assault_Enemies_Alien1_tile002_png from "./root/data/app/pixel_assault/Enemies/Alien1/tile002.png";
-import root_data_app_pixel_assault_Enemies_blub_blub1_png from "./root/data/app/pixel_assault/Enemies/blub/blub1.png";
-import root_data_app_pixel_assault_Enemies_blub_blub2_png from "./root/data/app/pixel_assault/Enemies/blub/blub2.png";
-import root_data_app_pixel_assault_Enemies_enemygreen_gif from "./root/data/app/pixel_assault/Enemies/enemygreen.gif";
-import root_data_app_pixel_assault_Enemies_grab_grab1_png from "./root/data/app/pixel_assault/Enemies/grab/grab1.png";
-import root_data_app_pixel_assault_Enemies_grab_grab2_png from "./root/data/app/pixel_assault/Enemies/grab/grab2.png";
-import root_data_app_pixel_assault_Enemies_grab_grab3_png from "./root/data/app/pixel_assault/Enemies/grab/grab3.png";
-import root_data_app_pixel_assault_Enemies_paranoid_gif from "./root/data/app/pixel_assault/Enemies/paranoid.gif";
-import root_data_app_pixel_assault_PixelAssaultSplash2_png from "./root/data/app/pixel_assault/PixelAssaultSplash2.png";
-import root_data_app_pixel_assault_background_jpg from "./root/data/app/pixel_assault/background.jpg";
-import root_data_app_pixel_assault_bonuses_bulletbonus_png from "./root/data/app/pixel_assault/bonuses/bulletbonus.png";
-import root_data_app_pixel_assault_bonuses_heartbonus_png from "./root/data/app/pixel_assault/bonuses/heartbonus.png";
-import root_data_app_pixel_assault_bonuses_scorebonus_png from "./root/data/app/pixel_assault/bonuses/scorebonus.png";
-import root_data_app_pixel_assault_bonuses_shieldbonus_png from "./root/data/app/pixel_assault/bonuses/shieldbonus.png";
-import root_data_app_pixel_assault_bonuses_speedbonus_png from "./root/data/app/pixel_assault/bonuses/speedbonus.png";
-import root_data_app_pixel_assault_bullet_png from "./root/data/app/pixel_assault/bullet.png";
-import root_data_app_pixel_assault_enemybullet_png from "./root/data/app/pixel_assault/enemybullet.png";
-import root_data_app_pixel_assault_heartanim_gif from "./root/data/app/pixel_assault/heartanim.gif";
-import root_data_app_pixel_assault_numbers_digit0_png from "./root/data/app/pixel_assault/numbers/digit0.png";
-import root_data_app_pixel_assault_numbers_digit1_png from "./root/data/app/pixel_assault/numbers/digit1.png";
-import root_data_app_pixel_assault_numbers_digit2_png from "./root/data/app/pixel_assault/numbers/digit2.png";
-import root_data_app_pixel_assault_numbers_digit3_png from "./root/data/app/pixel_assault/numbers/digit3.png";
-import root_data_app_pixel_assault_numbers_digit4_png from "./root/data/app/pixel_assault/numbers/digit4.png";
-import root_data_app_pixel_assault_numbers_digit5_png from "./root/data/app/pixel_assault/numbers/digit5.png";
-import root_data_app_pixel_assault_numbers_digit6_png from "./root/data/app/pixel_assault/numbers/digit6.png";
-import root_data_app_pixel_assault_numbers_digit7_png from "./root/data/app/pixel_assault/numbers/digit7.png";
-import root_data_app_pixel_assault_numbers_digit8_png from "./root/data/app/pixel_assault/numbers/digit8.png";
-import root_data_app_pixel_assault_numbers_digit9_png from "./root/data/app/pixel_assault/numbers/digit9.png";
-import root_data_app_pixel_assault_pixelsplosion_gif from "./root/data/app/pixel_assault/pixelsplosion.gif";
-import root_data_app_pixel_assault_player_lightning0_png from "./root/data/app/pixel_assault/player/lightning0.png";
-import root_data_app_pixel_assault_player_lightning1_png from "./root/data/app/pixel_assault/player/lightning1.png";
-import root_data_app_pixel_assault_player_lightning2_png from "./root/data/app/pixel_assault/player/lightning2.png";
-import root_data_app_pixel_assault_player_lightning3_png from "./root/data/app/pixel_assault/player/lightning3.png";
-import root_data_app_pixel_assault_shieldpiece_png from "./root/data/app/pixel_assault/shieldpiece.png";
-import root_data_app_pixel_assault_shieldpiece10_png from "./root/data/app/pixel_assault/shieldpiece10.png";
-import root_data_app_pixel_assault_shieldpiece3_png from "./root/data/app/pixel_assault/shieldpiece3.png";
-import root_data_app_pixel_assault_shieldpiece6_png from "./root/data/app/pixel_assault/shieldpiece6.png";
-import root_data_demo_animation_32x32_A_png from "./root/data/demo/animation/32x32_A.png";
-import root_data_demo_animation_32x32_B_png from "./root/data/demo/animation/32x32_B.png";
-import root_data_demo_animation_32x32_C_png from "./root/data/demo/animation/32x32_C.png";
-import root_data_demo_dssh_samplescript_dssh from "./root/data/demo/dssh/samplescript.dssh";
-import root_data_demo_markdown_32x32_testpattern_png from "./root/data/demo/markdown/32x32_testpattern.png";
-import root_data_demo_markdown_demomarkdown_dsmd from "./root/data/demo/markdown/demomarkdown.dsmd";
-import root_data_demo_mousetouch_pointer_png from "./root/data/demo/mousetouch/pointer.png";
-import root_data_deprecated_systems_incorporated_txt from "./root/data/deprecated_systems_incorporated.txt";
-import root_data_depsys_txt from "./root/data/depsys.txt";
-import root_data_man__template_dsmd from "./root/data/man/_template.dsmd";
-import root_data_man_cat_dsmd from "./root/data/man/cat.dsmd";
-import root_data_man_caterpillar_dsmd from "./root/data/man/caterpillar.dsmd";
-import root_data_man_chmod_dsmd from "./root/data/man/chmod.dsmd";
-import root_data_man_demoanim_dsmd from "./root/data/man/demoanim.dsmd";
-import root_data_man_democurses_dsmd from "./root/data/man/democurses.dsmd";
-import root_data_man_demomarkdown_dsmd from "./root/data/man/demomarkdown.dsmd";
-import root_data_man_demomousetouch_dsmd from "./root/data/man/demomousetouch.dsmd";
-import root_data_man_dsmdbrowser_dsmd from "./root/data/man/dsmdbrowser.dsmd";
-import root_data_man_dssh_dsmd from "./root/data/man/dssh.dsmd";
-import root_data_man_echo_dsmd from "./root/data/man/echo.dsmd";
-import root_data_man_env_dsmd from "./root/data/man/env.dsmd";
-import root_data_man_file_dsmd from "./root/data/man/file.dsmd";
-import root_data_man_fsviewer_dsmd from "./root/data/man/fsviewer.dsmd";
-import root_data_man_imgview_dsmd from "./root/data/man/imgview.dsmd";
-import root_data_man_init_dsmd from "./root/data/man/init.dsmd";
-import root_data_man_less_dsmd from "./root/data/man/less.dsmd";
-import root_data_man_ls_dsmd from "./root/data/man/ls.dsmd";
-import root_data_man_man_dsmd from "./root/data/man/man.dsmd";
-import root_data_man_mkdir_dsmd from "./root/data/man/mkdir.dsmd";
-import root_data_man_pixelassault_dsmd from "./root/data/man/pixelassault.dsmd";
-import root_data_man_ps_dsmd from "./root/data/man/ps.dsmd";
-import root_data_man_pwd_dsmd from "./root/data/man/pwd.dsmd";
-import root_data_man_reset_dsmd from "./root/data/man/reset.dsmd";
-import root_data_man_sleep_dsmd from "./root/data/man/sleep.dsmd";
-import root_data_man_splash_dsmd from "./root/data/man/splash.dsmd";
-import root_data_site_130x46_godot_png from "./root/data/site/130x46_godot.png";
-import root_data_site_181x64_godot_png from "./root/data/site/181x64_godot.png";
-import root_data_site_DSADOS_dsmd from "./root/data/site/DSADOS.dsmd";
-import root_data_site_GODOT_dsmd from "./root/data/site/GODOT.dsmd";
-import root_data_site_about_dsmd from "./root/data/site/about.dsmd";
-import root_data_site_avatars_posterized_globnobulous_png from "./root/data/site/avatars/posterized_globnobulous.png";
-import root_data_site_caterpillar_png from "./root/data/site/caterpillar.png";
-import root_data_site_concursion_dsmd from "./root/data/site/concursion.dsmd";
-import root_data_site_dauntless_dsmd from "./root/data/site/dauntless.dsmd";
-import root_data_site_devlog_2025_01_30_20250130_dsmd from "./root/data/site/devlog/2025-01-30/20250130.dsmd";
-import root_data_site_devlog_2025_01_30_C64_png from "./root/data/site/devlog/2025-01-30/C64.png";
-import root_data_site_devlog_2025_01_30_Road_Toad_png from "./root/data/site/devlog/2025-01-30/Road-Toad.png";
-import root_data_site_devlog_2025_02_10_20250210_dsmd from "./root/data/site/devlog/2025-02-10/20250210.dsmd";
-import root_data_site_devlog_2025_03_01_20250301_dsmd from "./root/data/site/devlog/2025-03-01/20250301.dsmd";
-import root_data_site_devlog_2025_03_01_Signal11_png from "./root/data/site/devlog/2025-03-01/Signal11.png";
-import root_data_site_devlog_2025_03_02_20250302_dsmd from "./root/data/site/devlog/2025-03-02/20250302.dsmd";
-import root_data_site_devlog_2025_03_02_console_log_png from "./root/data/site/devlog/2025-03-02/console.log.png";
-import root_data_site_devlog_2025_03_16_20250316_dsmd from "./root/data/site/devlog/2025-03-16/20250316.dsmd";
-import root_data_site_devlog_2025_03_16_mainmenu_png from "./root/data/site/devlog/2025-03-16/mainmenu.png";
-import root_data_site_devlog_2025_03_16_modem_300_users_manual_front_png from "./root/data/site/devlog/2025-03-16/modem_300_users_manual_front.png";
-import root_data_site_devlog_2025_03_16_playarea_png from "./root/data/site/devlog/2025-03-16/playarea.png";
-import root_data_site_devlog_2025_08_26_20250826_dsmd from "./root/data/site/devlog/2025-08-26/20250826.dsmd";
-import root_data_site_devlog_2025_08_26_demo2_gif from "./root/data/site/devlog/2025-08-26/demo2.gif";
-import root_data_site_devlog_2025_08_26_ozzyforest_png from "./root/data/site/devlog/2025-08-26/ozzyforest.png";
-import root_data_site_devlog_2025_09_02_20250902_dsmd from "./root/data/site/devlog/2025-09-02/20250902.dsmd";
-import root_data_site_devlog_2025_09_02_UofT_png from "./root/data/site/devlog/2025-09-02/UofT.png";
-import root_data_site_devlog_2025_09_02_UofTcampus_png from "./root/data/site/devlog/2025-09-02/UofTcampus.png";
-import root_data_site_devlog_devlog_dsmd from "./root/data/site/devlog/devlog.dsmd";
-import root_data_site_devlog_entry_template_dsmd from "./root/data/site/devlog/entry-template.dsmd";
-import root_data_site_games_dsmd from "./root/data/site/games.dsmd";
-import root_data_site_index_dsmd from "./root/data/site/index.dsmd";
-import root_data_site_tech_dsmd from "./root/data/site/tech.dsmd";
-import root_data_test_bazisa_txt from "./root/data/test/bazisa.txt";
-import root_data_test_image_gorzocrop_png from "./root/data/test/image/gorzocrop.png";
-import root_data_test_image_worldturning_gif from "./root/data/test/image/worldturning.gif";
-import root_etc_autoexec_dssh from "./root/etc/autoexec.dssh";
-import root_etc_dsos_conf from "./root/etc/dsos.conf";
+import { PRCat } from "./rootfs/base/bin/cat";
+import { PRCaterpillar } from "./rootfs/base/bin/caterpillar";
+import { PRCHMod } from "./rootfs/base/bin/chmod";
+import { PRTestAnim } from "./rootfs/base/bin/demoanim";
+import { PRDemoCurses } from "./rootfs/base/bin/democurses";
+import { PRDemoMarkdown } from "./rootfs/base/bin/demomarkdown";
+import { PRDemoMouseTouch } from "./rootfs/base/bin/demomousetouch";
+import { PRDSMDBrowser } from "./rootfs/base/bin/dsmdbrowser";
+import { DSShell } from "./rootfs/base/bin/dssh";
+import { PREcho } from "./rootfs/base/bin/echo";
+import { PREnv } from "./rootfs/base/bin/env";
+import { PRFile } from "./rootfs/base/bin/file";
+import { PRFSViewer } from "./rootfs/base/bin/fsviewer";
+import { PRImgview } from "./rootfs/base/bin/imgview";
+import { PRInit } from "./rootfs/base/bin/init";
+import { PRLess } from "./rootfs/base/bin/less";
+import { PRLs } from "./rootfs/base/bin/ls";
+import { PRMan } from "./rootfs/base/bin/man";
+import { PRMkdir } from "./rootfs/base/bin/mkdir";
+import { PRPixelAssault } from "./rootfs/base/bin/pixelassault";
+import { PRPs } from "./rootfs/base/bin/ps";
+import { PRPwd } from "./rootfs/base/bin/pwd";
+import { PRReset } from "./rootfs/base/bin/reset";
+import { PRSleep } from "./rootfs/base/bin/sleep";
+import { PRSplash } from "./rootfs/base/bin/splash";
+import rootfs_base_demo_animation_32x32_A_png from "./rootfs/base/demo/animation/32x32_A.png";
+import rootfs_base_demo_animation_32x32_B_png from "./rootfs/base/demo/animation/32x32_B.png";
+import rootfs_base_demo_animation_32x32_C_png from "./rootfs/base/demo/animation/32x32_C.png";
+import rootfs_base_demo_dssh_samplescript_dssh from "./rootfs/base/demo/dssh/samplescript.dssh";
+import rootfs_base_demo_image_gorzocrop_png from "./rootfs/base/demo/image/gorzocrop.png";
+import rootfs_base_demo_image_worldturning_gif from "./rootfs/base/demo/image/worldturning.gif";
+import rootfs_base_demo_markdown_32x32_testpattern_png from "./rootfs/base/demo/markdown/32x32_testpattern.png";
+import rootfs_base_demo_markdown_demomarkdown_dsmd from "./rootfs/base/demo/markdown/demomarkdown.dsmd";
+import rootfs_base_demo_mousetouch_pointer_png from "./rootfs/base/demo/mousetouch/pointer.png";
+import rootfs_base_demo_text_bazisa_txt from "./rootfs/base/demo/text/bazisa.txt";
+import rootfs_base_man__template_dsmd from "./rootfs/base/man/_template.dsmd";
+import rootfs_base_man_cat_dsmd from "./rootfs/base/man/cat.dsmd";
+import rootfs_base_man_caterpillar_dsmd from "./rootfs/base/man/caterpillar.dsmd";
+import rootfs_base_man_chmod_dsmd from "./rootfs/base/man/chmod.dsmd";
+import rootfs_base_man_demoanim_dsmd from "./rootfs/base/man/demoanim.dsmd";
+import rootfs_base_man_democurses_dsmd from "./rootfs/base/man/democurses.dsmd";
+import rootfs_base_man_demomarkdown_dsmd from "./rootfs/base/man/demomarkdown.dsmd";
+import rootfs_base_man_demomousetouch_dsmd from "./rootfs/base/man/demomousetouch.dsmd";
+import rootfs_base_man_dsmdbrowser_dsmd from "./rootfs/base/man/dsmdbrowser.dsmd";
+import rootfs_base_man_dssh_dsmd from "./rootfs/base/man/dssh.dsmd";
+import rootfs_base_man_echo_dsmd from "./rootfs/base/man/echo.dsmd";
+import rootfs_base_man_env_dsmd from "./rootfs/base/man/env.dsmd";
+import rootfs_base_man_file_dsmd from "./rootfs/base/man/file.dsmd";
+import rootfs_base_man_fsviewer_dsmd from "./rootfs/base/man/fsviewer.dsmd";
+import rootfs_base_man_imgview_dsmd from "./rootfs/base/man/imgview.dsmd";
+import rootfs_base_man_init_dsmd from "./rootfs/base/man/init.dsmd";
+import rootfs_base_man_less_dsmd from "./rootfs/base/man/less.dsmd";
+import rootfs_base_man_ls_dsmd from "./rootfs/base/man/ls.dsmd";
+import rootfs_base_man_man_dsmd from "./rootfs/base/man/man.dsmd";
+import rootfs_base_man_mkdir_dsmd from "./rootfs/base/man/mkdir.dsmd";
+import rootfs_base_man_pixelassault_dsmd from "./rootfs/base/man/pixelassault.dsmd";
+import rootfs_base_man_ps_dsmd from "./rootfs/base/man/ps.dsmd";
+import rootfs_base_man_pwd_dsmd from "./rootfs/base/man/pwd.dsmd";
+import rootfs_base_man_reset_dsmd from "./rootfs/base/man/reset.dsmd";
+import rootfs_base_man_sleep_dsmd from "./rootfs/base/man/sleep.dsmd";
+import rootfs_base_man_splash_dsmd from "./rootfs/base/man/splash.dsmd";
+import rootfs_site_data_app_dsmdbrowser_404_dsmd from "./rootfs/site/data/app/dsmdbrowser/404.dsmd";
+import rootfs_site_data_app_pixel_assault_Enemies_Alien1_tile000_png from "./rootfs/site/data/app/pixel_assault/Enemies/Alien1/tile000.png";
+import rootfs_site_data_app_pixel_assault_Enemies_Alien1_tile001_png from "./rootfs/site/data/app/pixel_assault/Enemies/Alien1/tile001.png";
+import rootfs_site_data_app_pixel_assault_Enemies_Alien1_tile002_png from "./rootfs/site/data/app/pixel_assault/Enemies/Alien1/tile002.png";
+import rootfs_site_data_app_pixel_assault_Enemies_blub_blub1_png from "./rootfs/site/data/app/pixel_assault/Enemies/blub/blub1.png";
+import rootfs_site_data_app_pixel_assault_Enemies_blub_blub2_png from "./rootfs/site/data/app/pixel_assault/Enemies/blub/blub2.png";
+import rootfs_site_data_app_pixel_assault_Enemies_enemygreen_gif from "./rootfs/site/data/app/pixel_assault/Enemies/enemygreen.gif";
+import rootfs_site_data_app_pixel_assault_Enemies_grab_grab1_png from "./rootfs/site/data/app/pixel_assault/Enemies/grab/grab1.png";
+import rootfs_site_data_app_pixel_assault_Enemies_grab_grab2_png from "./rootfs/site/data/app/pixel_assault/Enemies/grab/grab2.png";
+import rootfs_site_data_app_pixel_assault_Enemies_grab_grab3_png from "./rootfs/site/data/app/pixel_assault/Enemies/grab/grab3.png";
+import rootfs_site_data_app_pixel_assault_Enemies_paranoid_gif from "./rootfs/site/data/app/pixel_assault/Enemies/paranoid.gif";
+import rootfs_site_data_app_pixel_assault_PixelAssaultSplash2_png from "./rootfs/site/data/app/pixel_assault/PixelAssaultSplash2.png";
+import rootfs_site_data_app_pixel_assault_background_jpg from "./rootfs/site/data/app/pixel_assault/background.jpg";
+import rootfs_site_data_app_pixel_assault_bonuses_bulletbonus_png from "./rootfs/site/data/app/pixel_assault/bonuses/bulletbonus.png";
+import rootfs_site_data_app_pixel_assault_bonuses_heartbonus_png from "./rootfs/site/data/app/pixel_assault/bonuses/heartbonus.png";
+import rootfs_site_data_app_pixel_assault_bonuses_scorebonus_png from "./rootfs/site/data/app/pixel_assault/bonuses/scorebonus.png";
+import rootfs_site_data_app_pixel_assault_bonuses_shieldbonus_png from "./rootfs/site/data/app/pixel_assault/bonuses/shieldbonus.png";
+import rootfs_site_data_app_pixel_assault_bonuses_speedbonus_png from "./rootfs/site/data/app/pixel_assault/bonuses/speedbonus.png";
+import rootfs_site_data_app_pixel_assault_bullet_png from "./rootfs/site/data/app/pixel_assault/bullet.png";
+import rootfs_site_data_app_pixel_assault_enemybullet_png from "./rootfs/site/data/app/pixel_assault/enemybullet.png";
+import rootfs_site_data_app_pixel_assault_heartanim_gif from "./rootfs/site/data/app/pixel_assault/heartanim.gif";
+import rootfs_site_data_app_pixel_assault_numbers_digit0_png from "./rootfs/site/data/app/pixel_assault/numbers/digit0.png";
+import rootfs_site_data_app_pixel_assault_numbers_digit1_png from "./rootfs/site/data/app/pixel_assault/numbers/digit1.png";
+import rootfs_site_data_app_pixel_assault_numbers_digit2_png from "./rootfs/site/data/app/pixel_assault/numbers/digit2.png";
+import rootfs_site_data_app_pixel_assault_numbers_digit3_png from "./rootfs/site/data/app/pixel_assault/numbers/digit3.png";
+import rootfs_site_data_app_pixel_assault_numbers_digit4_png from "./rootfs/site/data/app/pixel_assault/numbers/digit4.png";
+import rootfs_site_data_app_pixel_assault_numbers_digit5_png from "./rootfs/site/data/app/pixel_assault/numbers/digit5.png";
+import rootfs_site_data_app_pixel_assault_numbers_digit6_png from "./rootfs/site/data/app/pixel_assault/numbers/digit6.png";
+import rootfs_site_data_app_pixel_assault_numbers_digit7_png from "./rootfs/site/data/app/pixel_assault/numbers/digit7.png";
+import rootfs_site_data_app_pixel_assault_numbers_digit8_png from "./rootfs/site/data/app/pixel_assault/numbers/digit8.png";
+import rootfs_site_data_app_pixel_assault_numbers_digit9_png from "./rootfs/site/data/app/pixel_assault/numbers/digit9.png";
+import rootfs_site_data_app_pixel_assault_pixelsplosion_gif from "./rootfs/site/data/app/pixel_assault/pixelsplosion.gif";
+import rootfs_site_data_app_pixel_assault_player_lightning0_png from "./rootfs/site/data/app/pixel_assault/player/lightning0.png";
+import rootfs_site_data_app_pixel_assault_player_lightning1_png from "./rootfs/site/data/app/pixel_assault/player/lightning1.png";
+import rootfs_site_data_app_pixel_assault_player_lightning2_png from "./rootfs/site/data/app/pixel_assault/player/lightning2.png";
+import rootfs_site_data_app_pixel_assault_player_lightning3_png from "./rootfs/site/data/app/pixel_assault/player/lightning3.png";
+import rootfs_site_data_app_pixel_assault_shieldpiece_png from "./rootfs/site/data/app/pixel_assault/shieldpiece.png";
+import rootfs_site_data_app_pixel_assault_shieldpiece10_png from "./rootfs/site/data/app/pixel_assault/shieldpiece10.png";
+import rootfs_site_data_app_pixel_assault_shieldpiece3_png from "./rootfs/site/data/app/pixel_assault/shieldpiece3.png";
+import rootfs_site_data_app_pixel_assault_shieldpiece6_png from "./rootfs/site/data/app/pixel_assault/shieldpiece6.png";
+import rootfs_site_data_site_avatars_deprecated_systems_incorporated_txt from "./rootfs/site/data/site/avatars/deprecated_systems_incorporated.txt";
+import rootfs_site_data_site_avatars_posterized_globnobulous_png from "./rootfs/site/data/site/avatars/posterized_globnobulous.png";
+import rootfs_site_data_site_devlog_2025_01_30_20250130_dsmd from "./rootfs/site/data/site/devlog/2025-01-30/20250130.dsmd";
+import rootfs_site_data_site_devlog_2025_01_30_C64_png from "./rootfs/site/data/site/devlog/2025-01-30/C64.png";
+import rootfs_site_data_site_devlog_2025_01_30_Road_Toad_png from "./rootfs/site/data/site/devlog/2025-01-30/Road-Toad.png";
+import rootfs_site_data_site_devlog_2025_02_10_20250210_dsmd from "./rootfs/site/data/site/devlog/2025-02-10/20250210.dsmd";
+import rootfs_site_data_site_devlog_2025_03_01_20250301_dsmd from "./rootfs/site/data/site/devlog/2025-03-01/20250301.dsmd";
+import rootfs_site_data_site_devlog_2025_03_01_Signal11_png from "./rootfs/site/data/site/devlog/2025-03-01/Signal11.png";
+import rootfs_site_data_site_devlog_2025_03_02_20250302_dsmd from "./rootfs/site/data/site/devlog/2025-03-02/20250302.dsmd";
+import rootfs_site_data_site_devlog_2025_03_02_console_log_png from "./rootfs/site/data/site/devlog/2025-03-02/console.log.png";
+import rootfs_site_data_site_devlog_2025_03_16_20250316_dsmd from "./rootfs/site/data/site/devlog/2025-03-16/20250316.dsmd";
+import rootfs_site_data_site_devlog_2025_03_16_mainmenu_png from "./rootfs/site/data/site/devlog/2025-03-16/mainmenu.png";
+import rootfs_site_data_site_devlog_2025_03_16_modem_300_users_manual_front_png from "./rootfs/site/data/site/devlog/2025-03-16/modem_300_users_manual_front.png";
+import rootfs_site_data_site_devlog_2025_03_16_playarea_png from "./rootfs/site/data/site/devlog/2025-03-16/playarea.png";
+import rootfs_site_data_site_devlog_2025_08_26_20250826_dsmd from "./rootfs/site/data/site/devlog/2025-08-26/20250826.dsmd";
+import rootfs_site_data_site_devlog_2025_08_26_demo2_gif from "./rootfs/site/data/site/devlog/2025-08-26/demo2.gif";
+import rootfs_site_data_site_devlog_2025_08_26_ozzyforest_png from "./rootfs/site/data/site/devlog/2025-08-26/ozzyforest.png";
+import rootfs_site_data_site_devlog_2025_09_02_20250902_dsmd from "./rootfs/site/data/site/devlog/2025-09-02/20250902.dsmd";
+import rootfs_site_data_site_devlog_2025_09_02_UofT_png from "./rootfs/site/data/site/devlog/2025-09-02/UofT.png";
+import rootfs_site_data_site_devlog_2025_09_02_UofTcampus_png from "./rootfs/site/data/site/devlog/2025-09-02/UofTcampus.png";
+import rootfs_site_data_site_devlog_devlog_dsmd from "./rootfs/site/data/site/devlog/devlog.dsmd";
+import rootfs_site_data_site_devlog_entry_template_dsmd from "./rootfs/site/data/site/devlog/entry-template.dsmd";
+import rootfs_site_data_site_image_130x46_godot_png from "./rootfs/site/data/site/image/130x46_godot.png";
+import rootfs_site_data_site_image_181x64_godot_png from "./rootfs/site/data/site/image/181x64_godot.png";
+import rootfs_site_data_site_image_caterpillar_png from "./rootfs/site/data/site/image/caterpillar.png";
+import rootfs_site_data_site_page_DSADOS_dsmd from "./rootfs/site/data/site/page/DSADOS.dsmd";
+import rootfs_site_data_site_page_GODOT_dsmd from "./rootfs/site/data/site/page/GODOT.dsmd";
+import rootfs_site_data_site_page_about_dsmd from "./rootfs/site/data/site/page/about.dsmd";
+import rootfs_site_data_site_page_concursion_dsmd from "./rootfs/site/data/site/page/concursion.dsmd";
+import rootfs_site_data_site_page_dauntless_dsmd from "./rootfs/site/data/site/page/dauntless.dsmd";
+import rootfs_site_data_site_page_depsys_txt from "./rootfs/site/data/site/page/depsys.txt";
+import rootfs_site_data_site_page_games_dsmd from "./rootfs/site/data/site/page/games.dsmd";
+import rootfs_site_data_site_page_index_dsmd from "./rootfs/site/data/site/page/index.dsmd";
+import rootfs_site_data_site_page_tech_dsmd from "./rootfs/site/data/site/page/tech.dsmd";
+import rootfs_site_etc_autoexec_dssh from "./rootfs/site/etc/autoexec.dssh";
+import rootfs_site_etc_dsos_conf from "./rootfs/site/etc/dsos.conf";
 
 // BUILDROOTFS HEADER
 export function buildrootfs(): DSFileSystem {
     const fs = new DSRAMFileSystem();
 
-    // BIN HEADER
-    const bindir = fs.root.mkdir('bin');
-    let binfile: DSInode;
-
-    // BIN BODY
-
-    binfile = new DSIProcessFile(fs, PRCat);
-    bindir.addfile("cat", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRCaterpillar);
-    bindir.addfile("caterpillar", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRCHMod);
-    bindir.addfile("chmod", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRTestAnim);
-    bindir.addfile("demoanim", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRDemoCurses);
-    bindir.addfile("democurses", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRDemoMarkdown);
-    bindir.addfile("demomarkdown", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRDemoMouseTouch);
-    bindir.addfile("demomousetouch", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRDSMDBrowser);
-    bindir.addfile("dsmdbrowser", binfile);
-    
-    binfile = new DSIProcessFile(fs, DSShell);
-    bindir.addfile("dssh", binfile);
-    
-    binfile = new DSIProcessFile(fs, PREcho);
-    bindir.addfile("echo", binfile);
-    
-    binfile = new DSIProcessFile(fs, PREnv);
-    bindir.addfile("env", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRFile);
-    bindir.addfile("file", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRFSViewer);
-    bindir.addfile("fsviewer", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRImgview);
-    bindir.addfile("imgview", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRInit);
-    bindir.addfile("init", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRLess);
-    bindir.addfile("less", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRLs);
-    bindir.addfile("ls", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRMan);
-    bindir.addfile("man", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRMkdir);
-    bindir.addfile("mkdir", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRPixelAssault);
-    bindir.addfile("pixelassault", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRPs);
-    bindir.addfile("ps", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRPwd);
-    bindir.addfile("pwd", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRReset);
-    bindir.addfile("reset", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRSleep);
-    bindir.addfile("sleep", binfile);
-    
-    binfile = new DSIProcessFile(fs, PRSplash);
-    bindir.addfile("splash", binfile);
-    
-    // BIN FOOTER
-    bindir.chmod(DSFilePerms.rx());
-
     // WEBFILE TRAVERSAL HEADER
     let dirstack: DSIDirectory[] = [];
     let curdir = fs.root;
     let curfile: DSIWebFile;
+    let binfile: DSInode;
 
     // WEBFILE TRAVERSAL BODY
 
-    // Traversing root/data
+    // Traversing rootfs/base/bin
     dirstack.push(curdir);
-    curdir = curdir.mkdir('data');
+    curdir = curdir.mkdir('bin');
     
-    // Traversing root/data/app
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('app');
-    
-    // Traversing root/data/app/dsmdbrowser
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('dsmdbrowser');
-    
-    // Creating root/data/app/dsmdbrowser/404.dsmd
-    curfile = new DSIWebFile(fs, root_data_app_dsmdbrowser_404_dsmd);
-    curdir.addfile("404.dsmd", curfile);
-    
-    
+    binfile = new DSIProcessFile(fs, PRCat);
+    curdir.addfile("cat", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRCaterpillar);
+    curdir.addfile("caterpillar", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRCHMod);
+    curdir.addfile("chmod", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRTestAnim);
+    curdir.addfile("demoanim", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRDemoCurses);
+    curdir.addfile("democurses", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRDemoMarkdown);
+    curdir.addfile("demomarkdown", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRDemoMouseTouch);
+    curdir.addfile("demomousetouch", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRDSMDBrowser);
+    curdir.addfile("dsmdbrowser", binfile);
+     
+    binfile = new DSIProcessFile(fs, DSShell);
+    curdir.addfile("dssh", binfile);
+     
+    binfile = new DSIProcessFile(fs, PREcho);
+    curdir.addfile("echo", binfile);
+     
+    binfile = new DSIProcessFile(fs, PREnv);
+    curdir.addfile("env", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRFile);
+    curdir.addfile("file", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRFSViewer);
+    curdir.addfile("fsviewer", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRImgview);
+    curdir.addfile("imgview", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRInit);
+    curdir.addfile("init", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRLess);
+    curdir.addfile("less", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRLs);
+    curdir.addfile("ls", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRMan);
+    curdir.addfile("man", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRMkdir);
+    curdir.addfile("mkdir", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRPixelAssault);
+    curdir.addfile("pixelassault", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRPs);
+    curdir.addfile("ps", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRPwd);
+    curdir.addfile("pwd", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRReset);
+    curdir.addfile("reset", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRSleep);
+    curdir.addfile("sleep", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRSplash);
+    curdir.addfile("splash", binfile);
+     
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
-    // Exited root/data/app/dsmdbrowser
+    // Exited rootfs/base/bin
         
-    // Traversing root/data/app/fsviewer
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('fsviewer');
-    
-    // Creating root/data/app/fsviewer/foldericon.png
-    curfile = new DSIWebFile(fs, root_data_app_fsviewer_foldericon_png);
-    curdir.addfile("foldericon.png", curfile);
-    
-    
-    // Creating root/data/app/fsviewer/fsvieweropen.dsmd
-    curfile = new DSIWebFile(fs, root_data_app_fsviewer_fsvieweropen_dsmd);
-    curdir.addfile("fsvieweropen.dsmd", curfile);
-    
-    
-    // Creating root/data/app/fsviewer/imageicon.png
-    curfile = new DSIWebFile(fs, root_data_app_fsviewer_imageicon_png);
-    curdir.addfile("imageicon.png", curfile);
-    
-    
-    // Creating root/data/app/fsviewer/texticon.png
-    curfile = new DSIWebFile(fs, root_data_app_fsviewer_texticon_png);
-    curdir.addfile("texticon.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/app/fsviewer
-        
-    // Traversing root/data/app/pixel_assault
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('pixel_assault');
-    
-    // Traversing root/data/app/pixel_assault/Enemies
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('Enemies');
-    
-    // Traversing root/data/app/pixel_assault/Enemies/Alien1
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('Alien1');
-    
-    // Creating root/data/app/pixel_assault/Enemies/Alien1/tile000.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_Alien1_tile000_png);
-    curdir.addfile("tile000.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/Enemies/Alien1/tile001.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_Alien1_tile001_png);
-    curdir.addfile("tile001.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/Enemies/Alien1/tile002.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_Alien1_tile002_png);
-    curdir.addfile("tile002.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/app/pixel_assault/Enemies/Alien1
-        
-    // Traversing root/data/app/pixel_assault/Enemies/blub
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('blub');
-    
-    // Creating root/data/app/pixel_assault/Enemies/blub/blub1.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_blub_blub1_png);
-    curdir.addfile("blub1.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/Enemies/blub/blub2.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_blub_blub2_png);
-    curdir.addfile("blub2.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/app/pixel_assault/Enemies/blub
-        
-    // Creating root/data/app/pixel_assault/Enemies/enemygreen.gif
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_enemygreen_gif);
-    curdir.addfile("enemygreen.gif", curfile);
-    
-    
-    // Traversing root/data/app/pixel_assault/Enemies/grab
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('grab');
-    
-    // Creating root/data/app/pixel_assault/Enemies/grab/grab1.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_grab_grab1_png);
-    curdir.addfile("grab1.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/Enemies/grab/grab2.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_grab_grab2_png);
-    curdir.addfile("grab2.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/Enemies/grab/grab3.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_grab_grab3_png);
-    curdir.addfile("grab3.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/app/pixel_assault/Enemies/grab
-        
-    // Creating root/data/app/pixel_assault/Enemies/paranoid.gif
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_Enemies_paranoid_gif);
-    curdir.addfile("paranoid.gif", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/app/pixel_assault/Enemies
-        
-    // Creating root/data/app/pixel_assault/PixelAssaultSplash2.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_PixelAssaultSplash2_png);
-    curdir.addfile("PixelAssaultSplash2.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/background.jpg
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_background_jpg);
-    curdir.addfile("background.jpg", curfile);
-    
-    
-    // Traversing root/data/app/pixel_assault/bonuses
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('bonuses');
-    
-    // Creating root/data/app/pixel_assault/bonuses/bulletbonus.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bonuses_bulletbonus_png);
-    curdir.addfile("bulletbonus.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/bonuses/heartbonus.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bonuses_heartbonus_png);
-    curdir.addfile("heartbonus.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/bonuses/scorebonus.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bonuses_scorebonus_png);
-    curdir.addfile("scorebonus.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/bonuses/shieldbonus.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bonuses_shieldbonus_png);
-    curdir.addfile("shieldbonus.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/bonuses/speedbonus.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bonuses_speedbonus_png);
-    curdir.addfile("speedbonus.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/app/pixel_assault/bonuses
-        
-    // Creating root/data/app/pixel_assault/bullet.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_bullet_png);
-    curdir.addfile("bullet.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/enemybullet.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_enemybullet_png);
-    curdir.addfile("enemybullet.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/heartanim.gif
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_heartanim_gif);
-    curdir.addfile("heartanim.gif", curfile);
-    
-    
-    // Traversing root/data/app/pixel_assault/numbers
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('numbers');
-    
-    // Creating root/data/app/pixel_assault/numbers/digit0.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit0_png);
-    curdir.addfile("digit0.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/numbers/digit1.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit1_png);
-    curdir.addfile("digit1.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/numbers/digit2.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit2_png);
-    curdir.addfile("digit2.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/numbers/digit3.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit3_png);
-    curdir.addfile("digit3.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/numbers/digit4.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit4_png);
-    curdir.addfile("digit4.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/numbers/digit5.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit5_png);
-    curdir.addfile("digit5.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/numbers/digit6.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit6_png);
-    curdir.addfile("digit6.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/numbers/digit7.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit7_png);
-    curdir.addfile("digit7.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/numbers/digit8.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit8_png);
-    curdir.addfile("digit8.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/numbers/digit9.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_numbers_digit9_png);
-    curdir.addfile("digit9.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/app/pixel_assault/numbers
-        
-    // Creating root/data/app/pixel_assault/pixelsplosion.gif
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_pixelsplosion_gif);
-    curdir.addfile("pixelsplosion.gif", curfile);
-    
-    
-    // Traversing root/data/app/pixel_assault/player
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('player');
-    
-    // Creating root/data/app/pixel_assault/player/lightning0.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_player_lightning0_png);
-    curdir.addfile("lightning0.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/player/lightning1.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_player_lightning1_png);
-    curdir.addfile("lightning1.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/player/lightning2.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_player_lightning2_png);
-    curdir.addfile("lightning2.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/player/lightning3.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_player_lightning3_png);
-    curdir.addfile("lightning3.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/app/pixel_assault/player
-        
-    // Creating root/data/app/pixel_assault/shieldpiece.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_shieldpiece_png);
-    curdir.addfile("shieldpiece.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/shieldpiece10.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_shieldpiece10_png);
-    curdir.addfile("shieldpiece10.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/shieldpiece3.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_shieldpiece3_png);
-    curdir.addfile("shieldpiece3.png", curfile);
-    
-    
-    // Creating root/data/app/pixel_assault/shieldpiece6.png
-    curfile = new DSIWebFile(fs, root_data_app_pixel_assault_shieldpiece6_png);
-    curdir.addfile("shieldpiece6.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/app/pixel_assault
-        
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/app
-        
-    // Traversing root/data/demo
+    // Traversing rootfs/base/demo
     dirstack.push(curdir);
     curdir = curdir.mkdir('demo');
     
-    // Traversing root/data/demo/animation
+    // Traversing rootfs/base/demo/animation
     dirstack.push(curdir);
     curdir = curdir.mkdir('animation');
     
-    // Creating root/data/demo/animation/32x32_A.png
-    curfile = new DSIWebFile(fs, root_data_demo_animation_32x32_A_png);
+    // Creating rootfs/base/demo/animation/32x32_A.png
+    curfile = new DSIWebFile(fs, rootfs_base_demo_animation_32x32_A_png);
     curdir.addfile("32x32_A.png", curfile);
     
     
-    // Creating root/data/demo/animation/32x32_B.png
-    curfile = new DSIWebFile(fs, root_data_demo_animation_32x32_B_png);
+    // Creating rootfs/base/demo/animation/32x32_B.png
+    curfile = new DSIWebFile(fs, rootfs_base_demo_animation_32x32_B_png);
     curdir.addfile("32x32_B.png", curfile);
     
     
-    // Creating root/data/demo/animation/32x32_C.png
-    curfile = new DSIWebFile(fs, root_data_demo_animation_32x32_C_png);
+    // Creating rootfs/base/demo/animation/32x32_C.png
+    curfile = new DSIWebFile(fs, rootfs_base_demo_animation_32x32_C_png);
     curdir.addfile("32x32_C.png", curfile);
     
     
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
-    // Exited root/data/demo/animation
+    // Exited rootfs/base/demo/animation
         
-    // Traversing root/data/demo/dssh
+    // Traversing rootfs/base/demo/dssh
     dirstack.push(curdir);
     curdir = curdir.mkdir('dssh');
     
-    // Creating root/data/demo/dssh/samplescript.dssh
-    curfile = new DSIWebFile(fs, root_data_demo_dssh_samplescript_dssh);
+    // Creating rootfs/base/demo/dssh/samplescript.dssh
+    curfile = new DSIWebFile(fs, rootfs_base_demo_dssh_samplescript_dssh);
     curdir.addfile("samplescript.dssh", curfile);
     
     
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
-    // Exited root/data/demo/dssh
+    // Exited rootfs/base/demo/dssh
         
-    // Traversing root/data/demo/markdown
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('markdown');
-    
-    // Creating root/data/demo/markdown/32x32_testpattern.png
-    curfile = new DSIWebFile(fs, root_data_demo_markdown_32x32_testpattern_png);
-    curdir.addfile("32x32_testpattern.png", curfile);
-    
-    
-    // Creating root/data/demo/markdown/demomarkdown.dsmd
-    curfile = new DSIWebFile(fs, root_data_demo_markdown_demomarkdown_dsmd);
-    curdir.addfile("demomarkdown.dsmd", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/demo/markdown
-        
-    // Traversing root/data/demo/mousetouch
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('mousetouch');
-    
-    // Creating root/data/demo/mousetouch/pointer.png
-    curfile = new DSIWebFile(fs, root_data_demo_mousetouch_pointer_png);
-    curdir.addfile("pointer.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/demo/mousetouch
-        
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/demo
-        
-    // Creating root/data/deprecated_systems_incorporated.txt
-    curfile = new DSIWebFile(fs, root_data_deprecated_systems_incorporated_txt);
-    curdir.addfile("deprecated_systems_incorporated.txt", curfile);
-    
-    
-    // Creating root/data/depsys.txt
-    curfile = new DSIWebFile(fs, root_data_depsys_txt);
-    curdir.addfile("depsys.txt", curfile);
-    
-    
-    // Traversing root/data/man
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('man');
-    
-    // Creating root/data/man/_template.dsmd
-    curfile = new DSIWebFile(fs, root_data_man__template_dsmd);
-    curdir.addfile("_template.dsmd", curfile);
-    
-    
-    // Creating root/data/man/cat.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_cat_dsmd);
-    curdir.addfile("cat.dsmd", curfile);
-    
-    
-    // Creating root/data/man/caterpillar.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_caterpillar_dsmd);
-    curdir.addfile("caterpillar.dsmd", curfile);
-    
-    
-    // Creating root/data/man/chmod.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_chmod_dsmd);
-    curdir.addfile("chmod.dsmd", curfile);
-    
-    
-    // Creating root/data/man/demoanim.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_demoanim_dsmd);
-    curdir.addfile("demoanim.dsmd", curfile);
-    
-    
-    // Creating root/data/man/democurses.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_democurses_dsmd);
-    curdir.addfile("democurses.dsmd", curfile);
-    
-    
-    // Creating root/data/man/demomarkdown.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_demomarkdown_dsmd);
-    curdir.addfile("demomarkdown.dsmd", curfile);
-    
-    
-    // Creating root/data/man/demomousetouch.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_demomousetouch_dsmd);
-    curdir.addfile("demomousetouch.dsmd", curfile);
-    
-    
-    // Creating root/data/man/dsmdbrowser.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_dsmdbrowser_dsmd);
-    curdir.addfile("dsmdbrowser.dsmd", curfile);
-    
-    
-    // Creating root/data/man/dssh.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_dssh_dsmd);
-    curdir.addfile("dssh.dsmd", curfile);
-    
-    
-    // Creating root/data/man/echo.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_echo_dsmd);
-    curdir.addfile("echo.dsmd", curfile);
-    
-    
-    // Creating root/data/man/env.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_env_dsmd);
-    curdir.addfile("env.dsmd", curfile);
-    
-    
-    // Creating root/data/man/file.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_file_dsmd);
-    curdir.addfile("file.dsmd", curfile);
-    
-    
-    // Creating root/data/man/fsviewer.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_fsviewer_dsmd);
-    curdir.addfile("fsviewer.dsmd", curfile);
-    
-    
-    // Creating root/data/man/imgview.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_imgview_dsmd);
-    curdir.addfile("imgview.dsmd", curfile);
-    
-    
-    // Creating root/data/man/init.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_init_dsmd);
-    curdir.addfile("init.dsmd", curfile);
-    
-    
-    // Creating root/data/man/less.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_less_dsmd);
-    curdir.addfile("less.dsmd", curfile);
-    
-    
-    // Creating root/data/man/ls.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_ls_dsmd);
-    curdir.addfile("ls.dsmd", curfile);
-    
-    
-    // Creating root/data/man/man.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_man_dsmd);
-    curdir.addfile("man.dsmd", curfile);
-    
-    
-    // Creating root/data/man/mkdir.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_mkdir_dsmd);
-    curdir.addfile("mkdir.dsmd", curfile);
-    
-    
-    // Creating root/data/man/pixelassault.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_pixelassault_dsmd);
-    curdir.addfile("pixelassault.dsmd", curfile);
-    
-    
-    // Creating root/data/man/ps.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_ps_dsmd);
-    curdir.addfile("ps.dsmd", curfile);
-    
-    
-    // Creating root/data/man/pwd.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_pwd_dsmd);
-    curdir.addfile("pwd.dsmd", curfile);
-    
-    
-    // Creating root/data/man/reset.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_reset_dsmd);
-    curdir.addfile("reset.dsmd", curfile);
-    
-    
-    // Creating root/data/man/sleep.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_sleep_dsmd);
-    curdir.addfile("sleep.dsmd", curfile);
-    
-    
-    // Creating root/data/man/splash.dsmd
-    curfile = new DSIWebFile(fs, root_data_man_splash_dsmd);
-    curdir.addfile("splash.dsmd", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/man
-        
-    // Traversing root/data/site
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('site');
-    
-    // Creating root/data/site/130x46_godot.png
-    curfile = new DSIWebFile(fs, root_data_site_130x46_godot_png);
-    curdir.addfile("130x46_godot.png", curfile);
-    
-    
-    // Creating root/data/site/181x64_godot.png
-    curfile = new DSIWebFile(fs, root_data_site_181x64_godot_png);
-    curdir.addfile("181x64_godot.png", curfile);
-    
-    
-    // Creating root/data/site/DSADOS.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_DSADOS_dsmd);
-    curdir.addfile("DSADOS.dsmd", curfile);
-    
-    
-    // Creating root/data/site/GODOT.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_GODOT_dsmd);
-    curdir.addfile("GODOT.dsmd", curfile);
-    
-    
-    // Creating root/data/site/about.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_about_dsmd);
-    curdir.addfile("about.dsmd", curfile);
-    
-    
-    // Traversing root/data/site/avatars
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('avatars');
-    
-    // Creating root/data/site/avatars/posterized_globnobulous.png
-    curfile = new DSIWebFile(fs, root_data_site_avatars_posterized_globnobulous_png);
-    curdir.addfile("posterized_globnobulous.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/site/avatars
-        
-    // Creating root/data/site/caterpillar.png
-    curfile = new DSIWebFile(fs, root_data_site_caterpillar_png);
-    curdir.addfile("caterpillar.png", curfile);
-    
-    
-    // Creating root/data/site/concursion.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_concursion_dsmd);
-    curdir.addfile("concursion.dsmd", curfile);
-    
-    
-    // Creating root/data/site/dauntless.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_dauntless_dsmd);
-    curdir.addfile("dauntless.dsmd", curfile);
-    
-    
-    // Traversing root/data/site/devlog
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('devlog');
-    
-    // Traversing root/data/site/devlog/2025-01-30
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('2025-01-30');
-    
-    // Creating root/data/site/devlog/2025-01-30/20250130.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_01_30_20250130_dsmd);
-    curdir.addfile("20250130.dsmd", curfile);
-    
-    
-    // Creating root/data/site/devlog/2025-01-30/C64.png
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_01_30_C64_png);
-    curdir.addfile("C64.png", curfile);
-    
-    
-    // Creating root/data/site/devlog/2025-01-30/Road-Toad.png
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_01_30_Road_Toad_png);
-    curdir.addfile("Road-Toad.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/site/devlog/2025-01-30
-        
-    // Traversing root/data/site/devlog/2025-02-10
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('2025-02-10');
-    
-    // Creating root/data/site/devlog/2025-02-10/20250210.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_02_10_20250210_dsmd);
-    curdir.addfile("20250210.dsmd", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/site/devlog/2025-02-10
-        
-    // Traversing root/data/site/devlog/2025-03-01
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('2025-03-01');
-    
-    // Creating root/data/site/devlog/2025-03-01/20250301.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_01_20250301_dsmd);
-    curdir.addfile("20250301.dsmd", curfile);
-    
-    
-    // Creating root/data/site/devlog/2025-03-01/Signal11.png
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_01_Signal11_png);
-    curdir.addfile("Signal11.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/site/devlog/2025-03-01
-        
-    // Traversing root/data/site/devlog/2025-03-02
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('2025-03-02');
-    
-    // Creating root/data/site/devlog/2025-03-02/20250302.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_02_20250302_dsmd);
-    curdir.addfile("20250302.dsmd", curfile);
-    
-    
-    // Creating root/data/site/devlog/2025-03-02/console.log.png
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_02_console_log_png);
-    curdir.addfile("console.log.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/site/devlog/2025-03-02
-        
-    // Traversing root/data/site/devlog/2025-03-16
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('2025-03-16');
-    
-    // Creating root/data/site/devlog/2025-03-16/20250316.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_16_20250316_dsmd);
-    curdir.addfile("20250316.dsmd", curfile);
-    
-    
-    // Creating root/data/site/devlog/2025-03-16/mainmenu.png
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_16_mainmenu_png);
-    curdir.addfile("mainmenu.png", curfile);
-    
-    
-    // Creating root/data/site/devlog/2025-03-16/modem_300_users_manual_front.png
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_16_modem_300_users_manual_front_png);
-    curdir.addfile("modem_300_users_manual_front.png", curfile);
-    
-    
-    // Creating root/data/site/devlog/2025-03-16/playarea.png
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_03_16_playarea_png);
-    curdir.addfile("playarea.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/site/devlog/2025-03-16
-        
-    // Traversing root/data/site/devlog/2025-08-26
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('2025-08-26');
-    
-    // Creating root/data/site/devlog/2025-08-26/20250826.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_08_26_20250826_dsmd);
-    curdir.addfile("20250826.dsmd", curfile);
-    
-    
-    // Creating root/data/site/devlog/2025-08-26/demo2.gif
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_08_26_demo2_gif);
-    curdir.addfile("demo2.gif", curfile);
-    
-    
-    // Creating root/data/site/devlog/2025-08-26/ozzyforest.png
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_08_26_ozzyforest_png);
-    curdir.addfile("ozzyforest.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/site/devlog/2025-08-26
-        
-    // Traversing root/data/site/devlog/2025-09-02
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('2025-09-02');
-    
-    // Creating root/data/site/devlog/2025-09-02/20250902.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_09_02_20250902_dsmd);
-    curdir.addfile("20250902.dsmd", curfile);
-    
-    
-    // Creating root/data/site/devlog/2025-09-02/UofT.png
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_09_02_UofT_png);
-    curdir.addfile("UofT.png", curfile);
-    
-    
-    // Creating root/data/site/devlog/2025-09-02/UofTcampus.png
-    curfile = new DSIWebFile(fs, root_data_site_devlog_2025_09_02_UofTcampus_png);
-    curdir.addfile("UofTcampus.png", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/site/devlog/2025-09-02
-        
-    // Creating root/data/site/devlog/devlog.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_devlog_devlog_dsmd);
-    curdir.addfile("devlog.dsmd", curfile);
-    
-    
-    // Creating root/data/site/devlog/entry-template.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_devlog_entry_template_dsmd);
-    curdir.addfile("entry-template.dsmd", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/site/devlog
-        
-    // Creating root/data/site/games.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_games_dsmd);
-    curdir.addfile("games.dsmd", curfile);
-    
-    
-    // Creating root/data/site/index.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_index_dsmd);
-    curdir.addfile("index.dsmd", curfile);
-    
-    
-    // Creating root/data/site/tech.dsmd
-    curfile = new DSIWebFile(fs, root_data_site_tech_dsmd);
-    curdir.addfile("tech.dsmd", curfile);
-    
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited root/data/site
-        
-    // Traversing root/data/test
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('test');
-    
-    // Creating root/data/test/bazisa.txt
-    curfile = new DSIWebFile(fs, root_data_test_bazisa_txt);
-    curdir.addfile("bazisa.txt", curfile);
-    
-    
-    // Traversing root/data/test/image
+    // Traversing rootfs/base/demo/image
     dirstack.push(curdir);
     curdir = curdir.mkdir('image');
     
-    // Creating root/data/test/image/gorzocrop.png
-    curfile = new DSIWebFile(fs, root_data_test_image_gorzocrop_png);
+    // Creating rootfs/base/demo/image/gorzocrop.png
+    curfile = new DSIWebFile(fs, rootfs_base_demo_image_gorzocrop_png);
     curdir.addfile("gorzocrop.png", curfile);
     
     
-    // Creating root/data/test/image/worldturning.gif
-    curfile = new DSIWebFile(fs, root_data_test_image_worldturning_gif);
+    // Creating rootfs/base/demo/image/worldturning.gif
+    curfile = new DSIWebFile(fs, rootfs_base_demo_image_worldturning_gif);
     curdir.addfile("worldturning.gif", curfile);
     
     
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
-    // Exited root/data/test/image
+    // Exited rootfs/base/demo/image
+        
+    // Traversing rootfs/base/demo/markdown
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('markdown');
+    
+    // Creating rootfs/base/demo/markdown/32x32_testpattern.png
+    curfile = new DSIWebFile(fs, rootfs_base_demo_markdown_32x32_testpattern_png);
+    curdir.addfile("32x32_testpattern.png", curfile);
+    
+    
+    // Creating rootfs/base/demo/markdown/demomarkdown.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_demo_markdown_demomarkdown_dsmd);
+    curdir.addfile("demomarkdown.dsmd", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/base/demo/markdown
+        
+    // Traversing rootfs/base/demo/mousetouch
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('mousetouch');
+    
+    // Creating rootfs/base/demo/mousetouch/pointer.png
+    curfile = new DSIWebFile(fs, rootfs_base_demo_mousetouch_pointer_png);
+    curdir.addfile("pointer.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/base/demo/mousetouch
+        
+    // Traversing rootfs/base/demo/text
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('text');
+    
+    // Creating rootfs/base/demo/text/bazisa.txt
+    curfile = new DSIWebFile(fs, rootfs_base_demo_text_bazisa_txt);
+    curdir.addfile("bazisa.txt", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/base/demo/text
         
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
-    // Exited root/data/test
+    // Exited rootfs/base/demo
+        
+    // Traversing rootfs/base/man
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('man');
+    
+    // Creating rootfs/base/man/_template.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man__template_dsmd);
+    curdir.addfile("_template.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/cat.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_cat_dsmd);
+    curdir.addfile("cat.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/caterpillar.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_caterpillar_dsmd);
+    curdir.addfile("caterpillar.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/chmod.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_chmod_dsmd);
+    curdir.addfile("chmod.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/demoanim.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_demoanim_dsmd);
+    curdir.addfile("demoanim.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/democurses.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_democurses_dsmd);
+    curdir.addfile("democurses.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/demomarkdown.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_demomarkdown_dsmd);
+    curdir.addfile("demomarkdown.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/demomousetouch.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_demomousetouch_dsmd);
+    curdir.addfile("demomousetouch.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/dsmdbrowser.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_dsmdbrowser_dsmd);
+    curdir.addfile("dsmdbrowser.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/dssh.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_dssh_dsmd);
+    curdir.addfile("dssh.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/echo.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_echo_dsmd);
+    curdir.addfile("echo.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/env.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_env_dsmd);
+    curdir.addfile("env.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/file.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_file_dsmd);
+    curdir.addfile("file.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/fsviewer.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_fsviewer_dsmd);
+    curdir.addfile("fsviewer.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/imgview.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_imgview_dsmd);
+    curdir.addfile("imgview.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/init.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_init_dsmd);
+    curdir.addfile("init.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/less.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_less_dsmd);
+    curdir.addfile("less.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/ls.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_ls_dsmd);
+    curdir.addfile("ls.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/man.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_man_dsmd);
+    curdir.addfile("man.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/mkdir.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_mkdir_dsmd);
+    curdir.addfile("mkdir.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/pixelassault.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_pixelassault_dsmd);
+    curdir.addfile("pixelassault.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/ps.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_ps_dsmd);
+    curdir.addfile("ps.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/pwd.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_pwd_dsmd);
+    curdir.addfile("pwd.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/reset.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_reset_dsmd);
+    curdir.addfile("reset.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/sleep.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_sleep_dsmd);
+    curdir.addfile("sleep.dsmd", curfile);
+    
+    
+    // Creating rootfs/base/man/splash.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_splash_dsmd);
+    curdir.addfile("splash.dsmd", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/base/man
+        
+    // Traversing rootfs/site/data
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('data');
+    
+    // Traversing rootfs/site/data/app
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('app');
+    
+    // Traversing rootfs/site/data/app/dsmdbrowser
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('dsmdbrowser');
+    
+    // Creating rootfs/site/data/app/dsmdbrowser/404.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_dsmdbrowser_404_dsmd);
+    curdir.addfile("404.dsmd", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/app/dsmdbrowser
+        
+    // Traversing rootfs/site/data/app/pixel_assault
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('pixel_assault');
+    
+    // Traversing rootfs/site/data/app/pixel_assault/Enemies
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('Enemies');
+    
+    // Traversing rootfs/site/data/app/pixel_assault/Enemies/Alien1
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('Alien1');
+    
+    // Creating rootfs/site/data/app/pixel_assault/Enemies/Alien1/tile000.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_Enemies_Alien1_tile000_png);
+    curdir.addfile("tile000.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/Enemies/Alien1/tile001.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_Enemies_Alien1_tile001_png);
+    curdir.addfile("tile001.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/Enemies/Alien1/tile002.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_Enemies_Alien1_tile002_png);
+    curdir.addfile("tile002.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/app/pixel_assault/Enemies/Alien1
+        
+    // Traversing rootfs/site/data/app/pixel_assault/Enemies/blub
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('blub');
+    
+    // Creating rootfs/site/data/app/pixel_assault/Enemies/blub/blub1.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_Enemies_blub_blub1_png);
+    curdir.addfile("blub1.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/Enemies/blub/blub2.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_Enemies_blub_blub2_png);
+    curdir.addfile("blub2.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/app/pixel_assault/Enemies/blub
+        
+    // Creating rootfs/site/data/app/pixel_assault/Enemies/enemygreen.gif
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_Enemies_enemygreen_gif);
+    curdir.addfile("enemygreen.gif", curfile);
+    
+    
+    // Traversing rootfs/site/data/app/pixel_assault/Enemies/grab
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('grab');
+    
+    // Creating rootfs/site/data/app/pixel_assault/Enemies/grab/grab1.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_Enemies_grab_grab1_png);
+    curdir.addfile("grab1.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/Enemies/grab/grab2.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_Enemies_grab_grab2_png);
+    curdir.addfile("grab2.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/Enemies/grab/grab3.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_Enemies_grab_grab3_png);
+    curdir.addfile("grab3.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/app/pixel_assault/Enemies/grab
+        
+    // Creating rootfs/site/data/app/pixel_assault/Enemies/paranoid.gif
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_Enemies_paranoid_gif);
+    curdir.addfile("paranoid.gif", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/app/pixel_assault/Enemies
+        
+    // Creating rootfs/site/data/app/pixel_assault/PixelAssaultSplash2.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_PixelAssaultSplash2_png);
+    curdir.addfile("PixelAssaultSplash2.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/background.jpg
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_background_jpg);
+    curdir.addfile("background.jpg", curfile);
+    
+    
+    // Traversing rootfs/site/data/app/pixel_assault/bonuses
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('bonuses');
+    
+    // Creating rootfs/site/data/app/pixel_assault/bonuses/bulletbonus.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_bonuses_bulletbonus_png);
+    curdir.addfile("bulletbonus.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/bonuses/heartbonus.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_bonuses_heartbonus_png);
+    curdir.addfile("heartbonus.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/bonuses/scorebonus.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_bonuses_scorebonus_png);
+    curdir.addfile("scorebonus.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/bonuses/shieldbonus.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_bonuses_shieldbonus_png);
+    curdir.addfile("shieldbonus.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/bonuses/speedbonus.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_bonuses_speedbonus_png);
+    curdir.addfile("speedbonus.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/app/pixel_assault/bonuses
+        
+    // Creating rootfs/site/data/app/pixel_assault/bullet.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_bullet_png);
+    curdir.addfile("bullet.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/enemybullet.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_enemybullet_png);
+    curdir.addfile("enemybullet.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/heartanim.gif
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_heartanim_gif);
+    curdir.addfile("heartanim.gif", curfile);
+    
+    
+    // Traversing rootfs/site/data/app/pixel_assault/numbers
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('numbers');
+    
+    // Creating rootfs/site/data/app/pixel_assault/numbers/digit0.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_numbers_digit0_png);
+    curdir.addfile("digit0.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/numbers/digit1.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_numbers_digit1_png);
+    curdir.addfile("digit1.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/numbers/digit2.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_numbers_digit2_png);
+    curdir.addfile("digit2.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/numbers/digit3.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_numbers_digit3_png);
+    curdir.addfile("digit3.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/numbers/digit4.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_numbers_digit4_png);
+    curdir.addfile("digit4.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/numbers/digit5.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_numbers_digit5_png);
+    curdir.addfile("digit5.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/numbers/digit6.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_numbers_digit6_png);
+    curdir.addfile("digit6.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/numbers/digit7.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_numbers_digit7_png);
+    curdir.addfile("digit7.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/numbers/digit8.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_numbers_digit8_png);
+    curdir.addfile("digit8.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/numbers/digit9.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_numbers_digit9_png);
+    curdir.addfile("digit9.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/app/pixel_assault/numbers
+        
+    // Creating rootfs/site/data/app/pixel_assault/pixelsplosion.gif
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_pixelsplosion_gif);
+    curdir.addfile("pixelsplosion.gif", curfile);
+    
+    
+    // Traversing rootfs/site/data/app/pixel_assault/player
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('player');
+    
+    // Creating rootfs/site/data/app/pixel_assault/player/lightning0.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_player_lightning0_png);
+    curdir.addfile("lightning0.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/player/lightning1.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_player_lightning1_png);
+    curdir.addfile("lightning1.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/player/lightning2.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_player_lightning2_png);
+    curdir.addfile("lightning2.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/player/lightning3.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_player_lightning3_png);
+    curdir.addfile("lightning3.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/app/pixel_assault/player
+        
+    // Creating rootfs/site/data/app/pixel_assault/shieldpiece.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_shieldpiece_png);
+    curdir.addfile("shieldpiece.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/shieldpiece10.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_shieldpiece10_png);
+    curdir.addfile("shieldpiece10.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/shieldpiece3.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_shieldpiece3_png);
+    curdir.addfile("shieldpiece3.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/pixel_assault/shieldpiece6.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_pixel_assault_shieldpiece6_png);
+    curdir.addfile("shieldpiece6.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/app/pixel_assault
         
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
-    // Exited root/data
+    // Exited rootfs/site/data/app
         
-    // Traversing root/etc
+    // Traversing rootfs/site/data/site
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('site');
+    
+    // Traversing rootfs/site/data/site/avatars
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('avatars');
+    
+    // Creating rootfs/site/data/site/avatars/deprecated_systems_incorporated.txt
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_avatars_deprecated_systems_incorporated_txt);
+    curdir.addfile("deprecated_systems_incorporated.txt", curfile);
+    
+    
+    // Creating rootfs/site/data/site/avatars/posterized_globnobulous.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_avatars_posterized_globnobulous_png);
+    curdir.addfile("posterized_globnobulous.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/site/avatars
+        
+    // Traversing rootfs/site/data/site/devlog
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('devlog');
+    
+    // Traversing rootfs/site/data/site/devlog/2025-01-30
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2025-01-30');
+    
+    // Creating rootfs/site/data/site/devlog/2025-01-30/20250130.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_01_30_20250130_dsmd);
+    curdir.addfile("20250130.dsmd", curfile);
+    
+    
+    // Creating rootfs/site/data/site/devlog/2025-01-30/C64.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_01_30_C64_png);
+    curdir.addfile("C64.png", curfile);
+    
+    
+    // Creating rootfs/site/data/site/devlog/2025-01-30/Road-Toad.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_01_30_Road_Toad_png);
+    curdir.addfile("Road-Toad.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/site/devlog/2025-01-30
+        
+    // Traversing rootfs/site/data/site/devlog/2025-02-10
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2025-02-10');
+    
+    // Creating rootfs/site/data/site/devlog/2025-02-10/20250210.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_02_10_20250210_dsmd);
+    curdir.addfile("20250210.dsmd", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/site/devlog/2025-02-10
+        
+    // Traversing rootfs/site/data/site/devlog/2025-03-01
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2025-03-01');
+    
+    // Creating rootfs/site/data/site/devlog/2025-03-01/20250301.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_01_20250301_dsmd);
+    curdir.addfile("20250301.dsmd", curfile);
+    
+    
+    // Creating rootfs/site/data/site/devlog/2025-03-01/Signal11.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_01_Signal11_png);
+    curdir.addfile("Signal11.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/site/devlog/2025-03-01
+        
+    // Traversing rootfs/site/data/site/devlog/2025-03-02
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2025-03-02');
+    
+    // Creating rootfs/site/data/site/devlog/2025-03-02/20250302.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_02_20250302_dsmd);
+    curdir.addfile("20250302.dsmd", curfile);
+    
+    
+    // Creating rootfs/site/data/site/devlog/2025-03-02/console.log.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_02_console_log_png);
+    curdir.addfile("console.log.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/site/devlog/2025-03-02
+        
+    // Traversing rootfs/site/data/site/devlog/2025-03-16
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2025-03-16');
+    
+    // Creating rootfs/site/data/site/devlog/2025-03-16/20250316.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_16_20250316_dsmd);
+    curdir.addfile("20250316.dsmd", curfile);
+    
+    
+    // Creating rootfs/site/data/site/devlog/2025-03-16/mainmenu.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_16_mainmenu_png);
+    curdir.addfile("mainmenu.png", curfile);
+    
+    
+    // Creating rootfs/site/data/site/devlog/2025-03-16/modem_300_users_manual_front.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_16_modem_300_users_manual_front_png);
+    curdir.addfile("modem_300_users_manual_front.png", curfile);
+    
+    
+    // Creating rootfs/site/data/site/devlog/2025-03-16/playarea.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_16_playarea_png);
+    curdir.addfile("playarea.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/site/devlog/2025-03-16
+        
+    // Traversing rootfs/site/data/site/devlog/2025-08-26
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2025-08-26');
+    
+    // Creating rootfs/site/data/site/devlog/2025-08-26/20250826.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_08_26_20250826_dsmd);
+    curdir.addfile("20250826.dsmd", curfile);
+    
+    
+    // Creating rootfs/site/data/site/devlog/2025-08-26/demo2.gif
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_08_26_demo2_gif);
+    curdir.addfile("demo2.gif", curfile);
+    
+    
+    // Creating rootfs/site/data/site/devlog/2025-08-26/ozzyforest.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_08_26_ozzyforest_png);
+    curdir.addfile("ozzyforest.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/site/devlog/2025-08-26
+        
+    // Traversing rootfs/site/data/site/devlog/2025-09-02
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2025-09-02');
+    
+    // Creating rootfs/site/data/site/devlog/2025-09-02/20250902.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_09_02_20250902_dsmd);
+    curdir.addfile("20250902.dsmd", curfile);
+    
+    
+    // Creating rootfs/site/data/site/devlog/2025-09-02/UofT.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_09_02_UofT_png);
+    curdir.addfile("UofT.png", curfile);
+    
+    
+    // Creating rootfs/site/data/site/devlog/2025-09-02/UofTcampus.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_09_02_UofTcampus_png);
+    curdir.addfile("UofTcampus.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/site/devlog/2025-09-02
+        
+    // Creating rootfs/site/data/site/devlog/devlog.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_devlog_dsmd);
+    curdir.addfile("devlog.dsmd", curfile);
+    
+    
+    // Creating rootfs/site/data/site/devlog/entry-template.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_entry_template_dsmd);
+    curdir.addfile("entry-template.dsmd", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/site/devlog
+        
+    // Traversing rootfs/site/data/site/image
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('image');
+    
+    // Creating rootfs/site/data/site/image/130x46_godot.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_image_130x46_godot_png);
+    curdir.addfile("130x46_godot.png", curfile);
+    
+    
+    // Creating rootfs/site/data/site/image/181x64_godot.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_image_181x64_godot_png);
+    curdir.addfile("181x64_godot.png", curfile);
+    
+    
+    // Creating rootfs/site/data/site/image/caterpillar.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_image_caterpillar_png);
+    curdir.addfile("caterpillar.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/site/image
+        
+    // Traversing rootfs/site/data/site/page
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('page');
+    
+    // Creating rootfs/site/data/site/page/DSADOS.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_DSADOS_dsmd);
+    curdir.addfile("DSADOS.dsmd", curfile);
+    
+    
+    // Creating rootfs/site/data/site/page/GODOT.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_GODOT_dsmd);
+    curdir.addfile("GODOT.dsmd", curfile);
+    
+    
+    // Creating rootfs/site/data/site/page/about.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_about_dsmd);
+    curdir.addfile("about.dsmd", curfile);
+    
+    
+    // Creating rootfs/site/data/site/page/concursion.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_concursion_dsmd);
+    curdir.addfile("concursion.dsmd", curfile);
+    
+    
+    // Creating rootfs/site/data/site/page/dauntless.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_dauntless_dsmd);
+    curdir.addfile("dauntless.dsmd", curfile);
+    
+    
+    // Creating rootfs/site/data/site/page/depsys.txt
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_depsys_txt);
+    curdir.addfile("depsys.txt", curfile);
+    
+    
+    // Creating rootfs/site/data/site/page/games.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_games_dsmd);
+    curdir.addfile("games.dsmd", curfile);
+    
+    
+    // Creating rootfs/site/data/site/page/index.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_index_dsmd);
+    curdir.addfile("index.dsmd", curfile);
+    
+    
+    // Creating rootfs/site/data/site/page/tech.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_tech_dsmd);
+    curdir.addfile("tech.dsmd", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/site/page
+        
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/site
+        
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data
+        
+    // Traversing rootfs/site/etc
     dirstack.push(curdir);
     curdir = curdir.mkdir('etc');
     
-    // Creating root/etc/autoexec.dssh
-    curfile = new DSIWebFile(fs, root_etc_autoexec_dssh);
+    // Creating rootfs/site/etc/autoexec.dssh
+    curfile = new DSIWebFile(fs, rootfs_site_etc_autoexec_dssh);
     curdir.addfile("autoexec.dssh", curfile);
     curfile.chmod(DSFilePerms.rx());
     
-    // Creating root/etc/dsos.conf
-    curfile = new DSIWebFile(fs, root_etc_dsos_conf);
+    // Creating rootfs/site/etc/dsos.conf
+    curfile = new DSIWebFile(fs, rootfs_site_etc_dsos_conf);
     curdir.addfile("dsos.conf", curfile);
     
     
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
-    // Exited root/etc
+    // Exited rootfs/site/etc
         
     // BUILDROOTFS FOOTER
     fs.root.chmod(DSFilePerms.rx());

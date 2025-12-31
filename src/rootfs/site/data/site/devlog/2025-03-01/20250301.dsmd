@@ -1,0 +1,46 @@
+![globnobulous](/data/site/avatars/posterized_globnobulous.png)
+Globnobulous
+
+# [01-03-2025] - Down the Rabbit Hole
+
+So you know you're pretty far down the rabbit hole on a project when you run into your first hard crash.  The dreaded ***SEGV***, ***Signal 11***, ***EXCEPTION_ACCESS_VIOLATION***; when one's process tries to access a forbidden memory segment and the operating system responds by unceremoniously shooting it in the head.
+
+In a paid project situation, where I'm working on someone else's dime and there are project timelines and release deadlines, a SEGV conjures dread in the pit of my stomach. These can be notoriously difficult to track down, sometimes derailing progress for days or weeks as you hunt through code so far down the stack that it seems to have nothing to do with the project.
+
+But this is my project.  I'm in no rush, and this is just a new opportunity to explore, learn, and flex the deep debugging and integration skills that I consider to be one of my highest areas of technical expertise.  If I can track down how Motorola screwed up the motherboard traces between their I/O APIC chip and the cPCI bus connectors (a story for another time :), I can figure this out.
+
+## So how did I get here?
+
+After warming up with the implementation of this glorious ;) website, I've spent the past month putting together the frameworks and infrastructure for **The Dauntless**.
+
+One of my goals for this project has always been to write the backend model, libraries, and accompanying server as a set of independent C++ libraries for performance and [Domain Driven Design](https://en.wikipedia.org/wiki/Domain-driven_design) domain isolation reasons (more on that in a future episode).  Of course, as soon as you're writing your own compiled, non memory safe code, you're moving into SEGV territory, but in this case everything seemed to be going well with the game client running fine.
+
+## Enter godot editor hot reload...
+
+The speed of the developer iteration loop is very important to a dev's productivity and mental health, and is one of the things that godot is really good at.  When you're working in the godot editor, you can make changes to object attributes or even godot's dynamic [GDScript](https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_basics.html) code and have it take effect immediately (with some limitations) in a running instance of the game.  This is a glorious, super tight, couple of seconds long dev iteration loop.
+
+With external compiled code it's a little different.  It's a very tricky thing to change compiled code and expect it to affect a running instance of your game, but knowing how important a tight edit/build/run loop is to their devs, the godot team did the next best thing and recently implemented editor hot reload for [GDExtensions](https://docs.godotengine.org/en/stable/tutorials/scripting/gdextension/what_is_gdextension.html), the modular framework that I'm using to glue my custom compiled code and some 3rd party libraries into the godot editor and games.  This lets you at least not have to restart the editor on every recompile.  Except in my case hot reload caused the editor to crash to desktop with one of these in the console:
+
+![Signal 11](Signal11.png)
+
+So my extension was working in the game client and as I said, it is a fairly tricky thing to hot reload compiled binary code into a running process, so maybe I should just live with it?  No, for a couple reasons.
+
+## My precious iteration loop!
+Crashing and restarting the godot editor more than doubles the duration of my iteration loop.  Here's rough timing of the actions
+I need to take whenever I make changes to the compiled code:
+
+  - 10 seconds for recompile
+  - 15 seconds for game client cycle
+  - *30 seconds for editor crash and restart* <<<< **YIKES!**
+
+Even with an automatic editor restart loop and project selection, that more than doubles my "standing around and twiddling my thumbs while code context leaks out of my brain" time.  Not acceptable.
+
+## Who's to blame?!
+I'm not comfortable offhandedly assuming it's something wrong with godot.  The hot reload stuff is relatively new, so it's very possible it's a problem in the godot hot reload code.  However it's equally likely to be a symptom of something I'm doing wrong in my code that will come back to bite me later.  In either case tracking it down helps me and possibly others in the future.
+
+## This is my jam!
+Hunting down super tricky, gnarly bugs is a deeply rewarding engineering practice that I'm very good at.  It forces/leads me to dig deep into areas I'd never otherwise touch, and stretches my brain in ways that no other technical work does, and this is just such an opportunity.  Also, I'm planning to build a commercial product on top of an application framework whose inner workings I barely understand, and this will help ameliorate that.
+
+So given all of that, it was time to download the godot source and start digging.
+
+Stay tuned for [Part 2](/data/devlog/2025-03-02/20250302.dsmd)

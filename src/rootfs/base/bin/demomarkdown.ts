@@ -1,0 +1,105 @@
+import { DSProcess, DSProcessError } from "../../../dsProcess";
+import { DSOptionParser } from "../../../lib/dsOptionParser";
+import { DSMDDoc, ImageBlock } from "../../../lib/dsMarkdown";
+import { gotoxy, setattr, textattrs } from "../../../lib/dsCurses";
+import { DSKernel } from "../../../dsKernel";
+
+export class PRDemoMarkdown extends DSProcess {
+
+    protected async main(): Promise<void> {
+        const optparser = new DSOptionParser(
+            this.procname,
+            true,
+            "   run a markdown demo"
+        );
+        let nextarg = optparser.parseWithUsageAndHelp(this.argv);
+        if (nextarg != -1)
+            throw new DSProcessError(optparser.usage());
+
+        let filename = "/data/demo/markdown/demomarkdown.dsmd";
+        const inode = this.cwd.getfile(filename);
+        const text = await inode.contentAsText().read();
+        const doc = new DSMDDoc();
+        doc.parse(text);
+        await doc.loadContent(this.cwd);
+
+        let index = 0;
+        let width = 81;
+        let height = 31;
+        const w = (str: string) => { this.stdout.write(str); };
+
+        while (true) {
+
+            if (width < 4)
+                width = 4;
+            if (width > DSKernel.terminal.cols - 2)
+                width = DSKernel.terminal.cols - 2;
+            if (height > DSKernel.terminal.rows - 5)
+                height = DSKernel.terminal.rows - 5;
+            if (height < 4)
+                height = 4;
+
+            doc.render(width, DSKernel.terminal.cellwidth, DSKernel.terminal.cellheight);
+            console.log(doc);
+
+            let fillstr: string = "+";
+            fillstr = fillstr.padEnd(width + 1, "-");
+            fillstr += "+";
+
+            DSKernel.terminal.reset();
+            w(setattr(textattrs.fg_green));
+
+            // Draw border
+            w(setattr(textattrs.inverted) + gotoxy(1, 1) + fillstr);
+            for (let j = 1; j <= height; j++) {
+                w(gotoxy(1, j + 1) + "|");
+                w(gotoxy(width + 2, j + 1) + "|");
+            }
+            w(gotoxy(1, height + 2) + fillstr + setattr(textattrs.noninverted) + "\n");
+            w(
+                `index: ${index}\n` +
+                `width: ${width}\n` +
+                `height: ${height}`
+            )
+
+            // Draw the text
+            for (let j = 0; j < height && j + index < doc.rows.length; j++) {
+                const row = doc.rows[j + index];
+                w(gotoxy(2, j + 2) + `${row.text}`);
+            }
+
+            // Update the sprites
+            for (let i = 0; i < doc.blocks.length; i++) {
+                const block = doc.blocks[i];
+                if ((block instanceof ImageBlock) && block.sprite) {
+                    const sprite = block.sprite;
+                    sprite.enabled = true;
+                    sprite.x = doc.cellwidth;
+                    sprite.y = (block.firstrow - index + 1) * doc.cellheight;
+                }
+            }
+
+            const char = await this.stdin.read();
+            if (char == "\x1b[D") {
+                width -= 1;
+            } else if (char == "\x1b[C") {
+                width += 1;
+            } else if (char == "\x1b[A") {
+                height -= 1;
+            } else if (char == "\x1b[B") {
+                height += 1;
+            } else if (char == "w") {
+                index -= 1;
+                if (index < 0)
+                    index = 0;
+            } else if (char == "s") {
+                if (index < doc.rows.length)
+                    index += 1;
+
+            } else if (char == "q") {
+                break;
+            }
+        }
+        DSKernel.terminal.reset();
+    }
+}
