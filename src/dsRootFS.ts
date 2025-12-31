@@ -25,6 +25,7 @@ import { PRFile } from "./process/file";
 import { PRFSViewer } from "./process/fsviewer";
 import { PRImgview } from "./process/imgview";
 import { PRInit } from "./process/init";
+import { PRLess } from "./process/less";
 import { PRLs } from "./process/ls";
 import { PRMan } from "./process/man";
 import { PRMkdir } from "./process/mkdir";
@@ -104,6 +105,7 @@ import root_data_man_file_dsmd from "./root/data/man/file.dsmd";
 import root_data_man_fsviewer_dsmd from "./root/data/man/fsviewer.dsmd";
 import root_data_man_imgview_dsmd from "./root/data/man/imgview.dsmd";
 import root_data_man_init_dsmd from "./root/data/man/init.dsmd";
+import root_data_man_less_dsmd from "./root/data/man/less.dsmd";
 import root_data_man_ls_dsmd from "./root/data/man/ls.dsmd";
 import root_data_man_man_dsmd from "./root/data/man/man.dsmd";
 import root_data_man_mkdir_dsmd from "./root/data/man/mkdir.dsmd";
@@ -205,6 +207,9 @@ export function buildrootfs(): DSFileSystem {
     
     binfile = new DSIProcessFile(fs, PRInit);
     bindir.addfile("init", binfile);
+    
+    binfile = new DSIProcessFile(fs, PRLess);
+    bindir.addfile("less", binfile);
     
     binfile = new DSIProcessFile(fs, PRLs);
     bindir.addfile("ls", binfile);
@@ -722,6 +727,11 @@ export function buildrootfs(): DSFileSystem {
     // Creating root/data/man/init.dsmd
     curfile = new DSIWebFile(fs, root_data_man_init_dsmd);
     curdir.addfile("init.dsmd", curfile);
+    
+    
+    // Creating root/data/man/less.dsmd
+    curfile = new DSIWebFile(fs, root_data_man_less_dsmd);
+    curdir.addfile("less.dsmd", curfile);
     
     
     // Creating root/data/man/ls.dsmd
