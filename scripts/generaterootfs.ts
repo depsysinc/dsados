@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+
 const outputFile = './src/dsRootFS.ts';
 const webFileDir = './src/rootfs';
 
@@ -40,7 +41,6 @@ function sanitize(input: string): string {
     return sanitized.replace(/^[0-9]/, '_');
 }
 
-let webfile_traversal_imports = '// WEBFILE TRAVERSAL IMPORTS\n';
 const webfile_traversal_header = `
     // WEBFILE TRAVERSAL HEADER
     let dirstack: DSIDirectory[] = [];
@@ -50,91 +50,188 @@ const webfile_traversal_header = `
 
 `;
 
+type DirectoryNode = {
+    type: 'dir';
+    name: string;
+    relPath: string;
+    children: Map<string, DirectoryNode | FileNode>;
+};
+
+type FileNode = {
+    type: 'file';
+    name: string;
+    relPath: string; // path in the final filesystem (layer-stripped)
+    importPath: string; // path used in TS import (keeps layer prefix)
+    className?: string;
+    sanitized: string;
+    executable: boolean;
+};
+
+function toPosix(inputPath: string): string {
+    return inputPath.split(path.sep).join('/');
+}
+
 function processFilename(srcPath: string): string | null {
     const file = fs.readFileSync(srcPath, 'utf-8');
-    let match = file.match(/export class (\w+) extends (DSProcess|DSApp|DSArcadeGame) {/);
-    if (!match)
-        return null;
-    else
-        return match[1];
+    const match = file.match(/export class (\w+) extends (DSProcess|DSApp|DSArcadeGame) {/);
+    return match ? match[1] : null;
 }
 
-let webfile_traversal_body = '    // WEBFILE TRAVERSAL BODY\n';
+function createRootNode(): DirectoryNode {
+    return { type: 'dir', name: '', relPath: '', children: new Map() };
+}
 
-function webfileTraverseAndGenerate(dir: string) {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-        const srcPath = path.join(dir, entry.name);
-        const relPath = srcPath.replace(/^src\//, '');
+function ensureDir(root: DirectoryNode, dirParts: string[]): DirectoryNode {
+    let current = root;
+    let currentRel = '';
 
-        // Create directory
-        if (entry.isDirectory()) {
-            console.log(`Create Directory ${srcPath}`);
-            webfile_traversal_body += `
-    // Traversing ${relPath}
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('${entry.name}');
-    `;
-            webfileTraverseAndGenerate(srcPath);
-            webfile_traversal_body += `
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited ${relPath}
-        `;
+    for (const part of dirParts) {
+        const nextRel = currentRel ? `${currentRel}/${part}` : part;
+        const existing = current.children.get(part);
+        if (existing && existing.type === 'dir') {
+            current = existing;
+            currentRel = nextRel;
+            continue;
         }
 
-        // Create File
-        else if (entry.isFile()) {
-            console.log(`Create file from ${srcPath}`);
-            const stats = fs.lstatSync(srcPath);
-            const execperms = stats.mode & 0o111;
-            const permstring = execperms ? `curfile.chmod(DSFilePerms.rx());` : "";
-            const className = processFilename(srcPath);
+        const newDir: DirectoryNode = {
+            type: 'dir',
+            name: part,
+            relPath: nextRel,
+            children: new Map(),
+        };
+        current.children.set(part, newDir);
+        current = newDir;
+        currentRel = nextRel;
+    }
 
-            //DSProcess
-            if (className) {
-                const importPath = srcPath.replace(/^src\//, '').replace(/.ts$/, '');
-                let match = importPath.match(/([^\/]+)$/);
-                if (!match)
-                    throw Error("could not extract bin filename");
-                const binFileName = match[1];
-                webfile_traversal_imports += `import { ${className} } from "./${importPath}";\n`
-                webfile_traversal_body += `
-    binfile = new DSIProcessFile(fs, ${className});
-    curdir.addfile("${binFileName}", binfile);
-     `;
-            }
+    return current;
+}
 
-            //DSIWebFile
-            else {
-                let varname = sanitize(relPath);
-                webfile_traversal_imports += `import ${varname} from "./${relPath}";\n`
-                webfile_traversal_body += `
-    // Creating ${relPath}
-    curfile = new DSIWebFile(fs, ${varname});
-    curdir.addfile("${entry.name}", curfile);
-    ${permstring}
-    `;
+function addFile(root: DirectoryNode, file: FileNode) {
+    const parts = file.relPath.split('/').filter(Boolean);
+    const dirParts = parts.slice(0, -1);
+    const parent = ensureDir(root, dirParts);
+    // Later layers override earlier ones when the exact path matches
+    parent.children.set(file.name, file);
+}
+
+function walkLayer(layerName: string, root: DirectoryNode) {
+    const layerAbs = path.join(webFileDir, layerName);
+
+    function walk(absDir: string, relTarget: string) {
+        const entries = fs.readdirSync(absDir, { withFileTypes: true });
+        for (const entry of entries) {
+            const entryAbs = path.join(absDir, entry.name);
+            const targetRel = toPosix(path.join(relTarget, entry.name));
+
+            if (entry.isDirectory()) {
+                walk(entryAbs, targetRel);
+            } else if (entry.isFile()) {
+                const stats = fs.lstatSync(entryAbs);
+                const executable = Boolean(stats.mode & 0o111);
+                const isTypeScript = path.extname(entryAbs) === '.ts';
+                const className = isTypeScript ? processFilename(entryAbs) : null;
+                const importPath = toPosix(path.join('rootfs', layerName, relTarget, entry.name));
+                const fileNode: FileNode = {
+                    type: 'file',
+                    name: entry.name,
+                    relPath: targetRel,
+                    importPath: className ? importPath.replace(/\.ts$/, '') : importPath,
+                    className: className || undefined,
+                    sanitized: sanitize(importPath),
+                    executable,
+                };
+                addFile(root, fileNode);
+            } else {
+                console.log(`skipping ${entryAbs}`);
             }
-        } else {
-            console.log(`skipping ${srcPath}`);
         }
     }
+
+    walk(layerAbs, '');
 }
 
+function collectImports(node: DirectoryNode): string[] {
+    const imports: string[] = [];
+    for (const child of Array.from(node.children.values())) {
+        if (child.type === 'dir') {
+            imports.push(...collectImports(child));
+        } else if (child.className) {
+            imports.push(`import { ${child.className} } from "./${child.importPath}";`);
+        } else {
+            imports.push(`import ${child.sanitized} from "./${child.importPath}";`);
+        }
+    }
+    return imports;
+}
 
-console.log(`Doing web file traversal in ${webFileDir}`);
-let pages = fs.readdirSync(webFileDir);
-pages.forEach(element => {
-    webfileTraverseAndGenerate(webFileDir + '/' + element)
-});
+function generateFileBody(file: FileNode): string {
+    if (file.className) {
+        const binFileName = path.posix.basename(file.importPath);
+        return `
+    binfile = new DSIProcessFile(fs, ${file.className});
+    curdir.addfile("${binFileName}", binfile);
+     `;
+    }
+
+    const permLine = file.executable ? `
+    curfile.chmod(DSFilePerms.rx());` : '';
+    return `
+    // Creating ${file.relPath}
+    curfile = new DSIWebFile(fs, ${file.sanitized});
+    curdir.addfile("${file.name}", curfile);${permLine}
+    `;
+}
+
+function generateTraversal(node: DirectoryNode, includeHeader = false): string {
+    let body = includeHeader ? '    // WEBFILE TRAVERSAL BODY\n' : '';
+
+    const directories: DirectoryNode[] = [];
+    const files: FileNode[] = [];
+    for (const child of Array.from(node.children.values())) {
+        if (child.type === 'dir') {
+            directories.push(child);
+        } else {
+            files.push(child);
+        }
+    }
+
+    for (const child of directories) {
+        const displayPath = child.relPath || child.name || '/';
+        body += `
+    // Traversing ${displayPath}
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('${child.name}');
+    `;
+        body += generateTraversal(child);
+        body += `
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited ${displayPath}
+        `;
+    }
+
+    for (const child of files) {
+        body += generateFileBody(child);
+    }
+
+    return body;
+}
+
+console.log(`Building layered rootfs from ${webFileDir}`);
+const root = createRootNode();
+const layers = fs.readdirSync(webFileDir, { withFileTypes: true }).filter(e => e.isDirectory());
+for (const layer of layers) {
+    console.log(`  scanning ${layer.name}...`)
+    walkLayer(layer.name, root);
+}
+
+const importBlock = ['// WEBFILE TRAVERSAL IMPORTS', ...collectImports(root)].join('\n') + '\n';
+const traversalBody = generateTraversal(root, true);
 
 console.log(`Writing ${outputFile}`);
-fs.writeFileSync(outputFile,
-    header
-    + webfile_traversal_imports
-    + buildrootfs_header
-    + webfile_traversal_header
-    + webfile_traversal_body
-    + main_footer
+fs.writeFileSync(
+    outputFile,
+    header + importBlock + buildrootfs_header + webfile_traversal_header + traversalBody + main_footer
 );
