@@ -48,6 +48,8 @@ tag because must all fit on single line](/badfile)
 
 [Link to a process with arguments](cmd: bin/echo HelloWorld)
 
+[Link to a process that saves history](cmd: bin/fsviewer)
+
 # $$$$ Lists
 
   - An extra long list item to demonstrate multi line wrapping
