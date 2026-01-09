@@ -4,7 +4,7 @@ import { DSOptionParser } from "../../../lib/dsOptionParser";
 import { DSKernel } from "../../../dsKernel";
 import { DSSprite } from "../../../dsTerminal";
 import { DSInode } from "../../../dsFileSystem";
-import { load_image } from "../../../lib/dsImg";
+import { DSTexture, get_image_textures } from "../../../lib/dsImg";
 
 export class PRImgview extends DSProcess {
 
@@ -53,7 +53,7 @@ export class PRImgview extends DSProcess {
             throw new DSProcessError(`Not an image file\n`);
         }
         try {
-            const img = await load_image(inode.url);
+            const img = await get_image_textures(inode.url);
             return img;
         }
         catch (e) {
@@ -62,8 +62,8 @@ export class PRImgview extends DSProcess {
     }
 
 
-    private setupSprite(img: HTMLImageElement) {
-        const sprite = DSKernel.terminal.newSprite([{image:img,width:img.width,height:img.height}]);
+    private setupSprite(img: DSTexture[]) {
+        const sprite = DSKernel.terminal.newSprite(img);
         const ycoordoflowestrow = DSKernel.terminal.xterm.buffer.active.cursorY * DSKernel.terminal.cellheight;
         sprite.enabled = true;
         sprite.y = ycoordoflowestrow;

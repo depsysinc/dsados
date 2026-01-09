@@ -10,7 +10,7 @@ export abstract class DSArcadeGame extends DSApp {
 
     private fromresize: boolean = false;
 
-    protected async main(): Promise<void> {
+    protected async run(): Promise<void> {
 
         const optparser = new DSOptionParser(
             this.procname,

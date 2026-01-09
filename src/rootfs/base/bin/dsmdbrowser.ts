@@ -22,7 +22,7 @@ export class PRDSMDBrowser extends DSApp {
         return this.cwd.getdir(getDirPath(this.currentfilename))
     }
 
-    protected async main(): Promise<void> {
+    protected async run(): Promise<void> {
         const optparser = new DSOptionParser(
             this.procname,
             true,

@@ -1,8 +1,12 @@
 import { DSConcurrentQueue } from "../dsConcurrentQueue";
 import { DSKernel } from "../dsKernel";
-import { DSProcess } from "../dsProcess";
+import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSKeyEvent, DSPointerEvent } from "../dsTerminal";
+import { DSOptionParser } from "./dsOptionParser";
 
+export class DSAppBaseProcess extends DSProcess {
+
+}
 
 export abstract class DSApp extends DSProcess {
     protected eventQueue: DSConcurrentQueue<DSAppEvent> = new DSConcurrentQueue<DSAppEvent>();
@@ -10,10 +14,38 @@ export abstract class DSApp extends DSProcess {
     protected currentfilename: string = '';
     protected stdinEventQueue: boolean = true;
 
+    private static baseprocess: DSAppBaseProcess;
+
+    private async main(): Promise<void> {
+        const optparser = new DSOptionParser(
+            this.procname,
+            true,
+            "   a markdown browser",
+            "<mdfile>"
+        );
+        let nextarg = optparser.parseWithUsageAndHelp(this.argv);
+        if (nextarg == -1)
+            throw new DSProcessError(optparser.usage());
+
+
+        let filename = this.argv[nextarg];
+        this.startApp(filename);
+        return
+    }
+
+    protected abstract run(): Promise<void>;
+
     get currentstate(): HistoryState {
         return {
             process: this.procname,
             filepath: this.currentfilename
+        }
+    }
+
+    startApp(filename: string) {
+        this.currentfilename = filename
+        if (!DSApp.baseprocess) {
+            DSKernel.exec("bin/dsappbaseprocess", [''])
         }
     }
 
@@ -23,7 +55,7 @@ export abstract class DSApp extends DSProcess {
             history.replaceState(this.currentstate, '');
     }
 
-    protected addNewPage(filename:string) {
+    protected addNewPage(filename: string) {
         this.currentfilename = filename;
         history.pushState(this.currentstate, '')
     }
@@ -107,7 +139,7 @@ export abstract class DSApp extends DSProcess {
     handleHistory(e: PopStateEvent): void {
         let state: HistoryState = e.state;
         this.terminate();
-        DSKernel.exec('/bin/'+state.process, [state.process,state.filepath])
+        DSKernel.exec('/bin/' + state.process, [state.process, state.filepath])
         this.eventQueue.enqueue(new HistoryAppEvent(e));
     }
 

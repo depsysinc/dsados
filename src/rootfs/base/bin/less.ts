@@ -1,4 +1,4 @@
-import { DownArrowAppEvent, DSApp, MouseButtonDownEvent, MouseButtonUpEvent, MouseMoveAppEvent, PageDownAppEvent, PageUpAppEvent, TextAppEvent, TouchEndAppEvent, TouchMoveAppEvent, TouchStartAppEvent, UpArrowAppEvent, WheelAppEvent } from "../../../dsApp";
+import { DownArrowAppEvent, DSApp, MouseButtonDownEvent, MouseButtonUpEvent, MouseMoveAppEvent, PageDownAppEvent, PageUpAppEvent, TextAppEvent, TouchEndAppEvent, TouchMoveAppEvent, TouchStartAppEvent, UpArrowAppEvent, WheelAppEvent } from "../../../lib/dsApp";
 import { DSKernel } from "../../../dsKernel";
 import { DSProcessError } from "../../../dsProcess";
 import { cursornextline, reset_text, right, set_cursor, setattr, textattrs } from "../../../lib/dsCurses";
@@ -15,7 +15,7 @@ export class PRLess extends DSApp {
 
     private mouserow:number = null;
 
-    protected async main(): Promise<void> {
+    protected async run(): Promise<void> {
         const optparser = new DSOptionParser(
             this.procname,
             true,
