@@ -214,7 +214,6 @@ export class DSKernel {
                 throw new DSKernelMountError("First fs must have '/' mountpath");
             this.fstable.push(new DSFSTableEntry(fs.root, fs));
         } else {
-            this.fstable.push(new DSFSTableEntry(fs.root, fs));
             if (!mountpath.startsWith("/"))
                 throw new DSKernelMountError("Must be absolute path");
             const sepIdx = mountpath.lastIndexOf('/');
@@ -225,7 +224,7 @@ export class DSKernel {
             const parent = this.rootdir.getdir(parentpath);
             if (parent.getfileinfo(newdirname))
                 throw new DSKernelMountError("Directory entry already exists");
-
+            this.fstable.push(new DSFSTableEntry(fs.root, fs));
             parent.filelist.push(new DSFileInfo(fs.root, newdirname));
             fs.root.getfileinfo("..").inode = parent;
             fs.root.parent = parent;
