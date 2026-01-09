@@ -1,0 +1,58 @@
+NAME
+
+  **fsviewer** - view a filesystem
+
+SYNOPSIS
+
+    fsviewer *dirname* 
+
+DESCRIPTION
+
+    FSViewer is an app to view a filesystem. The dirname argument should be a directory;
+    if no argument is supplied, it will default to the current working directory. FSViewer
+    will display the list of files, along with their types. The Up/Down arrow keys or the mouse can 
+    be used to select different files, and click or press enter to view a file. 
+
+    When viewing a file, FSViewer will check the filetype - it will call dsmdbrowser for a .dsmd
+    file, imgview for an image file, and cat for a text file. It will then wait for the user to 
+    exit and return to the current directory. When viewing a directory, it will open the directory, 
+    and continue running with the new list of files. 
+
+    FSViewer has an internal history system - use the left and right arrow keys to navigate backwards
+    and forwards through it. The browser's back button will also exit FSViewer, and add [this page](/data/app/fsviewer/fsvieweropen.dsmd)
+    to the history. 
+    
+FSVIEWER COMMANDS
+
+    *q* - quit
+
+    *t* - down 3 rows
+
+    *enter* - open current file
+
+    *tab* - down 1 row
+
+    *down arrow* - down 1 row
+
+    *up arrow* - up one row
+
+    *left arrow* - back to previous entry
+
+    *right arrow* - forward to next entry
+
+    *drag* - move to row with mouse pointer
+
+    *left click* - open file under mouse pointer
+
+    *right click* - go to parent directory of current
+    
+    *scroll* - scroll the list of files
+
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [ls](/bin/man/ls)

@@ -22,6 +22,7 @@ import { DSShell } from "./rootfs/base/bin/dssh";
 import { PREcho } from "./rootfs/base/bin/echo";
 import { PREnv } from "./rootfs/base/bin/env";
 import { PRFile } from "./rootfs/base/bin/file";
+import { PRFSViewer } from "./rootfs/base/bin/fsviewer";
 import { PRImgview } from "./rootfs/base/bin/imgview";
 import { PRInit } from "./rootfs/base/bin/init";
 import { PRLess } from "./rootfs/base/bin/less";
@@ -58,6 +59,7 @@ import rootfs_base_man_dssh_dsmd from "./rootfs/base/man/dssh.dsmd";
 import rootfs_base_man_echo_dsmd from "./rootfs/base/man/echo.dsmd";
 import rootfs_base_man_env_dsmd from "./rootfs/base/man/env.dsmd";
 import rootfs_base_man_file_dsmd from "./rootfs/base/man/file.dsmd";
+import rootfs_base_man_fsviewer_dsmd from "./rootfs/base/man/fsviewer.dsmd";
 import rootfs_base_man_imgview_dsmd from "./rootfs/base/man/imgview.dsmd";
 import rootfs_base_man_init_dsmd from "./rootfs/base/man/init.dsmd";
 import rootfs_base_man_less_dsmd from "./rootfs/base/man/less.dsmd";
@@ -72,6 +74,10 @@ import rootfs_base_man_reset_dsmd from "./rootfs/base/man/reset.dsmd";
 import rootfs_base_man_sleep_dsmd from "./rootfs/base/man/sleep.dsmd";
 import rootfs_base_man_splash_dsmd from "./rootfs/base/man/splash.dsmd";
 import rootfs_site_data_app_dsmdbrowser_404_dsmd from "./rootfs/site/data/app/dsmdbrowser/404.dsmd";
+import rootfs_site_data_app_fsviewer_foldericon_png from "./rootfs/site/data/app/fsviewer/foldericon.png";
+import rootfs_site_data_app_fsviewer_fsvieweropen_dsmd from "./rootfs/site/data/app/fsviewer/fsvieweropen.dsmd";
+import rootfs_site_data_app_fsviewer_imageicon_png from "./rootfs/site/data/app/fsviewer/imageicon.png";
+import rootfs_site_data_app_fsviewer_texticon_png from "./rootfs/site/data/app/fsviewer/texticon.png";
 import rootfs_site_data_app_pixel_assault_Enemies_Alien1_tile000_png from "./rootfs/site/data/app/pixel_assault/Enemies/Alien1/tile000.png";
 import rootfs_site_data_app_pixel_assault_Enemies_Alien1_tile001_png from "./rootfs/site/data/app/pixel_assault/Enemies/Alien1/tile001.png";
 import rootfs_site_data_app_pixel_assault_Enemies_Alien1_tile002_png from "./rootfs/site/data/app/pixel_assault/Enemies/Alien1/tile002.png";
@@ -199,6 +205,9 @@ export function buildrootfs(): DSFileSystem {
      
     binfile = new DSIProcessFile(fs, PRFile);
     curdir.addfile("file", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRFSViewer);
+    curdir.addfile("fsviewer", binfile);
      
     binfile = new DSIProcessFile(fs, PRImgview);
     curdir.addfile("imgview", binfile);
@@ -418,6 +427,11 @@ export function buildrootfs(): DSFileSystem {
     curdir.addfile("file.dsmd", curfile);
     
     
+    // Creating rootfs/base/man/fsviewer.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_man_fsviewer_dsmd);
+    curdir.addfile("fsviewer.dsmd", curfile);
+    
+    
     // Creating rootfs/base/man/imgview.dsmd
     curfile = new DSIWebFile(fs, rootfs_base_man_imgview_dsmd);
     curdir.addfile("imgview.dsmd", curfile);
@@ -507,6 +521,34 @@ export function buildrootfs(): DSFileSystem {
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
     // Exited rootfs/site/data/app/dsmdbrowser
+        
+    // Traversing rootfs/site/data/app/fsviewer
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('fsviewer');
+    
+    // Creating rootfs/site/data/app/fsviewer/foldericon.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_fsviewer_foldericon_png);
+    curdir.addfile("foldericon.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/fsviewer/fsvieweropen.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_fsviewer_fsvieweropen_dsmd);
+    curdir.addfile("fsvieweropen.dsmd", curfile);
+    
+    
+    // Creating rootfs/site/data/app/fsviewer/imageicon.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_fsviewer_imageicon_png);
+    curdir.addfile("imageicon.png", curfile);
+    
+    
+    // Creating rootfs/site/data/app/fsviewer/texticon.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_app_fsviewer_texticon_png);
+    curdir.addfile("texticon.png", curfile);
+    
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited rootfs/site/data/app/fsviewer
         
     // Traversing rootfs/site/data/app/pixel_assault
     dirstack.push(curdir);
