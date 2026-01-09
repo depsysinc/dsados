@@ -28,6 +28,7 @@ import { PRLess } from "./rootfs/base/bin/less";
 import { PRLs } from "./rootfs/base/bin/ls";
 import { PRMan } from "./rootfs/base/bin/man";
 import { PRMkdir } from "./rootfs/base/bin/mkdir";
+import { PRMount } from "./rootfs/base/bin/mount";
 import { PRPixelAssault } from "./rootfs/base/bin/pixelassault";
 import { PRPs } from "./rootfs/base/bin/ps";
 import { PRPwd } from "./rootfs/base/bin/pwd";
@@ -103,6 +104,7 @@ import rootfs_base_data_man_less_dsmd from "./rootfs/base/data/man/less.dsmd";
 import rootfs_base_data_man_ls_dsmd from "./rootfs/base/data/man/ls.dsmd";
 import rootfs_base_data_man_man_dsmd from "./rootfs/base/data/man/man.dsmd";
 import rootfs_base_data_man_mkdir_dsmd from "./rootfs/base/data/man/mkdir.dsmd";
+import rootfs_base_data_man_mount_dsmd from "./rootfs/base/data/man/mount.dsmd";
 import rootfs_base_data_man_pixelassault_dsmd from "./rootfs/base/data/man/pixelassault.dsmd";
 import rootfs_base_data_man_ps_dsmd from "./rootfs/base/data/man/ps.dsmd";
 import rootfs_base_data_man_pwd_dsmd from "./rootfs/base/data/man/pwd.dsmd";
@@ -214,6 +216,9 @@ export function buildrootfs(): DSFileSystem {
      
     binfile = new DSIProcessFile(fs, PRMkdir);
     curdir.addfile("mkdir", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRMount);
+    curdir.addfile("mount", binfile);
      
     binfile = new DSIProcessFile(fs, PRPixelAssault);
     curdir.addfile("pixelassault", binfile);
@@ -656,6 +661,10 @@ export function buildrootfs(): DSFileSystem {
     // Creating data/man/mkdir.dsmd
     curfile = new DSIWebFile(fs, rootfs_base_data_man_mkdir_dsmd);
     curdir.addfile("mkdir.dsmd", curfile);
+    
+    // Creating data/man/mount.dsmd
+    curfile = new DSIWebFile(fs, rootfs_base_data_man_mount_dsmd);
+    curdir.addfile("mount.dsmd", curfile);
     
     // Creating data/man/pixelassault.dsmd
     curfile = new DSIWebFile(fs, rootfs_base_data_man_pixelassault_dsmd);
