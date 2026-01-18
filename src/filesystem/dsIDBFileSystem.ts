@@ -1,4 +1,5 @@
 import { DSFileInfo, DSFilePerms, DSFileSystem, DSFileSystemError, DSIDirectory, DSInode } from "../dsFileSystem";
+import { DSIDBFile } from "./dsIDBFile";
 
 export class DSIDBFileSystemError extends DSFileSystemError {
     constructor(message: string) {
@@ -14,8 +15,19 @@ interface SerializedDirectory {
     filelist: {name: string, inodeid: number}[];
 }
 
+interface SerializedFile {
+    id: number;
+    type: string;
+    text: string;
+    perms: DSFilePerms;
+}
+
 function isSerializedDirectory(obj: any): obj is SerializedDirectory {
     return obj && typeof obj.id !== undefined && obj.type === "DSIDirectory";
+}
+
+function isSerializedFile(obj:any) : obj is SerializedFile {
+    return obj && typeof obj.id !== undefined && obj.type === "DSIDBFile";
 }
 
 export class DSIDBFileSystem extends DSFileSystem {
@@ -59,7 +71,7 @@ export class DSIDBFileSystem extends DSFileSystem {
         const transaction = this._db.transaction("inodes", "readwrite");
         const store = transaction.objectStore("inodes");
 
-        // console.log("CHANGED:", inode.toJSON());
+        //console.log("CHANGED:", inode.toJSON());
         const request = store.put(inode.toJSON());
 
         request.onsuccess = (event) => {
@@ -155,7 +167,18 @@ export class DSIDBFileSystem extends DSFileSystem {
                 ));
             });
             return dir;
-        } else {
+        } 
+        else if (isSerializedFile(inodeobj)){
+            let iperms = inodeobj.perms as unknown as {_r:boolean, _w:boolean, _x:boolean}
+            //console.log(inodeobj.perms._r)
+            let perms = new DSFilePerms(iperms._r, iperms._w, iperms._x)
+            console.log(perms)
+            const file = new DSIDBFile(this,"text/plain", perms)
+            file.write(inodeobj.text)
+            file.id = inodeobj.id
+            return file
+        }
+        else {
             throw new DSIDBFileSystemError(`Unknown inode ${inodeobj}`);
         }
     }

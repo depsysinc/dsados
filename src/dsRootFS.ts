@@ -36,6 +36,7 @@ import { PRPwd } from "./rootfs/base/bin/pwd";
 import { PRReset } from "./rootfs/base/bin/reset";
 import { PRSleep } from "./rootfs/base/bin/sleep";
 import { PRSplash } from "./rootfs/base/bin/splash";
+import { PRTouch } from "./rootfs/base/bin/touch";
 import rootfs_base_data_app_dsmdbrowser_404_dsmd from "./rootfs/base/data/app/dsmdbrowser/404.dsmd";
 import rootfs_base_data_app_pixel_assault_Enemies_Alien1_tile000_png from "./rootfs/base/data/app/pixel_assault/Enemies/Alien1/tile000.png";
 import rootfs_base_data_app_pixel_assault_Enemies_Alien1_tile001_png from "./rootfs/base/data/app/pixel_assault/Enemies/Alien1/tile001.png";
@@ -246,6 +247,9 @@ export function buildrootfs(): DSFileSystem {
      
     binfile = new DSIProcessFile(fs, PRSplash);
     curdir.addfile("splash", binfile);
+     
+    binfile = new DSIProcessFile(fs, PRTouch);
+    curdir.addfile("touch", binfile);
      
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();

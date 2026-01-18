@@ -552,6 +552,7 @@ export class DSIDirectory extends DSInode {
         this._filelist.push(
             new DSFileInfo(newfile, filename)
         );
+        this._fs.changed(this); //DSIDBFS hook
         return newfile;
     }
 }
