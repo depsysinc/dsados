@@ -15,7 +15,7 @@ export class PRLess extends DSApp {
 
     private mouserow:number = null;
 
-    protected async run(): Promise<void> {
+    protected async runApp(): Promise<void> {
         const optparser = new DSOptionParser(
             this.procname,
             true,
@@ -39,7 +39,7 @@ export class PRLess extends DSApp {
         }
         DSKernel.terminal.reset();
 
-        this.init();
+        //this.init();
         this.text = await inode.contentAsText().read();
         this.display()
 

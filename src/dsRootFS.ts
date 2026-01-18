@@ -17,6 +17,7 @@ import { PRTestAnim } from "./rootfs/base/bin/demoanim";
 import { PRDemoCurses } from "./rootfs/base/bin/democurses";
 import { PRDemoMarkdown } from "./rootfs/base/bin/demomarkdown";
 import { PRDemoMouseTouch } from "./rootfs/base/bin/demomousetouch";
+import { DSAppBaseProcess } from "./rootfs/base/bin/dsappbaseprocess";
 import { PRDSMDBrowser } from "./rootfs/base/bin/dsmdbrowser";
 import { DSShell } from "./rootfs/base/bin/dssh";
 import { PREcho } from "./rootfs/base/bin/echo";
@@ -189,6 +190,9 @@ export function buildrootfs(): DSFileSystem {
      
     binfile = new DSIProcessFile(fs, PRDemoMouseTouch);
     curdir.addfile("demomousetouch", binfile);
+     
+    binfile = new DSIProcessFile(fs, DSAppBaseProcess);
+    curdir.addfile("dsappbaseprocess", binfile);
      
     binfile = new DSIProcessFile(fs, PRDSMDBrowser);
     curdir.addfile("dsmdbrowser", binfile);

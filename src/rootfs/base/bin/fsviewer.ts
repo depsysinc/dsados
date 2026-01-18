@@ -1,4 +1,4 @@
-import { DownArrowAppEvent, DSApp, HistoryAppEvent, LeftArrowAppEvent, MouseButtonDownEvent, MouseButtonUpEvent, MouseMoveAppEvent, ResizeAppEvent, RightArrowAppEvent, TextAppEvent, TouchEndAppEvent, TouchMoveAppEvent, TouchStartAppEvent, UpArrowAppEvent, WheelAppEvent } from "../../../dsApp";
+import { DownArrowAppEvent, DSApp, HistoryAppEvent, LeftArrowAppEvent, MouseButtonDownEvent, MouseButtonUpEvent, MouseMoveAppEvent, ResizeAppEvent, RightArrowAppEvent, TextAppEvent, TouchEndAppEvent, TouchMoveAppEvent, TouchStartAppEvent, UpArrowAppEvent, WheelAppEvent } from "../../../lib/dsApp";
 import { DSIDirectory } from "../../../dsFileSystem";
 import { DSKernel } from "../../../dsKernel";
 import { DSIWebFile } from "../../../filesystem/dsIWebFile";
@@ -22,7 +22,7 @@ export class PRFSViewer extends DSApp {
     private historystack: { filepath: string, rowidx: number }[] = [];
     private historystackpoint: number;
 
-    protected async main(): Promise<void> {
+    protected async runApp(): Promise<void> {
         const optparser = new DSOptionParser(
             this.procname,
             true,
@@ -124,7 +124,6 @@ export class PRFSViewer extends DSApp {
     }
 
     protected async init() {
-        super.init();
         this.foldertexture = await get_image_textures((this.cwd.getfile('/data/app/fsviewer/foldericon.png') as DSIWebFile).url);
         this.txttexture = await get_image_textures((this.cwd.getfile('/data/app/fsviewer/texticon.png') as DSIWebFile).url);
         this.imgtexture = await get_image_textures((this.cwd.getfile('/data/app/fsviewer/imageicon.png') as DSIWebFile).url);

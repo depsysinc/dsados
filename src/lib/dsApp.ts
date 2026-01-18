@@ -4,8 +4,9 @@ import { DSProcess, DSProcessError } from "../dsProcess";
 import { DSKeyEvent, DSPointerEvent } from "../dsTerminal";
 import { DSOptionParser } from "./dsOptionParser";
 
-export class DSAppBaseProcess extends DSProcess {
-
+export type DSAppInfo = {
+    process: string,
+    filepath: string
 }
 
 export abstract class DSApp extends DSProcess {
@@ -14,9 +15,29 @@ export abstract class DSApp extends DSProcess {
     protected currentfilename: string = '';
     protected stdinEventQueue: boolean = true;
 
-    private static baseprocess: DSAppBaseProcess;
+    static active: boolean;
+    static firsthistorystate: DSAppInfo = { process: "baseentry", filepath: "baseentry" }
 
-    private async main(): Promise<void> {
+    protected abstract runApp(): Promise<void>;
+
+    static beginApp(data: DSAppInfo) {
+        if (!DSApp.active) {
+            console.log('initializing DSApp')
+            history.replaceState(DSApp.firsthistorystate, '')
+        }
+
+        history.pushState(data,'')
+
+        if (!DSApp.active) {
+            DSApp.active = true;
+            DSKernel.exec("/bin/dsappbaseprocess", [''])
+        }
+
+    }
+
+
+    //Do not implement in derived classes! Use run() instead
+    protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
             this.procname,
             true,
@@ -29,30 +50,43 @@ export abstract class DSApp extends DSProcess {
 
 
         let filename = this.argv[nextarg];
-        this.startApp(filename);
+        console.log(DSKernel.procstack)
+
+        await this.startApp(filename);
+        console.log('Done wait whattttt')
         return
     }
 
-    protected abstract run(): Promise<void>;
 
-    get currentstate(): HistoryState {
+    get currentstate(): DSAppInfo {
         return {
             process: this.procname,
             filepath: this.currentfilename
         }
     }
 
-    startApp(filename: string) {
-        this.currentfilename = filename
-        if (!DSApp.baseprocess) {
-            DSKernel.exec("bin/dsappbaseprocess", [''])
+    async startApp(filename: string) {
+        console.log('Starting app!')
+        if (!DSApp.active) {
+            console.log('initializing DSApp')
+            history.replaceState(DSApp.firsthistorystate, '')
         }
-    }
+        this.addNewPage(filename);
 
-    protected init() {
-        //Add history entry if none exists
-        if (history.state == null)
-            history.replaceState(this.currentstate, '');
+        //console.log(DSKernel.procstack);
+
+        if (!DSApp.active) {
+            DSApp.active = true;
+            DSKernel.exec("/bin/dsappbaseprocess", [''])
+        }
+        else {
+            console.log('Running', this.procname)
+            await this.runApp();
+            console.log('leaving station,', DSKernel.procstack);
+
+        }
+        console.log('Finishing')
+
     }
 
     protected addNewPage(filename: string) {
@@ -67,6 +101,7 @@ export abstract class DSApp extends DSProcess {
     }
 
     handlePointer(e: DSPointerEvent): void {
+        console.log('pointer')
         if (e.type == "wheel") {
 
             this.eventQueue.enqueue(new WheelAppEvent(
@@ -137,7 +172,7 @@ export abstract class DSApp extends DSProcess {
     }
 
     handleHistory(e: PopStateEvent): void {
-        let state: HistoryState = e.state;
+        let state: DSAppInfo = e.state;
         this.terminate();
         DSKernel.exec('/bin/' + state.process, [state.process, state.filepath])
         this.eventQueue.enqueue(new HistoryAppEvent(e));
@@ -164,11 +199,6 @@ export class HistoryAppEvent extends DSAppEvent {
         super();
     }
 }
-export type HistoryState =
-    {
-        process: string;
-        filepath: string;
-    }
 
 // Keys
 export class UpArrowAppEvent extends DSAppEvent { }

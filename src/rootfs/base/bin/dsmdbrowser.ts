@@ -22,7 +22,8 @@ export class PRDSMDBrowser extends DSApp {
         return this.cwd.getdir(getDirPath(this.currentfilename))
     }
 
-    protected async run(): Promise<void> {
+    protected async runApp(): Promise<void> {
+        console.log(DSKernel.procstack)
         const optparser = new DSOptionParser(
             this.procname,
             true,
@@ -33,21 +34,23 @@ export class PRDSMDBrowser extends DSApp {
         if (nextarg == -1)
             throw new DSProcessError(optparser.usage());
 
+        console.log(DSKernel.procstack)
 
         let filename = this.argv[nextarg];
-        this.currentfilename = filename;
+        //this.currentfilename = filename;
 
-        // Start up AppEvent processing
-        this.init();
+        console.log(DSKernel.procstack)
+
 
         // Load assets
         this._err404 = await this.cwd.getfile("/data/app/dsmdbrowser/404.dsmd").contentAsText().read();
-
+        console.log("preloaddoc",DSKernel.procstack)
         await this._loadDoc(filename);
-
+        console.log(DSKernel.procstack)
         const t = DSKernel.terminal;
         while (!this.done) {
             const e = await this.eventQueue.dequeue();
+            console.log(e, DSKernel.procstack)
             if (e instanceof ResizeAppEvent) {
                 this._curdoc.render(t.cols, t.cellwidth, t.cellheight);
                 this._redraw();
@@ -176,6 +179,7 @@ export class PRDSMDBrowser extends DSApp {
             }
         }
         DSKernel.terminal.reset();
+        console.log("done")
     }
 
     private async openLink(url: string) {
