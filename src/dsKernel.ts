@@ -103,23 +103,27 @@ export class DSKernel {
 
         const fastboot = Boolean(nvram_get("fastboot"));
 
-        let bootfactor = fastboot ? 0 : 1;
-
-        await sleep(500 * bootfactor);
-        this.terminal.write(`BOOTING DepSysOS ${DSKernel.version}...\n\n`);
-        await sleep(1000 * bootfactor);
+        if (!fastboot) {
+            await sleep(500);
+            this.terminal.write(`BOOTING DepSysOS ${DSKernel.version}...\n\n`);
+            await sleep(1000);
+        }
         const t = this.terminal;
-        t.baud = 1000 * bootfactor;
+        const baudWrite = async (text: string) => {
+            if (!fastboot)
+                await t.baudWrite(text);
+        };
+        t.baud = 800;
 
         try {
             if (bootcount == 0) {
-                await t.baudWrite(`New terminal detected\n`);
+                await baudWrite(`New terminal detected\n`);
                 await (sleep(1000));
-                await t.baudWrite(`Doing first time configuration\n\n`);
+                await baudWrite(`Doing first time configuration\n\n`);
                 await (sleep(1000));
             }
 
-            await t.baudWrite(
+            await baudWrite(
                 `term: init\n` +
                 `     grid : ${t.cols} X ${t.rows}\n`);
 
@@ -131,7 +135,7 @@ export class DSKernel {
                 const device = agentmatch[2] || "UNKNOWN";
                 const impl = agentmatch[3] || "UNKNOWN";
 
-                await t.baudWrite(
+                await baudWrite(
                     ` standard : ${standard}\n` +
                     `   device : ${device}\n` +
                     `     impl : ${impl}\n`
@@ -140,43 +144,43 @@ export class DSKernel {
                 const altsregex = /(\s+[^\/]+\/[0-9.]+)/g
                 const altsmatch = agentmatch[4].match(altsregex);
                 for (let i = 0; i < altsmatch.length; i++)
-                    await t.baudWrite(`             - ${altsmatch[i].trim()}\n`);
+                    await baudWrite(`             - ${altsmatch[i].trim()}\n`);
 
             }
-            await t.baudWrite("term: start io handlers\n");
+            await baudWrite("term: start io handlers\n");
             this._startStdioHandlers();
 
             // Init filesystem
-            await t.baudWrite(`fsck: rootfs\n`)
+            await baudWrite(`fsck: rootfs\n`)
             const rootfs = buildrootfs();
             let fsckresults = rootfs.fsck();
-            await t.baudWrite(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
+            await baudWrite(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
 
-            await t.baudWrite(`mount: rootfs\n`)
+            await baudWrite(`mount: rootfs\n`)
             DSKernel.mount('/', rootfs);
 
 
-            await t.baudWrite(`fsck: localfs\n`)
+            await baudWrite(`fsck: localfs\n`)
             const localfs = new DSIDBFileSystem("depsys_local_fs", 1);
             await localfs.open();
 
             fsckresults = localfs.fsck();
-            await t.baudWrite(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
+            await baudWrite(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
 
-            await t.baudWrite(`mount: localfs\n`)
+            await baudWrite(`mount: localfs\n`)
             DSKernel.mount('/local', localfs);
 
             if (bootcount == 0) {
-                await t.baudWrite("nvram: enable fastboot");
+                await baudWrite("nvram: enable fastboot");
                 const oldbaud = t.baud;
                 t.baud = 10;
-                await t.baudWrite("...\n");
+                await baudWrite("...\n");
                 nvram_set("fastboot", String(true));
                 t.baud = oldbaud;
             }
 
             // Start init process
-            await t.baudWrite("exec: init\n");
+            await baudWrite("exec: init\n");
             t.baud = 0;
             await DSKernel.exec("/bin/init", ["init"]);
         } catch (e) {
@@ -325,7 +329,7 @@ export class DSKernel {
         this.curproc.handlePointer(e);
     }
 
-    static handleKeyEvent(e:DSKeyEvent) {
+    static handleKeyEvent(e: DSKeyEvent) {
         if (!this.curproc)
             return;
         this.curproc.handleKeyEvent(e);
