@@ -19,3 +19,4 @@ endif
 
 splash
 dsmdbrowser /data/site/page/index.dsmd
+cat /etc/motd.txt

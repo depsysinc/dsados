@@ -1,0 +1,65 @@
+![globnobulous](/data/site/avatars/posterized_globnobulous.png)
+Globnobulous - Teacher & Founder
+
+# [25-01-2026] - Second Semester
+
+First semester was good but intense.  I last taught this course with **chalk**.
+iPads and laptops in the lecturing context was new to me.  Also, 12 hours a
+week on campus was a big, but welcome departure from 8 years working from
+home.
+
+The engineering students are still overworked but trying hard for the most 
+part.  Learning, getting things done.  Their energy is inspiring :)
+
+Also, turns out I enjoy setting programming exams.  I guess it's really just
+puzzle making, and puzzles are a big component of games.  So I'm making puzzles
+for a game that gives you magic undergraduate degree credits as your 
+reward for solving them well enough and fast enough.
+
+Of course I like it :D
+
+## Rolling into a new semester
+Now I'm only teaching 1 section of a first year programming course where the material 
+is on the level of
+
+```
+    A for loop is structured like so:
+
+    for (<initialize>; <condition>; <increment>) {
+        <body>;
+    }
+```
+
+This does not require the same level of practice or prep that, say, Complexity Analysis 
+of Iterative & Recursive Algorithms does.  So DepSys projects are waking up and 
+making progress, which is exciting!
+
+For example, the framework for this website has been greatly expanded on, not 
+leastwise because of the efforts of my **Bright Young Apprentice**.  If you know anything
+about unix or command lines, I urge you to press q right now and see what this
+little framework can do :)
+
+## Concursion
+Most importantly, I've made a lot of progress on the concursion engine!  The current challenge
+is to select a unit and send it somewhere.  I've started at the highest level of mobility,
+with ships following Keplerian trajectories in gravity wells, and to test I've got a scale
+accurate model of our solarsystem.
+
+![Orrery](orrery.gif) 
+
+My test sets up a ship in LEO, and I need to plot a trajectory to the moon
+
+![TransferOrbit](transferorbit.gif)
+
+If you're patient watching the above, you'll see where the orbital calculations go off the rails :D
+
+It becomes super obvious when we print out the starting position vector of our calculated transfer 
+trajectory once per frame.  You don't even have to read the values to know something has gone horribly
+wrong!
+![HyperbolicParaboloid](hyperbolicparaboloid.png)
+
+There's something specific about this range of initial conditions that blows up my implementation
+of Hyperbolic Orbits, and neither Claude nor GPT can seem to figure it out.  So I *get to* (not *have
+to*!) dig in and learn something new about the maths of Keplerian orbits. :D
+
+Will try for a fast follow with my findings!

@@ -136,6 +136,10 @@ import rootfs_site_data_site_devlog_2025_08_26_ozzyforest_png from "./rootfs/sit
 import rootfs_site_data_site_devlog_2025_09_02_20250902_dsmd from "./rootfs/site/data/site/devlog/2025-09-02/20250902.dsmd";
 import rootfs_site_data_site_devlog_2025_09_02_UofT_png from "./rootfs/site/data/site/devlog/2025-09-02/UofT.png";
 import rootfs_site_data_site_devlog_2025_09_02_UofTcampus_png from "./rootfs/site/data/site/devlog/2025-09-02/UofTcampus.png";
+import rootfs_site_data_site_devlog_2026_01_25_20260125_dsmd from "./rootfs/site/data/site/devlog/2026-01-25/20260125.dsmd";
+import rootfs_site_data_site_devlog_2026_01_25_hyperbolicparaboloid_png from "./rootfs/site/data/site/devlog/2026-01-25/hyperbolicparaboloid.png";
+import rootfs_site_data_site_devlog_2026_01_25_orrery_gif from "./rootfs/site/data/site/devlog/2026-01-25/orrery.gif";
+import rootfs_site_data_site_devlog_2026_01_25_transferorbit_gif from "./rootfs/site/data/site/devlog/2026-01-25/transferorbit.gif";
 import rootfs_site_data_site_devlog_devlog_dsmd from "./rootfs/site/data/site/devlog/devlog.dsmd";
 import rootfs_site_data_site_devlog_entry_template_dsmd from "./rootfs/site/data/site/devlog/entry-template.dsmd";
 import rootfs_site_data_site_image_130x46_godot_png from "./rootfs/site/data/site/image/130x46_godot.png";
@@ -152,6 +156,7 @@ import rootfs_site_data_site_page_tech_dsmd from "./rootfs/site/data/site/page/t
 import rootfs_base_etc_deprecated_systems_incorporated_txt from "./rootfs/base/etc/deprecated_systems_incorporated.txt";
 import rootfs_base_etc_depsys_txt from "./rootfs/base/etc/depsys.txt";
 import rootfs_site_etc_autoexec_dssh from "./rootfs/site/etc/autoexec.dssh";
+import rootfs_site_etc_motd_txt from "./rootfs/site/etc/motd.txt";
 
 // BUILDROOTFS HEADER
 export function buildrootfs(): DSFileSystem {
@@ -879,6 +884,30 @@ export function buildrootfs(): DSFileSystem {
     curdir = dirstack.pop();
     // Exited data/site/devlog/2025-09-02
         
+    // Traversing data/site/devlog/2026-01-25
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2026-01-25');
+    
+    // Creating data/site/devlog/2026-01-25/20260125.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2026_01_25_20260125_dsmd);
+    curdir.addfile("20260125.dsmd", curfile);
+    
+    // Creating data/site/devlog/2026-01-25/hyperbolicparaboloid.png
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2026_01_25_hyperbolicparaboloid_png);
+    curdir.addfile("hyperbolicparaboloid.png", curfile);
+    
+    // Creating data/site/devlog/2026-01-25/orrery.gif
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2026_01_25_orrery_gif);
+    curdir.addfile("orrery.gif", curfile);
+    
+    // Creating data/site/devlog/2026-01-25/transferorbit.gif
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2026_01_25_transferorbit_gif);
+    curdir.addfile("transferorbit.gif", curfile);
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited data/site/devlog/2026-01-25
+        
     // Creating data/site/devlog/devlog.dsmd
     curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_devlog_dsmd);
     curdir.addfile("devlog.dsmd", curfile);
@@ -975,6 +1004,10 @@ export function buildrootfs(): DSFileSystem {
     curfile = new DSIWebFile(fs, rootfs_site_etc_autoexec_dssh);
     curdir.addfile("autoexec.dssh", curfile);
     curfile.chmod(DSFilePerms.rx());
+    
+    // Creating etc/motd.txt
+    curfile = new DSIWebFile(fs, rootfs_site_etc_motd_txt);
+    curdir.addfile("motd.txt", curfile);
     
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
