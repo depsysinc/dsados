@@ -80,23 +80,6 @@ export class PRCaterpillar extends DSArcadeGame {
     private playerx: number = Math.floor(CGameData.cols / 2)
 
 
-    protected async waitForGameStart(): Promise<void> {
-        while (true) {
-            let txt = await this.stdin.read();
-            if (txt == 'q' || txt == 'n') {
-                this.done = true;
-                return
-            }
-            if (txt == ' ') {
-                continue
-            }
-            if (txt == up || txt == down || txt == left || txt == right) {
-                continue
-            }
-            return;
-        }
-    }
-
     async splash() {
         this.stdout.write(reset_text());
         this.writelinecentered('#        ┏┓┏┓┏┳┓┏┓┳┓┏┓┳┓ ┓ ┏┓┳┓         #');

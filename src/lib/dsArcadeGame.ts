@@ -25,7 +25,7 @@ export abstract class DSArcadeGame extends DSApp {
         await this.awaitScreenCorrectSize();
 
         await this.splash();
-        
+
         console.log("Initializing game");
 
         while (!this.done) {
@@ -33,7 +33,7 @@ export abstract class DSArcadeGame extends DSApp {
             this.fromresize = false;
 
 
-            await this.waitForGameStart();
+            await this.waitForLevelStart();
             if (this.done || this.fromresize) {
                 continue;
             }
@@ -45,10 +45,10 @@ export abstract class DSArcadeGame extends DSApp {
             }
 
             if (!this.fromresize && !this.done) {
-                await this.onGameEnd();
+                await this.onLevelEnd();
             }
         }
-
+        //Sleep to give any async things a chance to finish so they don't appear after exiting
         sleep(10);
         DSKernel.terminal.reset();
 
@@ -62,11 +62,9 @@ export abstract class DSArcadeGame extends DSApp {
         if (!this.screenCorrectSize()) {
             DSKernel.terminal.reset();
             this.stdout.write("Resize your screen to play.");
-
         }
         else {
             this.splash();
-
         }
     }
 
@@ -83,12 +81,6 @@ export abstract class DSArcadeGame extends DSApp {
 
     }
 
-    //Wait for the game to begin (on splash screen, usually)
-    protected abstract waitForGameStart(): Promise<void>
-
-    //Check if the screen is the proper size to play the game
-    protected abstract screenCorrectSize(): boolean;
-
     //Display a static splash screen with the game's title + art
     protected abstract splash(): Promise<void>;
 
@@ -98,6 +90,23 @@ export abstract class DSArcadeGame extends DSApp {
     //Run a frame
     protected abstract runFrame(): Promise<void>;
 
-    //Run when the game ends, display scores 
-    protected async onGameEnd(): Promise<void> { }
+    //Check if the screen is the proper size to play the game
+    protected abstract screenCorrectSize(): boolean;
+
+    //Wait for the game to begin (on splash screen, usually)
+    protected async waitForLevelStart(): Promise<void> {
+        while (true) {
+            let txt = (await this.stdin.read()).toLowerCase();
+            if (txt == 'q' || txt == 'n') {
+                this.done = true;
+                return
+            }
+            if (txt == 'y') {
+                return
+            }
+        }
+    }
+
+    //Run when the game ends, display scores or the like
+    protected async onLevelEnd(): Promise<void> { }
 }

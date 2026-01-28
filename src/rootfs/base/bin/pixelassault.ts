@@ -208,10 +208,11 @@ export class PRPixelAssault extends DSArcadeGame {
         await this.createObject(PANonInteracting, "PixelAssaultSplash2.png", { x: 0, y: 0 });
     }
 
-    protected async waitForGameStart(): Promise<void> {
+    protected async waitForLevelStart(): Promise<void> {
         this.reset();
         this.splash();
         this.waiting = true;
+        //Will be triggered in the input listener
         while (this.waiting) {
             await sleep(50);
         }
@@ -422,7 +423,7 @@ export class PRPixelAssault extends DSArcadeGame {
         lastheart.kill();
     }
 
-    protected async onGameEnd(): Promise<void> {
+    protected async onLevelEnd(): Promise<void> {
         let score = this.score;
         this.reset();
 
