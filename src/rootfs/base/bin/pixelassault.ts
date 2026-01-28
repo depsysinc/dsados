@@ -218,7 +218,6 @@ export class PRPixelAssault extends DSArcadeGame {
     }
 
     protected async createGame() {
-        console.log("CREATING>")
         this.reset();
         this.initialized = true;
 

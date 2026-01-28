@@ -1,6 +1,7 @@
+import { DSApp } from "../dsApp";
 import { DSKernel } from "../dsKernel";
-import { DSApp, HistoryAppEvent, MouseButtonDownEvent, TextAppEvent } from "../lib/dsApp";
 import { sleep } from "./dsLib";
+
 import { DSOptionParser } from "./dsOptionParser";
 
 
@@ -10,7 +11,7 @@ export abstract class DSArcadeGame extends DSApp {
 
     private fromresize: boolean = false;
 
-    protected async runApp(): Promise<void> {
+    protected async main(): Promise<void> {
 
         const optparser = new DSOptionParser(
             this.procname,
@@ -24,12 +25,13 @@ export abstract class DSArcadeGame extends DSApp {
         await this.awaitScreenCorrectSize();
 
         await this.splash();
+        
+        console.log("Initializing game");
 
         while (!this.done) {
             await this.awaitScreenCorrectSize();
             this.fromresize = false;
 
-            console.log("Playing game...");
 
             await this.waitForGameStart();
             if (this.done || this.fromresize) {
