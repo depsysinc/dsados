@@ -46,6 +46,7 @@ export type DSPointerEvent = {
 export type DSKeyEvent = {
     down: boolean,
     key: string,
+    code: string,
     ctrl: boolean,
     alt: boolean,
     shift: boolean
@@ -303,7 +304,8 @@ export class DSTerminal {
     private _handleKeyEvents(e: KeyboardEvent, keydown: boolean) {
         const ke: DSKeyEvent = {
             down: keydown,
-            key: e.code,
+            key: e.key,
+            code: e.code,
             ctrl: e.ctrlKey,
             alt: e.altKey,
             shift: e.shiftKey,
