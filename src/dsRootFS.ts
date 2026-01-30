@@ -140,6 +140,8 @@ import rootfs_site_data_site_devlog_2026_01_25_20260125_dsmd from "./rootfs/site
 import rootfs_site_data_site_devlog_2026_01_25_hyperbolicparaboloid_png from "./rootfs/site/data/site/devlog/2026-01-25/hyperbolicparaboloid.png";
 import rootfs_site_data_site_devlog_2026_01_25_orrery_gif from "./rootfs/site/data/site/devlog/2026-01-25/orrery.gif";
 import rootfs_site_data_site_devlog_2026_01_25_transferorbit_gif from "./rootfs/site/data/site/devlog/2026-01-25/transferorbit.gif";
+import rootfs_site_data_site_devlog_2026_01_30_20260130_dsmd from "./rootfs/site/data/site/devlog/2026-01-30/20260130.dsmd";
+import rootfs_site_data_site_devlog_2026_01_30_workingtransferorbit_gif from "./rootfs/site/data/site/devlog/2026-01-30/workingtransferorbit.gif";
 import rootfs_site_data_site_devlog_devlog_dsmd from "./rootfs/site/data/site/devlog/devlog.dsmd";
 import rootfs_site_data_site_devlog_entry_template_dsmd from "./rootfs/site/data/site/devlog/entry-template.dsmd";
 import rootfs_site_data_site_image_130x46_godot_png from "./rootfs/site/data/site/image/130x46_godot.png";
@@ -907,6 +909,22 @@ export function buildrootfs(): DSFileSystem {
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
     // Exited data/site/devlog/2026-01-25
+        
+    // Traversing data/site/devlog/2026-01-30
+    dirstack.push(curdir);
+    curdir = curdir.mkdir('2026-01-30');
+    
+    // Creating data/site/devlog/2026-01-30/20260130.dsmd
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2026_01_30_20260130_dsmd);
+    curdir.addfile("20260130.dsmd", curfile);
+    
+    // Creating data/site/devlog/2026-01-30/workingtransferorbit.gif
+    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2026_01_30_workingtransferorbit_gif);
+    curdir.addfile("workingtransferorbit.gif", curfile);
+    
+    curdir.chmod(DSFilePerms.rx());
+    curdir = dirstack.pop();
+    // Exited data/site/devlog/2026-01-30
         
     // Creating data/site/devlog/devlog.dsmd
     curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_devlog_dsmd);
