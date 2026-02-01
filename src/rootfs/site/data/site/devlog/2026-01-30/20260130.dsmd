@@ -1,0 +1,56 @@
+![globnobulous](/data/site/avatars/posterized_globnobulous.png)
+Globnobulous - Teacher & Founder
+
+# [30-01-2026] - The Case of the Broken Solver
+
+This is a perfect case to illustrate the partnership between AI and human in programming.
+
+I had an orbital transfer trajectory calculation misbehaving under specific circumstances.
+So I went back and forth with **GPT** and **Claude** a bunch, having them suggest where the issue might be and 
+iterating a couple of changes in various parts of the code.  This is the closest I've come to
+vibe coding; not feeling confident in what the AI is suggesting, nor really understanding the changes it's making.
+This feels like the old debugging technique of changing a sign here, adding an off by one there, and just hoping the next iteration
+will nail the problem.  Unsuprisingingly, all was for naught.
+
+I got into programming because *I* want to solve problems, or at least understand them, so I spent an hour setting up an isolated test case.
+It's job was to incrementally iterate over the source orbit until the results diverged, allowing me to instrument each step in the calculation and 
+isolate which term was blowing up.
+
+Turns out the calculated orbital parameters were correct, but when **plotting** the orbit, **solve_eccentric_anomaly_hyperbolic()**
+was unable to handle small eccentricities.  Feeding my test results into **Claude**, it gave me this diagnosis:
+
+*<CLAUDE>*
+
+I can see the problem. The hyperbolic solver has a critical issue: it lacks bounds checking on the Newton-Raphson steps, unlike the elliptic solver which uses **safeguarded Newton iteration**.
+
+When eccentricity is very close to 1 (near-parabolic orbits), the derivative **fp = e*cosh(H) - 1** becomes extremely small, causing the Newton step **step = f/fp** to explode. This sends H to wildly incorrect values.
+
+Looking at your data:
+  - At e=1.00126, M=0.0233297: the derivative is around 0.0015, causing a huge step
+  - The solver jumps from H≈0.023 to H≈0.514
+  - As e approaches 1, it gets progressively worse, reaching H≈68
+
+The elliptic solver (lines 37-70) handles this properly with:
+  - low and high bounds
+  - Checking if the next step goes out of bounds
+  - Falling back to bisection when Newton fails
+
+The hyperbolic solver needs similar safeguards. Would you like me to fix this by adding bounded iteration and a more robust initial guess strategy for near-parabolic cases?
+
+*</CLAUDE>*
+
+First, it completely blows my mind that modern LLMs are capable of this.  Yes, I had to do some extra work to narrow the problem down for it,
+but once I provided it with the relevant test output it
+    - immediately and correctly identified the issue
+    - explained it in clear language
+    - identified an already existing piece of code with the correct approach!
+
+With a simple "yes, please" it applied the patch with all tests now passing.  Interestingly it did something I've seen
+it do often, which is to ignore the second part of it's suggestion.  It didn't "add a more robust initial guess strategy",
+but the solution worked and we now observe proper transfer orbits all the way through:
+
+![Working Transfer Orbit](workingtransferorbit.gif)
+
+Amazing.
+
+Next, we hook it up to the UI and let the player send their ship zipping around the solarsystem!

@@ -1,0 +1,11 @@
+Welcome to the Deprecated Systems SHell (dssh)
+==============================================
+
+To list commands, type:
+  cd bin
+  ls
+
+To read the manual for <command>, type:
+  man <command>
+
+Have fun!
