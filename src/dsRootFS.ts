@@ -20,6 +20,7 @@ import { PRDemoMouseTouch } from "./rootfs/base/bin/demomousetouch";
 import { PRDSMDBrowser } from "./rootfs/base/bin/dsmdbrowser";
 import { DSShell } from "./rootfs/base/bin/dssh";
 import { PREcho } from "./rootfs/base/bin/echo";
+import { PREdit } from "./rootfs/base/bin/edit";
 import { PREnv } from "./rootfs/base/bin/env";
 import { PRFile } from "./rootfs/base/bin/file";
 import { PRFSViewer } from "./rootfs/base/bin/fsviewer";
@@ -199,6 +200,9 @@ export function buildrootfs(): DSFileSystem {
      
     binfile = new DSIProcessFile(fs, PREcho);
     curdir.addfile("echo", binfile);
+     
+    binfile = new DSIProcessFile(fs, PREdit);
+    curdir.addfile("edit", binfile);
      
     binfile = new DSIProcessFile(fs, PREnv);
     curdir.addfile("env", binfile);
