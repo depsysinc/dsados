@@ -43,9 +43,12 @@ export class DSIDBFile extends DSInode {
 
     }
 
-    write(text:string) {
+    write(text:string, update_fs:boolean = true) {
         this.perms.checkWrite()
         this._text = text;
+        if (update_fs) {
+            this.fs.changed(this);
+        }
     }
 
     append(text:string) {

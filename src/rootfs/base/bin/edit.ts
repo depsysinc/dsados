@@ -1,9 +1,12 @@
-import { DownArrowAppEvent, DSApp, MouseButtonDownEvent, MouseButtonUpEvent, MouseMoveAppEvent, PageDownAppEvent, PageUpAppEvent, TextAppEvent, TouchEndAppEvent, TouchMoveAppEvent, TouchStartAppEvent, UpArrowAppEvent, WheelAppEvent } from "../../../dsApp";
+import { BackspaceAppEvent, DeleteAppEvent, DownArrowAppEvent, DSApp, LeftArrowAppEvent, MouseButtonDownEvent, MouseButtonUpEvent, MouseMoveAppEvent, PageDownAppEvent, PageUpAppEvent, RightArrowAppEvent, TextAppEvent, TouchEndAppEvent, TouchMoveAppEvent, TouchStartAppEvent, UpArrowAppEvent, WheelAppEvent } from "../../../dsApp";
 import { DSKernel } from "../../../dsKernel";
 import { DSProcessError } from "../../../dsProcess";
 import { cursornextline, reset_text, right, set_cursor, setattr, textattrs } from "../../../lib/dsCurses";
 import { DSOptionParser } from "../../../lib/dsOptionParser";
 import { getFileName } from "../../../lib/dsPath";
+import { DSTexture, get_image_textures, load_image } from "../../../lib/dsImg";
+import { DSIWebFile } from "../../../filesystem/dsIWebFile";
+import { DSIDBFile } from "../../../filesystem/dsIDBFile";
 
 export class PREdit extends DSApp {
 
@@ -13,7 +16,12 @@ export class PREdit extends DSApp {
     private rowidx: number = 0;
     private filepath: string;
 
-    private mouserow:number = null;
+    private mouserow: number = null;
+    private cursorpos: number = 0;
+
+    private editmode: boolean = false;
+
+    private inode: DSIDBFile;
 
     protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
@@ -27,20 +35,24 @@ export class PREdit extends DSApp {
             throw new DSProcessError(optparser.usage());
         }
         this.filepath = this.argv[nextarg];
-        let inode;
+        let tempinode
         try {
-            inode = this.cwd.getfile(this.filepath);
+            tempinode = this.cwd.getfile(this.filepath);
         } catch (e) {
             throw new DSProcessError(`'${this.filepath}' not found\n`);
         }
 
-        if (!((await inode.filetype()).includes("text"))) {
+        tempinode.perms.checkWrite();
+        this.inode = tempinode as DSIDBFile;
+
+        if (!((await this.inode.filetype()).includes("text"))) {
             throw new DSProcessError(`'${this.filepath}' not a text file\n`)
         }
         DSKernel.terminal.reset();
 
+
         this.init();
-        this.text = await inode.contentAsText().read();
+        this.text = await this.inode.contentAsText().read();
         this.display()
 
         while (!this.done) {
@@ -50,7 +62,7 @@ export class PREdit extends DSApp {
                 this.setrowidx(this.rowidx + change);
                 this.display();
             }
-            if (e instanceof TextAppEvent) {
+            if (e instanceof TextAppEvent && !this.editmode) {
                 if (e.text == 'q') {
                     DSKernel.terminal.reset();
                     this.done = true;
@@ -66,6 +78,24 @@ export class PREdit extends DSApp {
                 if (e.text == ' ') {
                     this.setrowidx(this.rowidx + 7);
                     this.display();
+                }
+            }
+            if (e instanceof TextAppEvent && this.editmode) {
+                let newtext = this.text.slice(0, this.cursorpos) + e.text + this.text.slice(this.cursorpos);
+                console.log(this.text)
+                this._updateText(newtext);
+            }
+
+            if (e instanceof DeleteAppEvent && this.editmode) {
+                this._cursorRight(1);
+                if (this.cursorpos > 0) {
+                    this._delAtCursor();
+                }
+            }
+
+            if (e instanceof BackspaceAppEvent && this.editmode) {
+                if (this.cursorpos > 0) {
+                    this._delAtCursor();
                 }
             }
 
@@ -85,9 +115,31 @@ export class PREdit extends DSApp {
                 this.setrowidx(this.rowidx - 1);
                 this.display();
             }
+            if (e instanceof LeftArrowAppEvent && this.editmode) {
+                this._cursorLeft(1);
+            }
+            if (e instanceof RightArrowAppEvent && this.editmode) {
+                this._cursorRight(1);
+            }
 
             if (e instanceof MouseButtonDownEvent || e instanceof TouchStartAppEvent) {
                 this.mouserow = e.row;
+                if (e.row == 1 && e.col < 4) { //If clicking the icon
+                    if (this.editmode) {
+                        this.save();
+                        this.stdout.write("\x1b[4l"); // Disable insert mode
+                        this.stdout.write(set_cursor(false))
+
+                    }
+                    else {
+                        this.stdout.write("\x1b[4h"); // Enable insert mode
+                        this.stdout.write(set_cursor(true))
+
+                        this.cursorpos = this.text.length;
+                    }
+                    this.editmode = !this.editmode
+                    this.display();
+                }
             }
             if (e instanceof MouseButtonUpEvent || e instanceof TouchEndAppEvent) {
                 this.mouserow = null;
@@ -103,13 +155,16 @@ export class PREdit extends DSApp {
         return;
     }
 
+    save() {
+        this.inode.write(this.text);
+    }
 
     get maxrowidx() {
         return Math.max(0, this.lines.length - DSKernel.terminal.rows + 2);
     }
 
 
-    display() {
+    async display() {
         this.stdout.write(set_cursor(false));
 
         let splitbylinebreaks = this.text.split('\n')
@@ -124,9 +179,17 @@ export class PREdit extends DSApp {
         this.setrowidx(this.rowidx); //Ensure rowidx is on screen
 
         this.stdout.write(setattr(textattrs.bg_green) + setattr(textattrs.fg_black))
-        this.dashlinecentered(getFileName(this.filepath));
+        let title = this.dashlinecentered(getFileName(this.filepath));
+        if (!this.editmode) {
+            title = ' ✎  ' + title.slice(4)
+        }
+        else {
+            title = ' ✔  ' + title.slice(4)
+        }
+        this.stdout.write(title);
         this.stdout.write(setattr(textattrs.bg_default) + setattr(textattrs.fg_default));
 
+        //Write the actual text
         let outtext = ""
         for (let i = 0; i < DSKernel.terminal.rows - 2; i++) {
             let line = this.lines[this.rowidx + i];
@@ -147,16 +210,18 @@ export class PREdit extends DSApp {
         }
         let message = `${this.rowidx}/${this.maxrowidx} (${Math.floor(percent)}%)`;
         this.stdout.write(setattr(textattrs.bg_green) + setattr(textattrs.fg_black));
-        this.dashlinecentered(message);
+        this.stdout.write(this.dashlinecentered(message));
         this.stdout.write(setattr(textattrs.bg_default) + setattr(textattrs.fg_default));
     }
 
 
-    private dashlinecentered(message: string) {
+    private dashlinecentered(message: string): string {
         let middlecol = DSKernel.terminal.cols / 2;
-        this.stdout.write('-'.repeat(Math.floor(middlecol - message.length / 2)));
-        this.stdout.write(message);
-        this.stdout.write('-'.repeat(Math.ceil(middlecol - message.length / 2)));
+        let outstring = ''
+        outstring += '-'.repeat(Math.floor(middlecol - message.length / 2));
+        outstring += message;
+        outstring += '-'.repeat(Math.ceil(middlecol - message.length / 2));
+        return outstring
     }
 
 
@@ -176,4 +241,78 @@ export class PREdit extends DSApp {
     handleResize(): void {
         this.display();
     }
+
+    private _cursorAtLeftEdge(): boolean {
+        const totalchars = this.cursorpos;
+        return (totalchars % DSKernel.terminal.cols == 0);
+    }
+
+    private _cursorAtRightEdge(): boolean {
+        const totalchars = this.cursorpos;
+        return ((totalchars + 1) % DSKernel.terminal.cols == 0)
+    }
+
+    private _cursorLeft(amount: number) {
+        if (amount < 0) {
+            throw new DSProcessError("Attempt to move negative positions left");
+        }
+        for (let _ = 0; _ < amount; _++) {
+            if (this._cursorAtLeftEdge()) {
+                this.stdout.write("\x1b[F\x1b[200000C") //Move cursor up one row and then to the rightmost column
+            }
+            else {
+                this.stdout.write(`\x1b[D`); //Move cursor one space left
+            }
+            this.cursorpos--
+        }
+    }
+
+    private _cursorRight(amount: number) {
+        if (amount < 0) {
+            throw new DSProcessError("Attempt to move negative positions right");
+        }
+        for (let _ = 0; _ < amount; _++) {
+            if (this._cursorAtRightEdge()) {
+                this.stdout.write("\x1b[E") //Move the cursor down one row and to the leftmost column
+            }
+            else {
+                this.stdout.write(`\x1b[C`); //Move the cursor one space right
+            }
+            this.cursorpos++
+        }
+        if (this.cursorpos > this.text.length) {
+            this.cursorpos = this.text.length;
+        }
+    }
+
+    private _updateText(newText: string) {
+        const stdout = this.stdout;
+        const startcursorpos = this.cursorpos;
+
+        this._cursorLeft(startcursorpos); //Move cursor to start of line
+        stdout.write("\x1b[J"); // Clear to EoF
+        this.cursorpos += newText.length //Update internal cursor position
+
+        //The xterm terminal handles cursor position differently at end of line - standardize it to avoid weird edge cases
+        if (this._cursorAtLeftEdge() && (newText.length) % DSKernel.terminal.cols == 0) {
+            stdout.write('\n');
+        }
+
+        const cursormovement = Math.min(newText.length, this.text.length - startcursorpos) //Move cursor to same relative position
+        if (cursormovement > 0) {
+            this._cursorLeft(cursormovement);
+        }
+        else if (cursormovement < 0) {
+            this._cursorRight(-cursormovement);
+        }
+
+        this.text = newText;
+        this.display();
+    }
+
+    private _delAtCursor(): void {
+        let newuserinput = this.text.slice(0, this.cursorpos - 1) + this.text.slice(this.cursorpos);
+        this._updateText(newuserinput);
+    }
+
 }

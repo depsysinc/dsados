@@ -174,7 +174,7 @@ export class DSIDBFileSystem extends DSFileSystem {
             let perms = new DSFilePerms(iperms._r, iperms._w, iperms._x)
             console.log(perms)
             const file = new DSIDBFile(this,"text/plain", perms)
-            file.write(inodeobj.text)
+            file.write(inodeobj.text, false)
             file.id = inodeobj.id
             return file
         }
