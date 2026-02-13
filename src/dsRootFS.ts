@@ -39,8 +39,6 @@ import { PRSleep } from "./rootfs/base/bin/sleep";
 import { PRSplash } from "./rootfs/base/bin/splash";
 import { PRTouch } from "./rootfs/base/bin/touch";
 import rootfs_base_data_app_dsmdbrowser_404_dsmd from "./rootfs/base/data/app/dsmdbrowser/404.dsmd";
-import rootfs_base_data_app_edit_editicon_png from "./rootfs/base/data/app/edit/editicon.png";
-import rootfs_base_data_app_edit_editicon2_png from "./rootfs/base/data/app/edit/editicon2.png";
 import rootfs_base_data_app_fsviewer_foldericon_png from "./rootfs/base/data/app/fsviewer/foldericon.png";
 import rootfs_base_data_app_fsviewer_fsvieweropen_dsmd from "./rootfs/base/data/app/fsviewer/fsvieweropen.dsmd";
 import rootfs_base_data_app_fsviewer_imageicon_png from "./rootfs/base/data/app/fsviewer/imageicon.png";
@@ -287,22 +285,6 @@ export function buildrootfs(): DSFileSystem {
     curdir.chmod(DSFilePerms.rx());
     curdir = dirstack.pop();
     // Exited data/app/dsmdbrowser
-        
-    // Traversing data/app/edit
-    dirstack.push(curdir);
-    curdir = curdir.mkdir('edit');
-    
-    // Creating data/app/edit/editicon.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_edit_editicon_png);
-    curdir.addfile("editicon.png", curfile);
-    
-    // Creating data/app/edit/editicon2.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_edit_editicon2_png);
-    curdir.addfile("editicon2.png", curfile);
-    
-    curdir.chmod(DSFilePerms.rx());
-    curdir = dirstack.pop();
-    // Exited data/app/edit
         
     // Traversing data/app/fsviewer
     dirstack.push(curdir);

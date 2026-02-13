@@ -81,8 +81,14 @@ export class PREdit extends DSApp {
                 }
             }
             if (e instanceof TextAppEvent && this.editmode) {
-                let newtext = this.text.slice(0, this.cursorpos) + e.text + this.text.slice(this.cursorpos);
-                console.log(this.text)
+                let char
+                if (e.text.charCodeAt(0) == 13) { //Enter sends a carriage return, put a linebreak instead
+                    char = "\n"
+                }
+                else {
+                    char = e.text;
+                }
+                let newtext = this.text.slice(0, this.cursorpos) + char + this.text.slice(this.cursorpos);
                 this._updateText(newtext);
             }
 
