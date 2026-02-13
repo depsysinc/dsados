@@ -5,18 +5,13 @@ export class DSIDBFile extends DSInode {
 
     private _text: string = "";
 
-    constructor(fs: DSFileSystem, private _filetype: string, perms: DSFilePerms) {
-        super(fs, perms);
+    constructor(fs: DSFileSystem) {
+        super(fs, DSFilePerms.full());
         this.fs.added(this);
     }
 
     get inodeType(): string {
         return "DSIDBFile"
-    }
-
-    async filetype(): Promise<string> {
-        // If we don't have the filetype look it up
-        return this._filetype;
     }
 
     contentAsText(): DSStream {

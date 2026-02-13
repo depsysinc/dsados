@@ -45,9 +45,6 @@ export class PREdit extends DSApp {
         tempinode.perms.checkWrite();
         this.inode = tempinode as DSIDBFile;
 
-        if (!((await this.inode.filetype()).includes("text"))) {
-            throw new DSProcessError(`'${this.filepath}' not a text file\n`)
-        }
         DSKernel.terminal.reset();
 
 
@@ -171,7 +168,7 @@ export class PREdit extends DSApp {
 
 
     async display() {
-        this.stdout.write(set_cursor(false));
+        this.stdout.write(set_cursor(this.editmode));
 
         let splitbylinebreaks = this.text.split('\n')
         this.lines = []

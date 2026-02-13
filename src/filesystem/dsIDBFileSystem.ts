@@ -173,7 +173,7 @@ export class DSIDBFileSystem extends DSFileSystem {
             //console.log(inodeobj.perms._r)
             let perms = new DSFilePerms(iperms._r, iperms._w, iperms._x)
             console.log(perms)
-            const file = new DSIDBFile(this,"text/plain", perms)
+            const file = this.createInode() as DSIDBFile;
             file.write(inodeobj.text, false)
             file.id = inodeobj.id
             return file
@@ -182,4 +182,13 @@ export class DSIDBFileSystem extends DSFileSystem {
             throw new DSIDBFileSystemError(`Unknown inode ${inodeobj}`);
         }
     }
-}
+
+
+    createInode(text?:string): DSInode {
+        const inode = new DSIDBFile(this)
+        if (text) {
+            inode.write(text,true);
+        }
+        return inode;   
+    }
+} 

@@ -1,6 +1,7 @@
 import { DownArrowAppEvent, DSApp, MouseButtonDownEvent, MouseButtonUpEvent, MouseMoveAppEvent, PageDownAppEvent, PageUpAppEvent, TextAppEvent, TouchEndAppEvent, TouchMoveAppEvent, TouchStartAppEvent, UpArrowAppEvent, WheelAppEvent } from "../../../dsApp";
 import { DSKernel } from "../../../dsKernel";
 import { DSProcessError } from "../../../dsProcess";
+import { DSIWebFile } from "../../../filesystem/dsIWebFile";
 import { cursornextline, reset_text, right, set_cursor, setattr, textattrs } from "../../../lib/dsCurses";
 import { DSOptionParser } from "../../../lib/dsOptionParser";
 import { getFileName } from "../../../lib/dsPath";
@@ -34,7 +35,7 @@ export class PRLess extends DSApp {
             throw new DSProcessError(`'${this.filepath}' not found\n`);
         }
 
-        if (!((await inode.filetype()).includes("text"))) {
+        if (inode instanceof DSIWebFile && !((await inode.filetype()).includes("text"))) {
             throw new DSProcessError(`'${this.filepath}' not a text file\n`)
         }
         DSKernel.terminal.reset();

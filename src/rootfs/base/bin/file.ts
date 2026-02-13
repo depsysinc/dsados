@@ -1,5 +1,6 @@
 import { DSProcess, DSProcessError } from "../../../dsProcess";
 import { DSOptionParser } from "../../../lib/dsOptionParser";
+import { getFileType } from "../../../lib/dsPath";
 
 export class PRFile extends DSProcess {
 
@@ -15,12 +16,12 @@ export class PRFile extends DSProcess {
             throw new DSProcessError(optparser.usage());
 
         let filename = this.argv[nextarg];
-        try {
+        try { //Still throw error if the file doesn't exist, even though we're just checking the path
             const inode = this.cwd.getfile(filename);
-            const filetype = await inode.filetype();
-            this.stdout.write(filetype + '\n');
         } catch (e) {
             throw new DSProcessError(`'${filename}' not found\n`);
         }
+        const filetype = getFileType(filename);
+        this.stdout.write(filetype + '\n');
     }
 }

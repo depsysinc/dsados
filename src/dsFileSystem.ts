@@ -1,6 +1,7 @@
 // Exceptions
 
 import { DSStream } from "./dsStream";
+import { DSIWebFile } from "./filesystem/dsIWebFile";
 import { getDirPath, getFileName } from "./lib/dsPath";
 
 export class DSFileSystemError extends Error {
@@ -149,6 +150,8 @@ export abstract class DSFileSystem {
 
     abstract changed(inode: DSInode): void;
 
+    abstract createInode(): DSInode;
+
     fsck(): FSCKResults {
         const results: FSCKResults = {
             inodecount: 1,    // Include root directory
@@ -176,6 +179,10 @@ export class DSRAMFileSystem extends DSFileSystem {
     added(inode: DSInode) { }
     changed(inode: DSInode): void { }
 
+    createInode(url?:string): DSInode {
+        const inode = new DSIWebFile(this,url ? url : "")
+        return inode
+    }
 }
 
 /*
@@ -302,10 +309,6 @@ export abstract class DSInode {
         return this._fs;
     }
 
-    async filetype(): Promise<string> {
-        throw Error("operation not supported on filetype");
-    };
-
     contentAsText(): DSStream {
         throw new DSIFileError("operation not supported on filetype");
     }
@@ -409,10 +412,6 @@ export class DSIDirectory extends DSInode {
                 results.inodecount++;
             }
         });
-    }
-
-    async filetype(): Promise<string> {
-        return 'directory';
     }
 
     get fileinfo(): DSFileInfo {

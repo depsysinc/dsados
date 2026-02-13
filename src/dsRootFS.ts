@@ -279,7 +279,7 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('dsmdbrowser');
     
     // Creating data/app/dsmdbrowser/404.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_dsmdbrowser_404_dsmd);
+    curfile = fs.createInode(rootfs_base_data_app_dsmdbrowser_404_dsmd) as DSIWebFile;
     curdir.addfile("404.dsmd", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -291,19 +291,19 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('fsviewer');
     
     // Creating data/app/fsviewer/foldericon.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_fsviewer_foldericon_png);
+    curfile = fs.createInode(rootfs_base_data_app_fsviewer_foldericon_png) as DSIWebFile;
     curdir.addfile("foldericon.png", curfile);
     
     // Creating data/app/fsviewer/fsvieweropen.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_fsviewer_fsvieweropen_dsmd);
+    curfile = fs.createInode(rootfs_base_data_app_fsviewer_fsvieweropen_dsmd) as DSIWebFile;
     curdir.addfile("fsvieweropen.dsmd", curfile);
     
     // Creating data/app/fsviewer/imageicon.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_fsviewer_imageicon_png);
+    curfile = fs.createInode(rootfs_base_data_app_fsviewer_imageicon_png) as DSIWebFile;
     curdir.addfile("imageicon.png", curfile);
     
     // Creating data/app/fsviewer/texticon.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_fsviewer_texticon_png);
+    curfile = fs.createInode(rootfs_base_data_app_fsviewer_texticon_png) as DSIWebFile;
     curdir.addfile("texticon.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -323,15 +323,15 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('Alien1');
     
     // Creating data/app/pixel_assault/Enemies/Alien1/tile000.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_Enemies_Alien1_tile000_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_Enemies_Alien1_tile000_png) as DSIWebFile;
     curdir.addfile("tile000.png", curfile);
     
     // Creating data/app/pixel_assault/Enemies/Alien1/tile001.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_Enemies_Alien1_tile001_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_Enemies_Alien1_tile001_png) as DSIWebFile;
     curdir.addfile("tile001.png", curfile);
     
     // Creating data/app/pixel_assault/Enemies/Alien1/tile002.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_Enemies_Alien1_tile002_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_Enemies_Alien1_tile002_png) as DSIWebFile;
     curdir.addfile("tile002.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -343,11 +343,11 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('blub');
     
     // Creating data/app/pixel_assault/Enemies/blub/blub1.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_Enemies_blub_blub1_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_Enemies_blub_blub1_png) as DSIWebFile;
     curdir.addfile("blub1.png", curfile);
     
     // Creating data/app/pixel_assault/Enemies/blub/blub2.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_Enemies_blub_blub2_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_Enemies_blub_blub2_png) as DSIWebFile;
     curdir.addfile("blub2.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -359,15 +359,15 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('grab');
     
     // Creating data/app/pixel_assault/Enemies/grab/grab1.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_Enemies_grab_grab1_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_Enemies_grab_grab1_png) as DSIWebFile;
     curdir.addfile("grab1.png", curfile);
     
     // Creating data/app/pixel_assault/Enemies/grab/grab2.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_Enemies_grab_grab2_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_Enemies_grab_grab2_png) as DSIWebFile;
     curdir.addfile("grab2.png", curfile);
     
     // Creating data/app/pixel_assault/Enemies/grab/grab3.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_Enemies_grab_grab3_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_Enemies_grab_grab3_png) as DSIWebFile;
     curdir.addfile("grab3.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -375,11 +375,11 @@ export function buildrootfs(): DSFileSystem {
     // Exited data/app/pixel_assault/Enemies/grab
         
     // Creating data/app/pixel_assault/Enemies/enemygreen.gif
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_Enemies_enemygreen_gif);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_Enemies_enemygreen_gif) as DSIWebFile;
     curdir.addfile("enemygreen.gif", curfile);
     
     // Creating data/app/pixel_assault/Enemies/paranoid.gif
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_Enemies_paranoid_gif);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_Enemies_paranoid_gif) as DSIWebFile;
     curdir.addfile("paranoid.gif", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -391,23 +391,23 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('bonuses');
     
     // Creating data/app/pixel_assault/bonuses/bulletbonus.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_bonuses_bulletbonus_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_bonuses_bulletbonus_png) as DSIWebFile;
     curdir.addfile("bulletbonus.png", curfile);
     
     // Creating data/app/pixel_assault/bonuses/heartbonus.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_bonuses_heartbonus_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_bonuses_heartbonus_png) as DSIWebFile;
     curdir.addfile("heartbonus.png", curfile);
     
     // Creating data/app/pixel_assault/bonuses/scorebonus.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_bonuses_scorebonus_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_bonuses_scorebonus_png) as DSIWebFile;
     curdir.addfile("scorebonus.png", curfile);
     
     // Creating data/app/pixel_assault/bonuses/shieldbonus.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_bonuses_shieldbonus_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_bonuses_shieldbonus_png) as DSIWebFile;
     curdir.addfile("shieldbonus.png", curfile);
     
     // Creating data/app/pixel_assault/bonuses/speedbonus.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_bonuses_speedbonus_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_bonuses_speedbonus_png) as DSIWebFile;
     curdir.addfile("speedbonus.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -419,43 +419,43 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('numbers');
     
     // Creating data/app/pixel_assault/numbers/digit0.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_numbers_digit0_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_numbers_digit0_png) as DSIWebFile;
     curdir.addfile("digit0.png", curfile);
     
     // Creating data/app/pixel_assault/numbers/digit1.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_numbers_digit1_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_numbers_digit1_png) as DSIWebFile;
     curdir.addfile("digit1.png", curfile);
     
     // Creating data/app/pixel_assault/numbers/digit2.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_numbers_digit2_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_numbers_digit2_png) as DSIWebFile;
     curdir.addfile("digit2.png", curfile);
     
     // Creating data/app/pixel_assault/numbers/digit3.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_numbers_digit3_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_numbers_digit3_png) as DSIWebFile;
     curdir.addfile("digit3.png", curfile);
     
     // Creating data/app/pixel_assault/numbers/digit4.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_numbers_digit4_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_numbers_digit4_png) as DSIWebFile;
     curdir.addfile("digit4.png", curfile);
     
     // Creating data/app/pixel_assault/numbers/digit5.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_numbers_digit5_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_numbers_digit5_png) as DSIWebFile;
     curdir.addfile("digit5.png", curfile);
     
     // Creating data/app/pixel_assault/numbers/digit6.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_numbers_digit6_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_numbers_digit6_png) as DSIWebFile;
     curdir.addfile("digit6.png", curfile);
     
     // Creating data/app/pixel_assault/numbers/digit7.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_numbers_digit7_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_numbers_digit7_png) as DSIWebFile;
     curdir.addfile("digit7.png", curfile);
     
     // Creating data/app/pixel_assault/numbers/digit8.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_numbers_digit8_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_numbers_digit8_png) as DSIWebFile;
     curdir.addfile("digit8.png", curfile);
     
     // Creating data/app/pixel_assault/numbers/digit9.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_numbers_digit9_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_numbers_digit9_png) as DSIWebFile;
     curdir.addfile("digit9.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -467,19 +467,19 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('player');
     
     // Creating data/app/pixel_assault/player/lightning0.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_player_lightning0_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_player_lightning0_png) as DSIWebFile;
     curdir.addfile("lightning0.png", curfile);
     
     // Creating data/app/pixel_assault/player/lightning1.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_player_lightning1_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_player_lightning1_png) as DSIWebFile;
     curdir.addfile("lightning1.png", curfile);
     
     // Creating data/app/pixel_assault/player/lightning2.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_player_lightning2_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_player_lightning2_png) as DSIWebFile;
     curdir.addfile("lightning2.png", curfile);
     
     // Creating data/app/pixel_assault/player/lightning3.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_player_lightning3_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_player_lightning3_png) as DSIWebFile;
     curdir.addfile("lightning3.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -487,43 +487,43 @@ export function buildrootfs(): DSFileSystem {
     // Exited data/app/pixel_assault/player
         
     // Creating data/app/pixel_assault/PixelAssaultSplash2.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_PixelAssaultSplash2_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_PixelAssaultSplash2_png) as DSIWebFile;
     curdir.addfile("PixelAssaultSplash2.png", curfile);
     
     // Creating data/app/pixel_assault/background.jpg
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_background_jpg);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_background_jpg) as DSIWebFile;
     curdir.addfile("background.jpg", curfile);
     
     // Creating data/app/pixel_assault/bullet.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_bullet_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_bullet_png) as DSIWebFile;
     curdir.addfile("bullet.png", curfile);
     
     // Creating data/app/pixel_assault/enemybullet.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_enemybullet_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_enemybullet_png) as DSIWebFile;
     curdir.addfile("enemybullet.png", curfile);
     
     // Creating data/app/pixel_assault/heartanim.gif
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_heartanim_gif);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_heartanim_gif) as DSIWebFile;
     curdir.addfile("heartanim.gif", curfile);
     
     // Creating data/app/pixel_assault/pixelsplosion.gif
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_pixelsplosion_gif);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_pixelsplosion_gif) as DSIWebFile;
     curdir.addfile("pixelsplosion.gif", curfile);
     
     // Creating data/app/pixel_assault/shieldpiece.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_shieldpiece_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_shieldpiece_png) as DSIWebFile;
     curdir.addfile("shieldpiece.png", curfile);
     
     // Creating data/app/pixel_assault/shieldpiece10.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_shieldpiece10_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_shieldpiece10_png) as DSIWebFile;
     curdir.addfile("shieldpiece10.png", curfile);
     
     // Creating data/app/pixel_assault/shieldpiece3.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_shieldpiece3_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_shieldpiece3_png) as DSIWebFile;
     curdir.addfile("shieldpiece3.png", curfile);
     
     // Creating data/app/pixel_assault/shieldpiece6.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_app_pixel_assault_shieldpiece6_png);
+    curfile = fs.createInode(rootfs_base_data_app_pixel_assault_shieldpiece6_png) as DSIWebFile;
     curdir.addfile("shieldpiece6.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -543,15 +543,15 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('animation');
     
     // Creating data/demo/animation/32x32_A.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_demo_animation_32x32_A_png);
+    curfile = fs.createInode(rootfs_base_data_demo_animation_32x32_A_png) as DSIWebFile;
     curdir.addfile("32x32_A.png", curfile);
     
     // Creating data/demo/animation/32x32_B.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_demo_animation_32x32_B_png);
+    curfile = fs.createInode(rootfs_base_data_demo_animation_32x32_B_png) as DSIWebFile;
     curdir.addfile("32x32_B.png", curfile);
     
     // Creating data/demo/animation/32x32_C.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_demo_animation_32x32_C_png);
+    curfile = fs.createInode(rootfs_base_data_demo_animation_32x32_C_png) as DSIWebFile;
     curdir.addfile("32x32_C.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -563,7 +563,7 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('dssh');
     
     // Creating data/demo/dssh/samplescript.dssh
-    curfile = new DSIWebFile(fs, rootfs_base_data_demo_dssh_samplescript_dssh);
+    curfile = fs.createInode(rootfs_base_data_demo_dssh_samplescript_dssh) as DSIWebFile;
     curdir.addfile("samplescript.dssh", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -575,11 +575,11 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('image');
     
     // Creating data/demo/image/gorzocrop.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_demo_image_gorzocrop_png);
+    curfile = fs.createInode(rootfs_base_data_demo_image_gorzocrop_png) as DSIWebFile;
     curdir.addfile("gorzocrop.png", curfile);
     
     // Creating data/demo/image/worldturning.gif
-    curfile = new DSIWebFile(fs, rootfs_base_data_demo_image_worldturning_gif);
+    curfile = fs.createInode(rootfs_base_data_demo_image_worldturning_gif) as DSIWebFile;
     curdir.addfile("worldturning.gif", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -591,11 +591,11 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('markdown');
     
     // Creating data/demo/markdown/32x32_testpattern.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_demo_markdown_32x32_testpattern_png);
+    curfile = fs.createInode(rootfs_base_data_demo_markdown_32x32_testpattern_png) as DSIWebFile;
     curdir.addfile("32x32_testpattern.png", curfile);
     
     // Creating data/demo/markdown/demomarkdown.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_demo_markdown_demomarkdown_dsmd);
+    curfile = fs.createInode(rootfs_base_data_demo_markdown_demomarkdown_dsmd) as DSIWebFile;
     curdir.addfile("demomarkdown.dsmd", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -607,7 +607,7 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('mousetouch');
     
     // Creating data/demo/mousetouch/pointer.png
-    curfile = new DSIWebFile(fs, rootfs_base_data_demo_mousetouch_pointer_png);
+    curfile = fs.createInode(rootfs_base_data_demo_mousetouch_pointer_png) as DSIWebFile;
     curdir.addfile("pointer.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -619,7 +619,7 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('text');
     
     // Creating data/demo/text/bazisa.txt
-    curfile = new DSIWebFile(fs, rootfs_base_data_demo_text_bazisa_txt);
+    curfile = fs.createInode(rootfs_base_data_demo_text_bazisa_txt) as DSIWebFile;
     curdir.addfile("bazisa.txt", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -635,111 +635,111 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('man');
     
     // Creating data/man/_template.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man__template_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man__template_dsmd) as DSIWebFile;
     curdir.addfile("_template.dsmd", curfile);
     
     // Creating data/man/cat.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_cat_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_cat_dsmd) as DSIWebFile;
     curdir.addfile("cat.dsmd", curfile);
     
     // Creating data/man/caterpillar.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_caterpillar_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_caterpillar_dsmd) as DSIWebFile;
     curdir.addfile("caterpillar.dsmd", curfile);
     
     // Creating data/man/chmod.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_chmod_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_chmod_dsmd) as DSIWebFile;
     curdir.addfile("chmod.dsmd", curfile);
     
     // Creating data/man/demoanim.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_demoanim_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_demoanim_dsmd) as DSIWebFile;
     curdir.addfile("demoanim.dsmd", curfile);
     
     // Creating data/man/democurses.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_democurses_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_democurses_dsmd) as DSIWebFile;
     curdir.addfile("democurses.dsmd", curfile);
     
     // Creating data/man/demomarkdown.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_demomarkdown_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_demomarkdown_dsmd) as DSIWebFile;
     curdir.addfile("demomarkdown.dsmd", curfile);
     
     // Creating data/man/demomousetouch.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_demomousetouch_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_demomousetouch_dsmd) as DSIWebFile;
     curdir.addfile("demomousetouch.dsmd", curfile);
     
     // Creating data/man/dsmdbrowser.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_dsmdbrowser_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_dsmdbrowser_dsmd) as DSIWebFile;
     curdir.addfile("dsmdbrowser.dsmd", curfile);
     
     // Creating data/man/dssh.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_dssh_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_dssh_dsmd) as DSIWebFile;
     curdir.addfile("dssh.dsmd", curfile);
     
     // Creating data/man/echo.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_echo_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_echo_dsmd) as DSIWebFile;
     curdir.addfile("echo.dsmd", curfile);
     
     // Creating data/man/env.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_env_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_env_dsmd) as DSIWebFile;
     curdir.addfile("env.dsmd", curfile);
     
     // Creating data/man/file.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_file_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_file_dsmd) as DSIWebFile;
     curdir.addfile("file.dsmd", curfile);
     
     // Creating data/man/fsviewer.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_fsviewer_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_fsviewer_dsmd) as DSIWebFile;
     curdir.addfile("fsviewer.dsmd", curfile);
     
     // Creating data/man/imgview.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_imgview_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_imgview_dsmd) as DSIWebFile;
     curdir.addfile("imgview.dsmd", curfile);
     
     // Creating data/man/init.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_init_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_init_dsmd) as DSIWebFile;
     curdir.addfile("init.dsmd", curfile);
     
     // Creating data/man/less.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_less_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_less_dsmd) as DSIWebFile;
     curdir.addfile("less.dsmd", curfile);
     
     // Creating data/man/ls.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_ls_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_ls_dsmd) as DSIWebFile;
     curdir.addfile("ls.dsmd", curfile);
     
     // Creating data/man/man.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_man_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_man_dsmd) as DSIWebFile;
     curdir.addfile("man.dsmd", curfile);
     
     // Creating data/man/mkdir.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_mkdir_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_mkdir_dsmd) as DSIWebFile;
     curdir.addfile("mkdir.dsmd", curfile);
     
     // Creating data/man/mount.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_mount_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_mount_dsmd) as DSIWebFile;
     curdir.addfile("mount.dsmd", curfile);
     
     // Creating data/man/pixelassault.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_pixelassault_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_pixelassault_dsmd) as DSIWebFile;
     curdir.addfile("pixelassault.dsmd", curfile);
     
     // Creating data/man/ps.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_ps_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_ps_dsmd) as DSIWebFile;
     curdir.addfile("ps.dsmd", curfile);
     
     // Creating data/man/pwd.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_pwd_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_pwd_dsmd) as DSIWebFile;
     curdir.addfile("pwd.dsmd", curfile);
     
     // Creating data/man/reset.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_reset_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_reset_dsmd) as DSIWebFile;
     curdir.addfile("reset.dsmd", curfile);
     
     // Creating data/man/sleep.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_sleep_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_sleep_dsmd) as DSIWebFile;
     curdir.addfile("sleep.dsmd", curfile);
     
     // Creating data/man/splash.dsmd
-    curfile = new DSIWebFile(fs, rootfs_base_data_man_splash_dsmd);
+    curfile = fs.createInode(rootfs_base_data_man_splash_dsmd) as DSIWebFile;
     curdir.addfile("splash.dsmd", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -755,7 +755,7 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('avatars');
     
     // Creating data/site/avatars/posterized_globnobulous.png
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_avatars_posterized_globnobulous_png);
+    curfile = fs.createInode(rootfs_site_data_site_avatars_posterized_globnobulous_png) as DSIWebFile;
     curdir.addfile("posterized_globnobulous.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -771,15 +771,15 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('2025-01-30');
     
     // Creating data/site/devlog/2025-01-30/20250130.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_01_30_20250130_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_01_30_20250130_dsmd) as DSIWebFile;
     curdir.addfile("20250130.dsmd", curfile);
     
     // Creating data/site/devlog/2025-01-30/C64.png
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_01_30_C64_png);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_01_30_C64_png) as DSIWebFile;
     curdir.addfile("C64.png", curfile);
     
     // Creating data/site/devlog/2025-01-30/Road-Toad.png
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_01_30_Road_Toad_png);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_01_30_Road_Toad_png) as DSIWebFile;
     curdir.addfile("Road-Toad.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -791,7 +791,7 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('2025-02-10');
     
     // Creating data/site/devlog/2025-02-10/20250210.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_02_10_20250210_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_02_10_20250210_dsmd) as DSIWebFile;
     curdir.addfile("20250210.dsmd", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -803,11 +803,11 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('2025-03-01');
     
     // Creating data/site/devlog/2025-03-01/20250301.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_01_20250301_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_03_01_20250301_dsmd) as DSIWebFile;
     curdir.addfile("20250301.dsmd", curfile);
     
     // Creating data/site/devlog/2025-03-01/Signal11.png
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_01_Signal11_png);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_03_01_Signal11_png) as DSIWebFile;
     curdir.addfile("Signal11.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -819,11 +819,11 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('2025-03-02');
     
     // Creating data/site/devlog/2025-03-02/20250302.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_02_20250302_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_03_02_20250302_dsmd) as DSIWebFile;
     curdir.addfile("20250302.dsmd", curfile);
     
     // Creating data/site/devlog/2025-03-02/console.log.png
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_02_console_log_png);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_03_02_console_log_png) as DSIWebFile;
     curdir.addfile("console.log.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -835,19 +835,19 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('2025-03-16');
     
     // Creating data/site/devlog/2025-03-16/20250316.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_16_20250316_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_03_16_20250316_dsmd) as DSIWebFile;
     curdir.addfile("20250316.dsmd", curfile);
     
     // Creating data/site/devlog/2025-03-16/mainmenu.png
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_16_mainmenu_png);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_03_16_mainmenu_png) as DSIWebFile;
     curdir.addfile("mainmenu.png", curfile);
     
     // Creating data/site/devlog/2025-03-16/modem_300_users_manual_front.png
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_16_modem_300_users_manual_front_png);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_03_16_modem_300_users_manual_front_png) as DSIWebFile;
     curdir.addfile("modem_300_users_manual_front.png", curfile);
     
     // Creating data/site/devlog/2025-03-16/playarea.png
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_03_16_playarea_png);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_03_16_playarea_png) as DSIWebFile;
     curdir.addfile("playarea.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -859,15 +859,15 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('2025-08-26');
     
     // Creating data/site/devlog/2025-08-26/20250826.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_08_26_20250826_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_08_26_20250826_dsmd) as DSIWebFile;
     curdir.addfile("20250826.dsmd", curfile);
     
     // Creating data/site/devlog/2025-08-26/demo2.gif
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_08_26_demo2_gif);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_08_26_demo2_gif) as DSIWebFile;
     curdir.addfile("demo2.gif", curfile);
     
     // Creating data/site/devlog/2025-08-26/ozzyforest.png
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_08_26_ozzyforest_png);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_08_26_ozzyforest_png) as DSIWebFile;
     curdir.addfile("ozzyforest.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -879,15 +879,15 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('2025-09-02');
     
     // Creating data/site/devlog/2025-09-02/20250902.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_09_02_20250902_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_09_02_20250902_dsmd) as DSIWebFile;
     curdir.addfile("20250902.dsmd", curfile);
     
     // Creating data/site/devlog/2025-09-02/UofT.png
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_09_02_UofT_png);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_09_02_UofT_png) as DSIWebFile;
     curdir.addfile("UofT.png", curfile);
     
     // Creating data/site/devlog/2025-09-02/UofTcampus.png
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2025_09_02_UofTcampus_png);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2025_09_02_UofTcampus_png) as DSIWebFile;
     curdir.addfile("UofTcampus.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -899,19 +899,19 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('2026-01-25');
     
     // Creating data/site/devlog/2026-01-25/20260125.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2026_01_25_20260125_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2026_01_25_20260125_dsmd) as DSIWebFile;
     curdir.addfile("20260125.dsmd", curfile);
     
     // Creating data/site/devlog/2026-01-25/hyperbolicparaboloid.png
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2026_01_25_hyperbolicparaboloid_png);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2026_01_25_hyperbolicparaboloid_png) as DSIWebFile;
     curdir.addfile("hyperbolicparaboloid.png", curfile);
     
     // Creating data/site/devlog/2026-01-25/orrery.gif
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2026_01_25_orrery_gif);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2026_01_25_orrery_gif) as DSIWebFile;
     curdir.addfile("orrery.gif", curfile);
     
     // Creating data/site/devlog/2026-01-25/transferorbit.gif
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2026_01_25_transferorbit_gif);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2026_01_25_transferorbit_gif) as DSIWebFile;
     curdir.addfile("transferorbit.gif", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -923,11 +923,11 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('2026-01-30');
     
     // Creating data/site/devlog/2026-01-30/20260130.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2026_01_30_20260130_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2026_01_30_20260130_dsmd) as DSIWebFile;
     curdir.addfile("20260130.dsmd", curfile);
     
     // Creating data/site/devlog/2026-01-30/workingtransferorbit.gif
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_2026_01_30_workingtransferorbit_gif);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_2026_01_30_workingtransferorbit_gif) as DSIWebFile;
     curdir.addfile("workingtransferorbit.gif", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -935,11 +935,11 @@ export function buildrootfs(): DSFileSystem {
     // Exited data/site/devlog/2026-01-30
         
     // Creating data/site/devlog/devlog.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_devlog_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_devlog_dsmd) as DSIWebFile;
     curdir.addfile("devlog.dsmd", curfile);
     
     // Creating data/site/devlog/entry-template.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_devlog_entry_template_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_devlog_entry_template_dsmd) as DSIWebFile;
     curdir.addfile("entry-template.dsmd", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -951,15 +951,15 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('image');
     
     // Creating data/site/image/130x46_godot.png
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_image_130x46_godot_png);
+    curfile = fs.createInode(rootfs_site_data_site_image_130x46_godot_png) as DSIWebFile;
     curdir.addfile("130x46_godot.png", curfile);
     
     // Creating data/site/image/181x64_godot.png
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_image_181x64_godot_png);
+    curfile = fs.createInode(rootfs_site_data_site_image_181x64_godot_png) as DSIWebFile;
     curdir.addfile("181x64_godot.png", curfile);
     
     // Creating data/site/image/caterpillar.png
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_image_caterpillar_png);
+    curfile = fs.createInode(rootfs_site_data_site_image_caterpillar_png) as DSIWebFile;
     curdir.addfile("caterpillar.png", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -971,35 +971,35 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('page');
     
     // Creating data/site/page/DSADOS.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_DSADOS_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_page_DSADOS_dsmd) as DSIWebFile;
     curdir.addfile("DSADOS.dsmd", curfile);
     
     // Creating data/site/page/GODOT.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_GODOT_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_page_GODOT_dsmd) as DSIWebFile;
     curdir.addfile("GODOT.dsmd", curfile);
     
     // Creating data/site/page/about.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_about_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_page_about_dsmd) as DSIWebFile;
     curdir.addfile("about.dsmd", curfile);
     
     // Creating data/site/page/concursion.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_concursion_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_page_concursion_dsmd) as DSIWebFile;
     curdir.addfile("concursion.dsmd", curfile);
     
     // Creating data/site/page/dauntless.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_dauntless_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_page_dauntless_dsmd) as DSIWebFile;
     curdir.addfile("dauntless.dsmd", curfile);
     
     // Creating data/site/page/games.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_games_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_page_games_dsmd) as DSIWebFile;
     curdir.addfile("games.dsmd", curfile);
     
     // Creating data/site/page/index.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_index_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_page_index_dsmd) as DSIWebFile;
     curdir.addfile("index.dsmd", curfile);
     
     // Creating data/site/page/tech.dsmd
-    curfile = new DSIWebFile(fs, rootfs_site_data_site_page_tech_dsmd);
+    curfile = fs.createInode(rootfs_site_data_site_page_tech_dsmd) as DSIWebFile;
     curdir.addfile("tech.dsmd", curfile);
     
     curdir.chmod(DSFilePerms.rx());
@@ -1019,20 +1019,20 @@ export function buildrootfs(): DSFileSystem {
     curdir = curdir.mkdir('etc');
     
     // Creating etc/deprecated_systems_incorporated.txt
-    curfile = new DSIWebFile(fs, rootfs_base_etc_deprecated_systems_incorporated_txt);
+    curfile = fs.createInode(rootfs_base_etc_deprecated_systems_incorporated_txt) as DSIWebFile;
     curdir.addfile("deprecated_systems_incorporated.txt", curfile);
     
     // Creating etc/depsys.txt
-    curfile = new DSIWebFile(fs, rootfs_base_etc_depsys_txt);
+    curfile = fs.createInode(rootfs_base_etc_depsys_txt) as DSIWebFile;
     curdir.addfile("depsys.txt", curfile);
     
     // Creating etc/autoexec.dssh
-    curfile = new DSIWebFile(fs, rootfs_site_etc_autoexec_dssh);
+    curfile = fs.createInode(rootfs_site_etc_autoexec_dssh) as DSIWebFile;
     curdir.addfile("autoexec.dssh", curfile);
     curfile.chmod(DSFilePerms.rx());
     
     // Creating etc/motd.txt
-    curfile = new DSIWebFile(fs, rootfs_site_etc_motd_txt);
+    curfile = fs.createInode(rootfs_site_etc_motd_txt) as DSIWebFile;
     curdir.addfile("motd.txt", curfile);
     
     curdir.chmod(DSFilePerms.rx());

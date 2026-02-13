@@ -28,8 +28,8 @@ export class PRTouch extends DSProcess {
         }
         //Add checks for - valid filename, no overlap
         directory.perms.checkWrite();
-        //Parameterize at some point?
-        let file = new DSIDBFile(directory.fs, 'text/plain', DSFilePerms.full())
+        //Parameterize filetype at some point?
+        let file = directory.fs.createInode()
         directory.addfile(filename+'.txt',file);
         return;
     }

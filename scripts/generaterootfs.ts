@@ -179,7 +179,7 @@ function generateFileBody(file: FileNode): string {
     curfile.chmod(DSFilePerms.rx());` : '';
     return `
     // Creating ${file.relPath}
-    curfile = new DSIWebFile(fs, ${file.sanitized});
+    curfile = fs.createInode(${file.sanitized}) as DSIWebFile;
     curdir.addfile("${file.name}", curfile);${permLine}
     `;
 }
