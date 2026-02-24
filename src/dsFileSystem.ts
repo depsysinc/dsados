@@ -1,7 +1,6 @@
 // Exceptions
 
 import { DSStream } from "./dsStream";
-import { DSIWebFile } from "./filesystem/dsIWebFile";
 import { getDirPath, getFileName } from "./lib/dsPath";
 
 export class DSFileSystemError extends Error {
@@ -170,20 +169,6 @@ export abstract class DSFileSystem {
     }
 }
 
-export class DSRAMFileSystem extends DSFileSystem {
-    constructor() {
-        super();
-        this._root = new DSIDirectory(this, DSFilePerms.full());
-    }
-
-    added(inode: DSInode) { }
-    changed(inode: DSInode): void { }
-
-    createInode(url?:string): DSInode {
-        const inode = new DSIWebFile(this,url ? url : "")
-        return inode
-    }
-}
 
 /*
     File Permission Meanings

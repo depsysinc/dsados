@@ -1,8 +1,6 @@
 import { DSFilePerms, DSIDirectory, DSIDirectoryInvalidPathError } from "../../../dsFileSystem";
 import { DSProcess, DSProcessError } from "../../../dsProcess";
-import { DSIDBFile } from "../../../filesystem/dsIDBFile";
 import { DSOptionParser } from "../../../lib/dsOptionParser";
-import { getFileType } from "../../../lib/dsPath";
 
 export class PRTouch extends DSProcess {
 
@@ -33,7 +31,7 @@ export class PRTouch extends DSProcess {
         }
         catch (DSIDirectoryInvalidPathError) { }
 
-        if (getFileType(filename) == 'directory') {
+        if (!filename.includes('.')) {
             throw new DSProcessError("File type not specified");
         }
 

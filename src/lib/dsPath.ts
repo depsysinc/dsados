@@ -28,13 +28,3 @@ export function getAbsolutePath(localdir: DSIDirectory, path: string) {
     }
     return globaldirpath + '/' + filename;
 }
-
-export function getFileType(path: string) {
-    if (!path.includes(".")) {
-        return "directory"
-    }
-    else {
-        let split = path.split(".");
-        return split[split.length - 1];
-    }
-}

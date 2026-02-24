@@ -8,8 +8,19 @@ import { sleep } from "../../../lib/dsLib";
 import { DSOptionParser } from "../../../lib/dsOptionParser";
 import { getAbsolutePath } from "../../../lib/dsPath";
 
+enum FiletypeCategory {
+    directory,
+    text,
+    image,
+    markdown
+}
+
 
 export class PRFSViewer extends DSApp {
+
+    static imagefiletypes = ['png', 'jpg', 'gif']
+    static textfiletypes = ['txt', 'dssh']
+    static markdownfiletypes = ['dsmd']
 
     private currentdir: DSIDirectory;
     private selectedrow: number = 0;
@@ -187,14 +198,17 @@ export class PRFSViewer extends DSApp {
         else if (inode instanceof DSIWebFile) {
             let filetype = await this.getFileType(inode);
 
-            if (filetype.includes('dsmd')) {
+            if (filetype == FiletypeCategory.markdown) {
                 await DSKernel.exec('bin/dsmdbrowser', ['', filepath])
                 this.drawdisplay();
                 return
             }
             DSKernel.terminal.reset();
-            if (filetype.includes('image')) {
+            if (filetype == FiletypeCategory.image) {
                 await DSKernel.exec('bin/imgview', ['', filepath])
+            }
+            else if (filetype == FiletypeCategory.text) {
+                await DSKernel.exec('bin/less', ['', filepath])
             }
             else {
                 await DSKernel.exec('bin/cat', ['', filepath])
@@ -274,22 +288,37 @@ export class PRFSViewer extends DSApp {
         this.drawdisplay();
     }
 
-
-    private async getFileType(inode: DSIWebFile): Promise<string> {
-        return await inode.filetype();
+    private getFileType(inode: DSIWebFile): FiletypeCategory {
+        if (!inode.url.includes(".")) {
+            return FiletypeCategory.directory
+        }
+        else {
+            let extension:string = inode.url.split(".")[inode.url.split(".").length - 1];
+            if (PRFSViewer.imagefiletypes.includes(extension)) {
+                return FiletypeCategory.image
+            }
+            else if (PRFSViewer.textfiletypes.includes(extension)) {
+                return FiletypeCategory.text
+            }
+            else if (PRFSViewer.markdownfiletypes.includes(extension)) {
+                return FiletypeCategory.markdown
+            }
+        }
     }
 
     private async getIcon(inode: DSIWebFile): Promise<DSTexture[]> {
         let filetype = await this.getFileType(inode)
-        let basetype = filetype.split('/')[0]
 
-        if (basetype == 'directory') {
+        if (filetype == FiletypeCategory.directory) {
             return this.foldertexture
         }
-        else if (basetype == 'text') {
+        else if (filetype == FiletypeCategory.text) {
             return this.txttexture
         }
-        else if (basetype == 'image') {
+        else if (filetype == FiletypeCategory.markdown) {
+            return this.txttexture
+        }
+        else if (filetype == FiletypeCategory.image) {
             return this.imgtexture
         }
         else {
