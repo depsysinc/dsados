@@ -157,7 +157,7 @@ export class PRFSViewer extends DSApp {
 
         for (let i = this.rowidx; i < Math.min(this.currentdir.filelist.length, DSKernel.terminal.rows - 2 + this.rowidx); i++) {
             let file = this.currentdir.filelist[i];
-            let icon = await this.getIcon(file.inode as DSIWebFile);
+            let icon = await this.getIcon(file.name);
             if (icon) {
                 let sprite = DSKernel.terminal.newSprite(icon);
                 sprite.x = DSKernel.terminal.cellwidth / 4;
@@ -196,19 +196,23 @@ export class PRFSViewer extends DSApp {
             this.drawdisplay();
         }
         else if (inode instanceof DSIWebFile) {
-            let filetype = await this.getFileType(inode);
+            let filetype = this.getFileType(filepath);
 
             if (filetype == FiletypeCategory.markdown) {
                 await DSKernel.exec('bin/dsmdbrowser', ['', filepath])
                 this.drawdisplay();
                 return
             }
+            else if (filetype == FiletypeCategory.text) {
+                await DSKernel.exec('bin/less', ['', filepath])
+                this.drawdisplay();
+                return
+
+            }
+
             DSKernel.terminal.reset();
             if (filetype == FiletypeCategory.image) {
                 await DSKernel.exec('bin/imgview', ['', filepath])
-            }
-            else if (filetype == FiletypeCategory.text) {
-                await DSKernel.exec('bin/less', ['', filepath])
             }
             else {
                 await DSKernel.exec('bin/cat', ['', filepath])
@@ -288,12 +292,12 @@ export class PRFSViewer extends DSApp {
         this.drawdisplay();
     }
 
-    private getFileType(inode: DSIWebFile): FiletypeCategory {
-        if (!inode.url.includes(".")) {
+    private getFileType(path: string): FiletypeCategory {
+        if (!path.includes(".")) {
             return FiletypeCategory.directory
         }
         else {
-            let extension:string = inode.url.split(".")[inode.url.split(".").length - 1];
+            let extension:string = path.split(".")[path.split(".").length - 1];
             if (PRFSViewer.imagefiletypes.includes(extension)) {
                 return FiletypeCategory.image
             }
@@ -306,8 +310,8 @@ export class PRFSViewer extends DSApp {
         }
     }
 
-    private async getIcon(inode: DSIWebFile): Promise<DSTexture[]> {
-        let filetype = await this.getFileType(inode)
+    private async getIcon(path: string): Promise<DSTexture[]> {
+        let filetype = this.getFileType(path);  
 
         if (filetype == FiletypeCategory.directory) {
             return this.foldertexture

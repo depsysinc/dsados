@@ -5,9 +5,10 @@
  * Run 'yarn genrootfs' to regenerate
  * 
  */
-import { DSFilePerms, DSFileSystem, DSRAMFileSystem, DSIDirectory, DSInode } from "./dsFileSystem";
+import { DSFilePerms, DSFileSystem, DSIDirectory, DSInode } from "./dsFileSystem";
 import { DSIProcessFile } from "./filesystem/dsIProcessFile";
 import { DSIWebFile } from "./filesystem/dsIWebFile";
+import { DSRAMFileSystem } from "./filesystem/dsRAMFileSystem";
 
 // WEBFILE TRAVERSAL IMPORTS
 import { PRCat } from "./rootfs/base/bin/cat";

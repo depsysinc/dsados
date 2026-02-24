@@ -1,4 +1,4 @@
-import { DSRAMFileSystem } from "../../../dsFileSystem";
+import { DSRAMFileSystem } from "../../../filesystem/dsRAMFileSystem";
 import { DSKernel } from "../../../dsKernel";
 import { DSProcess, DSProcessError } from "../../../dsProcess";
 import { DSIDBFileSystem } from "../../../filesystem/dsIDBFileSystem";
