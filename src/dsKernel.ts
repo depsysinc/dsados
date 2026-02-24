@@ -170,7 +170,7 @@ export class DSKernel {
             await baudWrite(`mount: localfs\n`)
             DSKernel.mount('/local', localfs);
 
-            if (bootcount == 0) {
+            if (!fastboot) {
                 await baudWrite("nvram: enable fastboot");
                 const oldbaud = t.baud;
                 t.baud = 10;
