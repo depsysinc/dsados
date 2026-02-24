@@ -22,7 +22,6 @@ import { DSShell } from "./rootfs/base/bin/dssh";
 import { PREcho } from "./rootfs/base/bin/echo";
 import { PREdit } from "./rootfs/base/bin/edit";
 import { PREnv } from "./rootfs/base/bin/env";
-import { PRFile } from "./rootfs/base/bin/file";
 import { PRFSViewer } from "./rootfs/base/bin/fsviewer";
 import { PRImgview } from "./rootfs/base/bin/imgview";
 import { PRInit } from "./rootfs/base/bin/init";
@@ -104,7 +103,6 @@ import rootfs_base_data_man_dsmdbrowser_dsmd from "./rootfs/base/data/man/dsmdbr
 import rootfs_base_data_man_dssh_dsmd from "./rootfs/base/data/man/dssh.dsmd";
 import rootfs_base_data_man_echo_dsmd from "./rootfs/base/data/man/echo.dsmd";
 import rootfs_base_data_man_env_dsmd from "./rootfs/base/data/man/env.dsmd";
-import rootfs_base_data_man_file_dsmd from "./rootfs/base/data/man/file.dsmd";
 import rootfs_base_data_man_fsviewer_dsmd from "./rootfs/base/data/man/fsviewer.dsmd";
 import rootfs_base_data_man_imgview_dsmd from "./rootfs/base/data/man/imgview.dsmd";
 import rootfs_base_data_man_init_dsmd from "./rootfs/base/data/man/init.dsmd";
@@ -213,9 +211,6 @@ export function buildrootfs(): DSFileSystem {
      
     binfile = new DSIProcessFile(fs, PREnv);
     curdir.addfile("env", binfile);
-     
-    binfile = new DSIProcessFile(fs, PRFile);
-    curdir.addfile("file", binfile);
      
     binfile = new DSIProcessFile(fs, PRFSViewer);
     curdir.addfile("fsviewer", binfile);
@@ -681,10 +676,6 @@ export function buildrootfs(): DSFileSystem {
     // Creating data/man/env.dsmd
     curfile = fs.createInode(rootfs_base_data_man_env_dsmd) as DSIWebFile;
     curdir.addfile("env.dsmd", curfile);
-    
-    // Creating data/man/file.dsmd
-    curfile = fs.createInode(rootfs_base_data_man_file_dsmd) as DSIWebFile;
-    curdir.addfile("file.dsmd", curfile);
     
     // Creating data/man/fsviewer.dsmd
     curfile = fs.createInode(rootfs_base_data_man_fsviewer_dsmd) as DSIWebFile;
