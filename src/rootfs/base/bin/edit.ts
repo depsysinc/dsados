@@ -50,16 +50,20 @@ export class PREdit extends DSApp {
 
         this.init();
         this.text = await this.inode.contentAsText().read();
+        this.cursorpos = this.text.length;
+
         this.display()
 
         while (!this.done) {
             let e = await this.eventQueue.dequeue();
+            //console.log(e)
             if (e instanceof WheelAppEvent) {
                 let change = e.deltaY < 0 ? -1 : 1
                 this.setrowidx(this.rowidx + change);
                 this.display();
             }
             if (e instanceof TextAppEvent && !this.editmode) {
+                console.log(e.text)
                 if (e.text == 'q') {
                     DSKernel.terminal.reset();
                     this.done = true;
@@ -76,8 +80,15 @@ export class PREdit extends DSApp {
                     this.setrowidx(this.rowidx + 7);
                     this.display();
                 }
+                if (e.text == '') { //CTRL - e
+                    this.enterEditMode()
+                }
             }
+            
             if (e instanceof TextAppEvent && this.editmode) {
+                if (e.text == '') { // CTRL-S 
+                    this.exitEditMode()
+                }
                 let char
                 if (e.text.charCodeAt(0) == 13) { //Enter sends a carriage return, put a linebreak instead
                     char = "\n"
@@ -129,19 +140,11 @@ export class PREdit extends DSApp {
                 this.mouserow = e.row;
                 if (e.row == 1 && e.col < 4) { //If clicking the icon
                     if (this.editmode) {
-                        this.save();
-                        this.stdout.write("\x1b[4l"); // Disable insert mode
-                        this.stdout.write(set_cursor(false))
-
+                        this.exitEditMode()
                     }
                     else {
-                        this.stdout.write("\x1b[4h"); // Enable insert mode
-                        this.stdout.write(set_cursor(true))
-
-                        this.cursorpos = this.text.length;
+                        this.enterEditMode()
                     }
-                    this.editmode = !this.editmode
-                    this.display();
                 }
             }
             if (e instanceof MouseButtonUpEvent || e instanceof TouchEndAppEvent) {
@@ -166,6 +169,23 @@ export class PREdit extends DSApp {
         return Math.max(0, this.lines.length - DSKernel.terminal.rows + 2);
     }
 
+
+    enterEditMode() {
+        this.stdout.write("\x1b[4h"); // Enable insert mode
+        this.stdout.write(set_cursor(true));
+        this.editmode = true;
+        this.display();
+
+    }
+
+    exitEditMode() {
+        this.save();
+        this.stdout.write("\x1b[4l"); // Disable insert mode
+        this.stdout.write(set_cursor(false));
+        this.editmode = false;
+        this.display();
+
+    }
 
     async display() {
         this.stdout.write(set_cursor(this.editmode));
@@ -215,6 +235,7 @@ export class PREdit extends DSApp {
         this.stdout.write(setattr(textattrs.bg_green) + setattr(textattrs.fg_black));
         this.stdout.write(this.dashlinecentered(message));
         this.stdout.write(setattr(textattrs.bg_default) + setattr(textattrs.fg_default));
+
     }
 
 
