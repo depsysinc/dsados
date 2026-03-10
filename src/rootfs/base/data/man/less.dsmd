@@ -42,4 +42,4 @@ OPTIONS
 
 SEE ALSO
 
-    [cat](/data/man/cat), [dsmdbrowser](/data/man/dsmdbrowser), [echo](/data/man/echo)
+    [cat](/data/man/cat.dsmd), [dsmdbrowser](/data/man/dsmdbrowser.dsmd), [echo](/data/man/echo.dsmd), [edit](/data/man/edit.dsmd)
