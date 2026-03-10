@@ -103,6 +103,7 @@ import rootfs_base_data_man_demomousetouch_dsmd from "./rootfs/base/data/man/dem
 import rootfs_base_data_man_dsmdbrowser_dsmd from "./rootfs/base/data/man/dsmdbrowser.dsmd";
 import rootfs_base_data_man_dssh_dsmd from "./rootfs/base/data/man/dssh.dsmd";
 import rootfs_base_data_man_echo_dsmd from "./rootfs/base/data/man/echo.dsmd";
+import rootfs_base_data_man_edit_dsmd from "./rootfs/base/data/man/edit.dsmd";
 import rootfs_base_data_man_env_dsmd from "./rootfs/base/data/man/env.dsmd";
 import rootfs_base_data_man_fsviewer_dsmd from "./rootfs/base/data/man/fsviewer.dsmd";
 import rootfs_base_data_man_imgview_dsmd from "./rootfs/base/data/man/imgview.dsmd";
@@ -673,6 +674,10 @@ export function buildrootfs(): DSFileSystem {
     // Creating data/man/echo.dsmd
     curfile = fs.createInode(rootfs_base_data_man_echo_dsmd) as DSIWebFile;
     curdir.addfile("echo.dsmd", curfile);
+    
+    // Creating data/man/edit.dsmd
+    curfile = fs.createInode(rootfs_base_data_man_edit_dsmd) as DSIWebFile;
+    curdir.addfile("edit.dsmd", curfile);
     
     // Creating data/man/env.dsmd
     curfile = fs.createInode(rootfs_base_data_man_env_dsmd) as DSIWebFile;

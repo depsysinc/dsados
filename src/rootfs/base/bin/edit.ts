@@ -87,10 +87,14 @@ export class PREdit extends DSApp {
                 if (e.text == '') { //CTRL - e
                     this.enterEditMode()
                 }
+                if (e.text == '/' || e.text == '?' || e.text == 'h') {
+                    await DSKernel.exec('/bin/man',['','edit'])
+                    this.display();
+                }
             }
             
             if (e instanceof TextAppEvent && this.editmode) {
-                if (e.text == '') { // CTRL-S 
+                if (e.text == '') { // CTRL-s
                     this.exitEditMode()
                 }
                 let char
@@ -211,7 +215,7 @@ export class PREdit extends DSApp {
             title = ' ✎  ' + title.slice(4)
         }
         else {
-            title = ' ✔  ' + title.slice(4)
+            title = ' 👁  ' + title.slice(4)
         }
         this.stdout.write(title);
         this.stdout.write(setattr(textattrs.bg_default) + setattr(textattrs.fg_default));
