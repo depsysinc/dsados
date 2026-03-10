@@ -172,7 +172,6 @@ export class DSIDBFileSystem extends DSFileSystem {
             let iperms = inodeobj.perms as unknown as {_r:boolean, _w:boolean, _x:boolean}
             //console.log(inodeobj.perms._r)
             let perms = new DSFilePerms(iperms._r, iperms._w, iperms._x)
-            console.log(perms)
             const file = this.createInode() as DSIDBFile;
             file.write(inodeobj.text, false)
             file.id = inodeobj.id

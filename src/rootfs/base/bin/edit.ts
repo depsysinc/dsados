@@ -1,12 +1,13 @@
 import { BackspaceAppEvent, DeleteAppEvent, DownArrowAppEvent, DSApp, LeftArrowAppEvent, MouseButtonDownEvent, MouseButtonUpEvent, MouseMoveAppEvent, PageDownAppEvent, PageUpAppEvent, RightArrowAppEvent, TextAppEvent, TouchEndAppEvent, TouchMoveAppEvent, TouchStartAppEvent, UpArrowAppEvent, WheelAppEvent } from "../../../dsApp";
 import { DSKernel } from "../../../dsKernel";
 import { DSProcessError } from "../../../dsProcess";
-import { cursornextline, reset_text, right, set_cursor, setattr, textattrs } from "../../../lib/dsCurses";
+import { cursornextline, reset_text, set_cursor, setattr, textattrs } from "../../../lib/dsCurses";
 import { DSOptionParser } from "../../../lib/dsOptionParser";
 import { getFileName } from "../../../lib/dsPath";
-import { DSTexture, get_image_textures, load_image } from "../../../lib/dsImg";
-import { DSIWebFile } from "../../../filesystem/dsIWebFile";
 import { DSIDBFile } from "../../../filesystem/dsIDBFile";
+import { sleep } from "../../../lib/dsLib";
+import { getDirPath } from "../../../lib/dsPath";
+
 
 export class PREdit extends DSApp {
 
@@ -39,7 +40,10 @@ export class PREdit extends DSApp {
         try {
             tempinode = this.cwd.getfile(this.filepath);
         } catch (e) {
-            throw new DSProcessError(`'${this.filepath}' not found\n`);
+            let filedir = this.cwd.getdir(getDirPath(this.filepath));
+            tempinode = filedir.fs.createInode();
+            filedir.addfile(getFileName(this.filepath), tempinode)
+            
         }
 
         tempinode.perms.checkWrite();
@@ -203,7 +207,7 @@ export class PREdit extends DSApp {
 
         this.stdout.write(setattr(textattrs.bg_green) + setattr(textattrs.fg_black))
         let title = this.dashlinecentered(getFileName(this.filepath));
-        if (!this.editmode) {
+        if (this.editmode) {
             title = ' ✎  ' + title.slice(4)
         }
         else {
