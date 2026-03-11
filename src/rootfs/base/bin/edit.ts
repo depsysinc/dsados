@@ -1,7 +1,7 @@
 import { BackspaceAppEvent, DeleteAppEvent, DownArrowAppEvent, DSApp, LeftArrowAppEvent, MouseButtonDownEvent, MouseButtonUpEvent, MouseMoveAppEvent, PageDownAppEvent, PageUpAppEvent, RightArrowAppEvent, TextAppEvent, TouchEndAppEvent, TouchMoveAppEvent, TouchStartAppEvent, UpArrowAppEvent, WheelAppEvent } from "../../../dsApp";
 import { DSKernel } from "../../../dsKernel";
 import { DSProcessError } from "../../../dsProcess";
-import { cursornextline, reset_text, set_cursor, setattr, textattrs } from "../../../lib/dsCurses";
+import { cursordown, cursornextline, cursorright, cursorup, reset_text, set_cursor, setattr, textattrs } from "../../../lib/dsCurses";
 import { DSOptionParser } from "../../../lib/dsOptionParser";
 import { getFileName } from "../../../lib/dsPath";
 import { DSIDBFile } from "../../../filesystem/dsIDBFile";
@@ -43,7 +43,7 @@ export class PREdit extends DSApp {
             let filedir = this.cwd.getdir(getDirPath(this.filepath));
             tempinode = filedir.fs.createInode();
             filedir.addfile(getFileName(this.filepath), tempinode)
-            
+
         }
 
         tempinode.perms.checkWrite();
@@ -88,11 +88,11 @@ export class PREdit extends DSApp {
                     this.enterEditMode()
                 }
                 if (e.text == '/' || e.text == '?' || e.text == 'h') {
-                    await DSKernel.exec('/bin/man',['','edit'])
+                    await DSKernel.exec('/bin/man', ['', 'edit'])
                     this.display();
                 }
             }
-            
+
             if (e instanceof TextAppEvent && this.editmode) {
                 if (e.text == '') { // CTRL-s
                     this.exitEditMode()
@@ -139,9 +139,11 @@ export class PREdit extends DSApp {
             }
             if (e instanceof LeftArrowAppEvent && this.editmode) {
                 this._cursorLeft(1);
+                this.display()
             }
             if (e instanceof RightArrowAppEvent && this.editmode) {
                 this._cursorRight(1);
+                this.display()
             }
 
             if (e instanceof MouseButtonDownEvent || e instanceof TouchStartAppEvent) {
@@ -196,14 +198,38 @@ export class PREdit extends DSApp {
     }
 
     async display() {
+        console.log('SPLAY!')
         this.stdout.write(set_cursor(this.editmode));
 
         let splitbylinebreaks = this.text.split('\n')
         this.lines = []
+
+        let charspassed = 0;
+        let linespassed = 0;
+        let checkforcursor = this.editmode;
+        let cursorpos = { x: 0, y: 0 };
+
         splitbylinebreaks.forEach((line) => {
             for (let i = 0; i < line.length + 1; i += DSKernel.terminal.cols) {
-                this.lines.push(line.slice(i, i + DSKernel.terminal.cols))
+                let nextline = line.slice(i, i + DSKernel.terminal.cols)
+                this.lines.push(nextline);
+
+                let charsadded = nextline.length;
+                if (checkforcursor && charspassed + charsadded + 1 > this.cursorpos) {
+                    if (linespassed < this.rowidx) {
+                        this.rowidx = linespassed;
+                    }
+                    if (linespassed - (DSKernel.terminal.rows - 2) >= this.rowidx) {
+                        this.rowidx = linespassed - (DSKernel.terminal.rows - 2) + 1;
+                    }
+                    cursorpos.y = linespassed - this.rowidx;
+                    cursorpos.x = this.cursorpos - charspassed
+                    checkforcursor = false;
+                }
+                charspassed += charsadded;
+                linespassed++;
             }
+            charspassed++;
         })
 
         this.stdout.write(reset_text())
@@ -244,6 +270,10 @@ export class PREdit extends DSApp {
         this.stdout.write(this.dashlinecentered(message));
         this.stdout.write(setattr(textattrs.bg_default) + setattr(textattrs.fg_default));
 
+        if (this.editmode) {
+            this.setcursorlocation(cursorpos.x, cursorpos.y);
+        }
+
     }
 
 
@@ -269,6 +299,17 @@ export class PREdit extends DSApp {
         this.rowidx = row;
     }
 
+    private setcursorlocation(x: number, y: number) {
+        this.stdout.write(cursorup(DSKernel.terminal.cols + 10));
+        if (y > 0) {
+            this.stdout.write(cursordown(y));
+        }
+        this.stdout.write(cursornextline());
+        if (x > 0) {
+            this.stdout.write(cursorright(x));
+        }
+    }
+
 
     handleResize(): void {
         this.display();
@@ -288,14 +329,10 @@ export class PREdit extends DSApp {
         if (amount < 0) {
             throw new DSProcessError("Attempt to move negative positions left");
         }
-        for (let _ = 0; _ < amount; _++) {
-            if (this._cursorAtLeftEdge()) {
-                this.stdout.write("\x1b[F\x1b[200000C") //Move cursor up one row and then to the rightmost column
-            }
-            else {
-                this.stdout.write(`\x1b[D`); //Move cursor one space left
-            }
-            this.cursorpos--
+        this.cursorpos -= amount
+
+        if (this.cursorpos < 0) {
+            this.cursorpos = 0;
         }
     }
 
@@ -303,15 +340,8 @@ export class PREdit extends DSApp {
         if (amount < 0) {
             throw new DSProcessError("Attempt to move negative positions right");
         }
-        for (let _ = 0; _ < amount; _++) {
-            if (this._cursorAtRightEdge()) {
-                this.stdout.write("\x1b[E") //Move the cursor down one row and to the leftmost column
-            }
-            else {
-                this.stdout.write(`\x1b[C`); //Move the cursor one space right
-            }
-            this.cursorpos++
-        }
+        this.cursorpos += amount
+
         if (this.cursorpos > this.text.length) {
             this.cursorpos = this.text.length;
         }
