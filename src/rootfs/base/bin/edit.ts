@@ -60,14 +60,12 @@ export class PREdit extends DSApp {
 
         while (!this.done) {
             let e = await this.eventQueue.dequeue();
-            //console.log(e)
             if (e instanceof WheelAppEvent) {
                 let change = e.deltaY < 0 ? -1 : 1
                 this.setrowidx(this.rowidx + change);
                 this.display();
             }
             if (e instanceof TextAppEvent && !this.editmode) {
-                console.log(e.text)
                 if (e.text == 'q') {
                     DSKernel.terminal.reset();
                     this.done = true;
@@ -198,7 +196,6 @@ export class PREdit extends DSApp {
     }
 
     async display() {
-        console.log('SPLAY!')
         this.stdout.write(set_cursor(this.editmode));
 
         let splitbylinebreaks = this.text.split('\n')
