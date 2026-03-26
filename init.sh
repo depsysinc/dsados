@@ -1,8 +1,8 @@
-echo "Setting up depsysweb repo"
+echo "Setting up repo"
 yarn install
 cd /workspaces/xterm.js/addons/addon-webgl
 yarn link
-cd /workspaces/depsysweb
+cd /workspaces/dsados
 yarn link @xterm/addon-webgl
 
 echo "Installing AWS CLI"
