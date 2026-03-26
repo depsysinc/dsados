@@ -3,3 +3,4 @@ dist
 *.log
 venv
 .aws
+src/dsRootFS.ts

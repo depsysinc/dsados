@@ -28,12 +28,12 @@
   },
   "scripts": {
     "helpit": "webpack --help=verbose",
-    "build": "webpack --mode=production --node-env=production",
-    "build:dev": "webpack --mode=development",
-    "build:prod": "webpack --mode=production --node-env=production",
+    "build": "ts-node scripts/generaterootfs.ts && webpack --mode=production --node-env=production",
+    "build:dev": "ts-node scripts/generaterootfs.ts && webpack --mode=development",
+    "build:prod": "ts-node scripts/generaterootfs.ts && webpack --mode=production --node-env=production",
     "genrootfs": "ts-node scripts/generaterootfs.ts",
-    "watch": "webpack --watch",
-    "serve": "webpack serve --mode=development",
+    "watch": "ts-node scripts/generaterootfs.ts && webpack --watch",
+    "serve": "ts-node scripts/generaterootfs.ts && webpack serve --mode=development",
     "test": "jest",
     "webtests": "RUN_WEB_TESTS=true jest"
   },
