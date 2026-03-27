@@ -1,0 +1,47 @@
+# Code to demonstrate the features of dssh
+
+#This is a comment, these lines will be ignored
+
+var=123 #this line sets a variable
+var="text"
+
+echo $var #will output "text"
+echo var  #will output "var"
+
+if [-true] #if statement
+    var="true" #will evaluate
+endif
+
+if [-false] #will not evaluate
+    var="false"
+endif
+
+if [-$var]
+    var="I was true" 
+    echo $var
+endif
+
+navpath=data
+
+#if navpath exists, navigate to it
+if [-d $navpath]
+    navpathexists="true"
+else
+    navpathexists="false"
+endif
+
+if [-$navpathexists]
+    cd $navpath
+endif
+
+pwd
+
+
+sleep 2000 #run command sleep
+
+
+#execute another file
+exec /etc/autoexec.dssh
+
+echo done other file #once user exits autoexec, will run
+sleep 2000

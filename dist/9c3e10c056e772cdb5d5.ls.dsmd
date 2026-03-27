@@ -1,0 +1,23 @@
+NAME
+
+  **ls** - output contents of directory
+
+SYNOPSIS
+
+    ls 
+
+DESCRIPTION
+
+    Ls (short for list) outputs the contents of the current directory. Each 
+    file or directory within the current will be outputted on a new line. 
+    For each file, the permissions will be displayed first, followed by the
+    file/directory name. Passing any arguments will cause ls to return an
+    error.
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [chmod](/data/man/chmod.dsmd), [file](/data/man/file.dsmd), [pwd](/data/man/pwd.dsmd)

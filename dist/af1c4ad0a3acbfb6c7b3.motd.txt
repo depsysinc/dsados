@@ -1,0 +1,8 @@
+
+Welcome to DSADOS!
+
+For information on usage and
+customization visit
+
+https://github.com/depsysinc/dsados
+____

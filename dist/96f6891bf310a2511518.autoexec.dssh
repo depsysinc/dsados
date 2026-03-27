@@ -1,0 +1,7 @@
+#
+# DSADOS AUTOEXEC FILE
+#
+PATH=/bin
+
+cat /etc/depsys.txt
+cat /etc/motd.txt
