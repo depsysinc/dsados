@@ -1,0 +1,72 @@
+NAME
+
+  **edit** - editor for text files
+
+SYNOPSIS
+
+    edit *filename*
+
+DESCRIPTION
+
+    edit is a editor for text files. The filename argument should be a text file, and the 
+    edit command will open a viewer for that file. If no file exists, one will be created instead.
+    The file can be scrolled through, and the 
+    number of lines will be displayed on the bottom, as well as the filename on the top. Press CTRL-E or
+    click on the eye icon at the top to switch to edit mode. In this mode, you can enter text, which will
+    be saved when you exit edit mode with either CTRL-S or by clicking the pencil icon. Press h or ? to access
+    this help page.
+
+
+VIEW MODE COMMANDS
+
+    q - quit
+
+    Scroll wheel - scroll
+
+    Click and drag - scroll
+
+    Up arrow - scroll up one line
+
+    Down arrow - scroll down one line
+
+    Page Up - scroll up one page
+
+    Page Down - scroll down one page
+
+    g - jump to top
+
+    G - jump to bottom
+
+    Space - jump down the page
+
+    CTRL-E - enter edit mode
+
+    h - open man page
+
+    ? - open man page
+
+EDIT MODE COMMANDS
+
+    Scroll wheel - scroll
+
+    Click and drag - scroll
+
+    Up arrow - scroll up one line
+
+    Down arrow - scroll down one line
+
+    Page Up - scroll up one page
+
+    Page Down - scroll down one page
+
+    CTRL-S - save and exit
+
+
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [cat](/data/man/cat.dsmd), [dsmdbrowser](dsmdbrowser.dsmd), [less](/data/man/less.dsmd)

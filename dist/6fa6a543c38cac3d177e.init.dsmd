@@ -1,0 +1,22 @@
+NAME
+
+  **init** - initialize DSKernel
+
+SYNOPSIS
+
+    init 
+
+DESCRIPTION
+
+    Running init will throw an error - it's the base process and must 
+    always be at the bottom of the process stack. On startup, init 
+    calls the next process in the process stack, and repeats that whenever 
+    a process unexpectedly exits.
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+    
+    [dssh](/data/man/dssh.dsmd)

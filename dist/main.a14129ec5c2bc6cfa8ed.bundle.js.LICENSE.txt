@@ -1,0 +1,36 @@
+/**
+ * Copyright (c) 2016 The xterm.js authors. All rights reserved.
+ * @license MIT
+ */
+
+/**
+ * Copyright (c) 2017 The xterm.js authors. All rights reserved.
+ * @license MIT
+ */
+
+/**
+ * Copyright (c) 2018 The xterm.js authors. All rights reserved.
+ * @license MIT
+ */
+
+/**
+ * Copyright (c) 2019 The xterm.js authors. All rights reserved.
+ * @license MIT
+ *
+ * This was heavily inspired from microsoft/vscode's dependency injection system (MIT).
+ */
+
+/**
+ * Copyright (c) 2019 The xterm.js authors. All rights reserved.
+ * @license MIT
+ */
+
+/**
+ * Copyright (c) 2021 The xterm.js authors. All rights reserved.
+ * @license MIT
+ */
+
+/**
+ * Copyright (c) 2022 The xterm.js authors. All rights reserved.
+ * @license MIT
+ */

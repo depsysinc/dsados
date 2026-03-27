@@ -1,0 +1,23 @@
+NAME
+
+  **imgview** - output an image to the terminal
+
+SYNOPSIS
+
+    imgview *filename*
+
+DESCRIPTION
+
+    Imgview will display an image. It should be passed one 
+    argument, an image file (specified by name). If passed anything 
+    else, it will output "not an image file" to the terminal. The 
+    image file will be added to the sprite system and then the 
+    process will return.
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [cat](/data/man/cat.dsmd), [file](/data/man/file.dsmd)

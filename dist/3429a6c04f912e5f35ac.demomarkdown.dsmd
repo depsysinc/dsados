@@ -1,0 +1,166 @@
+# $$$$ Images
+![demo text wrapping](/data/test/image/gorzocrop.png)
+This is text to the right of the image less than the height of the image
+
+![demo overflow wrapping](/data/demo/markdown/32x32_testpattern.png)
+This demonstrates that handling of overflow wrapping works, where sufficient
+text exists that wrapping continues past the end of the image.
+
+![demo gif](/data/test/image/worldturning.gif) A gif
+
+![demo alt text](/an/invalid/image/url)
+
+![demo alt text](/an/invalid/image/url)With trailing text that is lengthy enough to
+demonstrate wrapping.
+
+![](/an/invalid/image/url) An image with no alt text
+
+![image tag with empty link url](/an/invalid/image/url)()
+trailing parenthesis will be treated as paragraph text
+
+## $$$$ Invalid Image Tags
+
+![invalid image tag empty img url]()
+
+![invalid image tag
+because not on same line](/an/image/url)
+
+## $$$$ Images with Links
+
+![demo img link](data/demo/markdown/32x32_testpattern.png)(https://google.com)
+This is an image with a valid link
+
+![demo invalide img link](data/demo/markdown/32x32_testpattern.png)(an/invalid/link)
+This is an image with an invalid link
+
+# $$$$ Links
+
+Some prefix text [Demonstrate a link long enough to be easily wrapped on multiple lines so that we can show link location detection in the browser](/an/invalid/url) some suffix text
+
+Demonstrate a [link](/an/invalid/url) that is embedded in a paragraph.
+
+Demonstrate [multiple](/an/invalid/url) different [links](/an/invalid/url) in the same paragraph.
+
+[an invalid link
+tag because must all fit on single line](/badfile)
+
+[Link to a process](cmd: bin/splash)
+
+[Link to a process with arguments](cmd: bin/echo HelloWorld)
+
+[Link to a process that saves history](cmd: bin/fsviewer)
+
+# $$$$ Lists
+
+  - An extra long list item to demonstrate multi line wrapping
+that will indicate if the indenting is working or not
+
+- First list item
+- Second list item
+with extra text on a new line
+- Third list item followed by sublist
+  - First sublist item
+  - Second sublist item
+with extra text on a new line 
+- Fourth list item
+  - New 2nd level sublist
+    - New 3rd level sublist
+with extra text on a new line
+
+- List to test bold **wrapping
+- to other** list items
+- Even across list **depth
+  - Changes,** from one line to another
+
+A paragraph separator
+
+  - A stand alone second level list
+
+A paragraph separator
+- A list with spaces
+
+- Between the list items
+
+
+
+- A final item after many spaces compressed to one
+  - A sublist
+
+  - With a space
+  - Then no space
+
+# $$$$ Code
+```
+This is a codeblock.
+   The whitespace  should   be            respected
+
+
+Line that is longer than the window will be cut off.  We shall demonstrate that with this very long line.
+
+Some ascii art to demonstrate whitespace conservation:
+======================================
+     ____            _____           
+    / __ \___  ____ / ___/__  _______
+   / / / / _ \/ __ \\__ \/ / / / ___/
+  / /_/ /  __/ /_/ /__/ / /_/ (__  ) 
+ /_____/\___/ .___/____/\__, /____/  
+           /_/         /____/        
+======================================
+```
+
+# $$$$ Titles
+
+This is a short paragraph after the title.
+
+# This is a first level title
+## This is a Second level title
+### This is a Third level title
+
+# This is a very long title to make it easy to test title wrapping
+
+This is a simple one line paragraph followed immediately by a title after a single linebreak.
+# This is the above mentioned title
+
+# This is a title followed immediately by text
+This is the above mentioned text that should form it's own paragraph
+
+# This title has extra     whitespace
+
+# $$$$ Text Attributes
+
+Some regular text
+
+Some *italic* text
+
+Some **bold** text
+
+Some ***bold and italic text that is long enough to test double*** wrapping
+
+Some italics in the mid*dle of wo*rds
+
+Some bold in the mid**dle of wor**ds
+
+An example of an unmatched *italics delimiter
+
+An example of an unmatched bold delimiter at the EOL**
+
+Some overlapping **bold *and** italics*
+
+# $$$$ Paragraphs
+
+
+This is a long paragraph with no linebreaks to demonstrate text wrapping.  Many words and such need to be added to this paragraph in order to guarantee that the wrapping gets tested properly.  We want at least a couple of linebreaks to have to be inserted to make this whole thing work.  That should be enough.
+
+This is a long paragraph with single linebreaks to demonstrate that they will be ignored by the viewer.
+This line and the previous line should be in the same paragraph.
+This last line should also be in the same paragraph as the previous two.
+
+
+
+There were multiple spaces between this paragraph and the last.  This should demonstrate that the extra spaces are ignored.
+
+   This paragraph has leading and trailing whitespace     
+
+This is a paragraph    with a bunch of strange     whitespace.
+         All this     whitespace should    be ignored.
+

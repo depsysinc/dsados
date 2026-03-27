@@ -1,0 +1,21 @@
+NAME
+
+  **sleep** - sleep for <milliseconds> milliseconds
+
+SYNOPSIS
+
+    sleep *milliseconds*
+
+DESCRIPTION
+
+    The sleep command waits for *milliseconds* milliseconds, and then returns. While waiting,
+    text inputs, mouse inputs and the like will be ignored. This will freeze any other processes
+    running. If milliseconds is not a positive number, sleep will throw an error.
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [splash](/data/man/splash.dsmd)
