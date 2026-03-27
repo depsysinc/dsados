@@ -21,6 +21,9 @@ DSADOS is a browser-based, single threaded, *operating system like* environment 
 
 It is the framework layer of DOS-style web experiences, such as the [depsys.io](https://depsys.io) web site. Site-specific content is layered on top via separate private repos.
 
+## DEMO
+Visit a demo version of the vanilla build at the [github pages site](https://depsysinc.github.io/dsados/)
+
 ## Features
 
 - **dssh** — a bash/sh style shell
