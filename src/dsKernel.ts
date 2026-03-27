@@ -101,26 +101,33 @@ export class DSKernel {
             bootcount = 0;
         nvram_set("bootcount", String(bootcount + 1));
 
-        const fastboot = Boolean(nvram_get("fastboot"));
+        const slowboot = params.has("slowboot");
+        const silentboot = params.has("silentboot");
 
-        if (!fastboot) {
-            await sleep(500);
-            this.terminal.write(`BOOTING DepSysOS ${DSKernel.version}...\n\n`);
-            await sleep(1000);
-        }
+        this.terminal.write(`BOOTING DepSysOS ${DSKernel.version}...\n\n`);
+
         const t = this.terminal;
+        if (slowboot) {
+            t.baud = 1200;
+        } else {
+            t.baud = 0;
+        }
+
         const baudWrite = async (text: string) => {
-            if (!fastboot)
+            if (silentboot) {
+                // Ignore output
+            } else if (slowboot) {
                 await t.baudWrite(text);
+            } else {
+                this.terminal.write(text);
+            }
         };
-        t.baud = 800;
+
 
         try {
             if (bootcount == 0) {
                 await baudWrite(`New terminal detected\n`);
-                await (sleep(1000));
                 await baudWrite(`Doing first time configuration\n\n`);
-                await (sleep(1000));
             }
 
             await baudWrite(
@@ -170,18 +177,8 @@ export class DSKernel {
             await baudWrite(`mount: localfs\n`)
             DSKernel.mount('/local', localfs);
 
-            if (!fastboot) {
-                await baudWrite("nvram: enable fastboot");
-                const oldbaud = t.baud;
-                t.baud = 10;
-                await baudWrite("...\n");
-                nvram_set("fastboot", String(true));
-                t.baud = oldbaud;
-            }
-
             // Start init process
             await baudWrite("exec: init\n");
-            t.baud = 0;
             await DSKernel.exec("/bin/init", ["init"]);
         } catch (e) {
             this.panic(e);

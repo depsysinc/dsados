@@ -1,6 +1,5 @@
 # TODO
 * fs
-  * writeable files in DSIDBFileSystem
   * S3 backed filesystem
 * general
   * Get PANIC to suggest clearing cache
@@ -13,8 +12,8 @@
   * autoexec.dssh
     * look for profile in /local/
   * dssh
-    * [tab] complete
-    * command history persistence across boots
+    * [tab] complete for binaries in path
+    * command history persistence across boots (.history file)
   * chmod
   * nvram
   * mv
