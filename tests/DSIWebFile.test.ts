@@ -1,6 +1,7 @@
-import { DSFilePerms, DSFilePermsReadError, DSRAMFileSystem } from "../src/dsFileSystem";
+import { DSFilePerms, DSFilePermsReadError } from "../src/dsFileSystem";
 import { DSStream, DSStreamClosedError } from "../src/dsStream";
 import { DSIWebFile } from "../src/filesystem/dsIWebFile";
+import { DSRAMFileSystem } from "../src/filesystem/dsRAMFileSystem";
 
 const webtest = (process.env.RUN_WEB_TESTS === "true") ? test : test.skip;
 const demofilelink =  'https://www.gutenberg.org/files/9542/old/7poet10.txt'

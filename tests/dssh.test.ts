@@ -1,12 +1,13 @@
-import { DSFilePerms, DSIDirectory, DSInode, DSRAMFileSystem } from "../src/dsFileSystem";
+import { DSFilePerms, DSIDirectory, DSInode } from "../src/dsFileSystem";
 import { DSKernel } from "../src/dsKernel";
 import { DSProcess } from "../src/dsProcess";
 import { DSStream } from "../src/dsStream";
 import { DSIProcessFile } from "../src/filesystem/dsIProcessFile";
 import { DSIStaticTextFile } from "../src/filesystem/dsIStaticFile";
 import { DSIWebFile } from "../src/filesystem/dsIWebFile";
-import { DSShell, DSShellError } from "../src/process/dssh";
-import { PREcho } from "../src/process/echo";
+import { DSRAMFileSystem } from "../src/filesystem/dsRAMFileSystem";
+import { DSShell, DSShellError } from "../src/rootfs/base/bin/dssh";
+import { PREcho } from "../src/rootfs/base/bin/echo";
 
 class TestProcess extends DSProcess {
     constructor(pwd: DSIDirectory) {

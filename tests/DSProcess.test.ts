@@ -1,5 +1,6 @@
 import { DSProcess } from "../src/dsProcess";
-import { DSFilePerms, DSFileSystem, DSIDirectory, DSRAMFileSystem } from "../src/dsFileSystem";
+import { DSFilePerms, DSFileSystem, DSIDirectory } from "../src/dsFileSystem";
+import { DSRAMFileSystem } from "../src/filesystem/dsRAMFileSystem";
 import { DSStream } from "../src/dsStream";
 
 class TestProcess extends DSProcess {

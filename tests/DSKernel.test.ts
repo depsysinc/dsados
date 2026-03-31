@@ -1,11 +1,13 @@
-import { DSFilePerms, DSFilePermsExecError, DSFileSystemError, DSIDirectory, DSIDirectoryInvalidPathError, DSInode, DSRAMFileSystem } from "../src/dsFileSystem";
+import { DSFilePerms, DSFilePermsExecError, DSFileSystemError, DSIDirectory, DSIDirectoryInvalidPathError, DSInode } from "../src/dsFileSystem";
 import { DSKernel, DSKernelError, DSKernelExecError } from "../src/dsKernel";
 import { DSProcess } from "../src/dsProcess";
 import { DSStream } from "../src/dsStream";
 import { DSIProcessFile } from "../src/filesystem/dsIProcessFile";
 import { DSIStaticTextFile } from "../src/filesystem/dsIStaticFile";
-import { DSShell } from "../src/process/dssh";
-import { PREcho } from "../src/process/echo";
+import { DSRAMFileSystem } from "../src/filesystem/dsRAMFileSystem";
+import { DSShell } from "../src/rootfs/base/bin/dssh";
+import { PREcho } from "../src/rootfs/base/bin/echo";
+
 
 class TestProcess extends DSProcess {
     constructor(pwd: DSIDirectory) {

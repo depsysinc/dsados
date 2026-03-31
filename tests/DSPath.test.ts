@@ -1,6 +1,7 @@
-import { DSRAMFileSystem } from '../src/dsFileSystem';
 import { DSIWebFile } from '../src/filesystem/dsIWebFile';
+import { DSRAMFileSystem } from '../src/filesystem/dsRAMFileSystem';
 import { getAbsolutePath, getDirPath, getFileName } from '../src/lib/dsPath'
+
 
 test('Get directory path local', () => {
     const testpath = 'subfolder/test.txt'
