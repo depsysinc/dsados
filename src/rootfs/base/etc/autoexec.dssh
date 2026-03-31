@@ -3,5 +3,23 @@
 #
 PATH=/bin
 
-cat /etc/depsys.txt
-cat /etc/motd.txt
+#checking for the existence of a directory: /local/home
+if [-d /local/home]
+else
+    echo "localfs: create home directory"
+    cd local
+    mkdir home
+    sleep 1000
+    cd ..
+endif
+
+#checking for the existence of a file: profile.dssh
+if [-f /local/home/profile.dssh]
+    #run profile.dssh
+    source /local/home/profile.dssh
+else
+    echo "no profile.dssh found."
+    cat /etc/depsys.txt
+    cat /etc/motd.txt
+endif
+
