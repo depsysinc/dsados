@@ -29,7 +29,6 @@ export class DSShell extends DSProcess {
     history: string[] = [];
 
     protected async main(): Promise<void> {
-        console.log(this.envp)
         const optparser = new DSOptionParser(
             this.procname,
             true,
