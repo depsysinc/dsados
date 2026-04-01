@@ -26,6 +26,8 @@ if [-f /local/home/profile.dssh]
 else
     #Otherwise, display the default startup text (stored in depsys.txt and motd.txt)
     echo "no profile.dssh found."
+    sleep 100
+    reset
     cat /etc/depsys.txt
     cat /etc/motd.txt
 endif
