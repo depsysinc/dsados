@@ -2,7 +2,6 @@
 # DSADOS AUTOEXEC FILE
 #
 PATH=/bin
-PS1=C:
 
 cat /etc/depsys.txt
 cat /etc/motd.txt

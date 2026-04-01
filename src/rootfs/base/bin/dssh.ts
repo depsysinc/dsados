@@ -45,7 +45,6 @@ export class DSShell extends DSProcess {
         let nextarg = optparser.parseWithUsageAndHelp(this.argv);
         this._loginshell = optparser.getLongOption("login").seen;
 
-
         this._prompt = new CommandLinePrompt(this);
         return this._commandLoop();
     }
@@ -346,7 +345,7 @@ class CommandLinePrompt {
         this._cursor = 0;
 
         const stdout = this._shell.stdout;
-        this._prompt = this._shell.envp['PS1'] ? this._shell.envp['PS1'] : ':';
+        this._prompt = this._shell.envp['PS1'] ? this._shell.envp['PS1'] : 'C:';
         this._prompt += this._shell.cwd.path;
         this._prompt += "$ ";
         this._shell.stdout.write(this._prompt);
