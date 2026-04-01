@@ -3,5 +3,32 @@
 #
 PATH=/bin
 
-cat /etc/depsys.txt
-cat /etc/motd.txt
+#Displaying "localfs: mount" status text, then mounting depsys_local_fs at /local
+echo "localfs: mount"
+mount dsidbfs depsys_local_fs /local
+
+
+#Checking for the existence of the /local/home directory
+if [-d /local/home]
+else
+    #If the directory does NOT exist, create one- enter the local folder, create "home", return to the parent folder
+    echo "localfs: create home directory"
+    cd local
+    mkdir home
+    cd ..
+endif
+
+
+#Checking for the existence of a profile.dssh file
+if [-f /local/home/profile.dssh]
+    #If it exists, run profile.dssh as a script
+    source /local/home/profile.dssh
+else
+    #Otherwise, display the default startup text (stored in depsys.txt and motd.txt)
+    echo "no profile.dssh found."
+    sleep 100
+    reset
+    cat /etc/depsys.txt
+    cat /etc/motd.txt
+endif
+

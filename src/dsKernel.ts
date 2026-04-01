@@ -166,17 +166,6 @@ export class DSKernel {
             await baudWrite(`mount: rootfs\n`)
             DSKernel.mount('/', rootfs);
 
-
-            await baudWrite(`fsck: localfs\n`)
-            const localfs = new DSIDBFileSystem("depsys_local_fs", 1);
-            await localfs.open();
-
-            fsckresults = localfs.fsck();
-            await baudWrite(`  scanned ${fsckresults.inodecount} inodes, ${fsckresults.directorycount} dirs\n`);
-
-            await baudWrite(`mount: localfs\n`)
-            DSKernel.mount('/local', localfs);
-
             // Start init process
             await baudWrite("exec: init\n");
             await DSKernel.exec("/bin/init", ["init"]);
