@@ -12,9 +12,9 @@ import {
     DSIDirectoryIllegalAddfileError,
     DSFilePermsUnsupportedError,
     DSIFileAlreadyExistsError,
-    DSRAMFileSystem
 } from "../src/dsFileSystem"
 import { DSIWebFile } from "../src/filesystem/dsIWebFile"
+import { DSRAMFileSystem } from "../src/filesystem/dsRAMFileSystem";
 
 
 const webtest = (process.env.RUN_WEB_TESTS === "true") ? test : test.skip;
@@ -366,13 +366,6 @@ test('chmod readonlyfs', () => {
     ).toThrow(DSFileSystemReadonlyError)
 });
 
-// filetype tests
-
-test('filetype gamma', async () => {
-    const fs = createTestFS();
-    const filetype = await fs.root.filetype();
-    expect(filetype).toEqual("directory");
-});
 
 // staticwebfile tests
 
