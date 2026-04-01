@@ -29,6 +29,7 @@ export class DSShell extends DSProcess {
     history: string[] = [];
 
     protected async main(): Promise<void> {
+        console.log(this.envp)
         const optparser = new DSOptionParser(
             this.procname,
             true,
@@ -44,6 +45,7 @@ export class DSShell extends DSProcess {
         });
         let nextarg = optparser.parseWithUsageAndHelp(this.argv);
         this._loginshell = optparser.getLongOption("login").seen;
+
 
         this._prompt = new CommandLinePrompt(this);
         return this._commandLoop();
@@ -332,23 +334,20 @@ function splitRespectingQuotes(input: string): string[] {
 }
 
 class CommandLinePrompt {
-    private _promptprefix: string;
     private _prompt: string;
     private _userinput: string = "";
     private _cursor: number = 0;
     private _historyIdx: number;
     private _waitingForDoubleTab: boolean;
 
-    constructor(private _shell: DSShell) {
-        this._promptprefix = "depsys.io:";
-    }
+    constructor(private _shell: DSShell) { }
 
     async promptForInput(): Promise<string> {
         this._userinput = "";
         this._cursor = 0;
 
         const stdout = this._shell.stdout;
-        this._prompt = this._promptprefix;
+        this._prompt = this._shell.envp['PS1'] ? this._shell.envp['PS1'] : ':';
         this._prompt += this._shell.cwd.path;
         this._prompt += "$ ";
         this._shell.stdout.write(this._prompt);
