@@ -3,6 +3,9 @@
 #
 PATH=/bin
 
+echo "localfs: mount"
+mount dsidbfs depsys_local_fs /local
+
 #checking for the existence of a directory: /local/home
 if [-d /local/home]
 else
