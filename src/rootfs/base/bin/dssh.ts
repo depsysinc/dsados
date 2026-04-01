@@ -28,6 +28,10 @@ export class DSShell extends DSProcess {
 
     history: string[] = [];
 
+    get promptprefix():string {
+        return this.envp['PS1'] ? this.envp['PS1'] : 'C:';
+    }
+
     protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
             this.procname,
@@ -345,7 +349,7 @@ class CommandLinePrompt {
         this._cursor = 0;
 
         const stdout = this._shell.stdout;
-        this._prompt = this._shell.envp['PS1'] ? this._shell.envp['PS1'] : 'C:';
+        this._prompt = this._shell.promptprefix
         this._prompt += this._shell.cwd.path;
         this._prompt += "$ ";
         this._shell.stdout.write(this._prompt);
