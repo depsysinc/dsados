@@ -28,6 +28,10 @@ export class DSShell extends DSProcess {
 
     history: string[] = [];
 
+    get promptprefix():string {
+        return this.envp['PS1'] ? this.envp['PS1'] : 'C:';
+    }
+
     protected async main(): Promise<void> {
         const optparser = new DSOptionParser(
             this.procname,
@@ -332,23 +336,20 @@ function splitRespectingQuotes(input: string): string[] {
 }
 
 class CommandLinePrompt {
-    private _promptprefix: string;
     private _prompt: string;
     private _userinput: string = "";
     private _cursor: number = 0;
     private _historyIdx: number;
     private _waitingForDoubleTab: boolean;
 
-    constructor(private _shell: DSShell) {
-        this._promptprefix = "depsys.io:";
-    }
+    constructor(private _shell: DSShell) { }
 
     async promptForInput(): Promise<string> {
         this._userinput = "";
         this._cursor = 0;
 
         const stdout = this._shell.stdout;
-        this._prompt = this._promptprefix;
+        this._prompt = this._shell.promptprefix
         this._prompt += this._shell.cwd.path;
         this._prompt += "$ ";
         this._shell.stdout.write(this._prompt);
