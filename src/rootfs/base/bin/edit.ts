@@ -128,12 +128,33 @@ export class PREdit extends DSApp {
                 this.display();
             }
             if (e instanceof DownArrowAppEvent) {
-                this.setrowidx(this.rowidx + 1);
-                this.display();
+                if (!this.editmode) {
+                    this.setrowidx(this.rowidx + 1);
+                    this.display();
+                }
+                else {
+                    let cursorxy = this.getcursorxy();
+                    cursorxy.y += 1;
+                    this.setcursorposfromxy(cursorxy);
+                    this.display();
+
+                }
+
             }
             if (e instanceof UpArrowAppEvent) {
-                this.setrowidx(this.rowidx - 1);
-                this.display();
+                if (!this.editmode) {
+                    this.setrowidx(this.rowidx - 1);
+                    this.display();
+                }
+                else {
+                    let cursorxy = this.getcursorxy();
+                    if (cursorxy.y > 0 || this.rowidx > 0) {
+                        cursorxy.y -= 1;
+                        this.setcursorposfromxy(cursorxy);
+                        this.display();
+                    }
+
+                }
             }
             if (e instanceof LeftArrowAppEvent && this.editmode) {
                 this._cursorLeft(1);
@@ -183,7 +204,6 @@ export class PREdit extends DSApp {
         this.stdout.write(set_cursor(true));
         this.editmode = true;
         this.display();
-
     }
 
     exitEditMode() {
@@ -192,27 +212,22 @@ export class PREdit extends DSApp {
         this.stdout.write(set_cursor(false));
         this.editmode = false;
         this.display();
-
     }
 
-    async display() {
-        this.stdout.write(set_cursor(this.editmode));
-
+    getcursorxy(): { x: number, y: number } {
+        let cursorpos = { x: 0, y: 0 };
         let splitbylinebreaks = this.text.split('\n')
-        this.lines = []
-
         let charspassed = 0;
         let linespassed = 0;
-        let checkforcursor = this.editmode;
-        let cursorpos = { x: 0, y: 0 };
+        let finished = false;
 
         splitbylinebreaks.forEach((line) => {
+            if (finished) return;
             for (let i = 0; i < line.length + 1; i += DSKernel.terminal.cols) {
                 let nextline = line.slice(i, i + DSKernel.terminal.cols)
-                this.lines.push(nextline);
-
                 let charsadded = nextline.length;
-                if (checkforcursor && charspassed + charsadded + 1 > this.cursorpos) {
+
+                if (!finished && charspassed + charsadded + 1 > this.cursorpos) {
                     if (linespassed < this.rowidx) {
                         this.rowidx = linespassed;
                     }
@@ -221,13 +236,59 @@ export class PREdit extends DSApp {
                     }
                     cursorpos.y = linespassed - this.rowidx;
                     cursorpos.x = this.cursorpos - charspassed
-                    checkforcursor = false;
+
+                    finished = true;
                 }
                 charspassed += charsadded;
                 linespassed++;
             }
             charspassed++;
         })
+        return cursorpos;
+    }
+
+    setcursorposfromxy(cursorxy: { x: number, y: number }) {
+        let splitbylinebreaks = this.text.split('\n')
+
+        let currenty = -this.rowidx - 1
+        let charspassed = 0
+
+        splitbylinebreaks.forEach((line) => {
+            for (let i = 0; i < line.length + 1; i += DSKernel.terminal.cols) {
+                let curline = line.slice(i, i + DSKernel.terminal.cols)
+                currenty += 1
+                if (currenty == cursorxy.y) {
+                    if (i != 0 && Math.min(cursorxy.x, curline.length) == 0)
+                        this.cursorpos = charspassed + 1
+                    else
+                        this.cursorpos = charspassed + Math.min(cursorxy.x, curline.length);
+
+                }
+                charspassed += curline.length;
+            }
+            charspassed++;
+        })
+
+    }
+
+
+    async display() {
+        this.stdout.write(set_cursor(this.editmode));
+
+        let splitbylinebreaks = this.text.split('\n')
+        this.lines = []
+
+        splitbylinebreaks.forEach((line) => {
+            for (let i = 0; i < line.length + 1; i += DSKernel.terminal.cols) {
+                let nextline = line.slice(i, i + DSKernel.terminal.cols)
+                this.lines.push(nextline);
+            }
+        })
+
+        let cursorpos;
+        if (this.editmode) {
+            cursorpos = this.getcursorxy();
+        }
 
         this.stdout.write(reset_text())
         this.setrowidx(this.rowidx); //Ensure rowidx is on screen
