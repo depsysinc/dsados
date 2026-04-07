@@ -1,0 +1,22 @@
+NAME
+
+  **setbaud** - change the terminal baud rate
+
+SYNOPSIS
+
+    setbaud *baudrate*
+
+DESCRIPTION
+
+    Sets the baud rate for the terminal. The baud rate is a measure of how fast the terminal outputs
+    text, measured in characters/second (so setbaud 2000 would set the text rate 2000 chars/sec).
+    If given non-numeric input, throws an error. Setting the baud rate to 0 will set the 
+    speed to instantaneous, rather than 0, and is the default behaviour.
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [splash](/data/man/splash.dsmd)
