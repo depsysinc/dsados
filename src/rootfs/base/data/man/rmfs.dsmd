@@ -1,0 +1,28 @@
+NAME
+
+  **rmfs** - delete filesystem
+
+
+SYNOPSIS
+
+    rmfs
+
+DESCRIPTION
+
+    The rmfs command can be used to delete dsidb filesystems. The filesystems store data between
+    sessions, and this command removes that data. It is mandatory to pass either the --fsname or the
+    --mountpoint flag, which specify which filesystem to delete. 
+
+OPTIONS
+
+    -n, --fsname: use this option if the filesystem has not been mounted - specify with its argument
+    the database name of the filesystem to remove    
+
+    -m, --mountpoint: use this option if the filesystem has already been mounted - specify with its argument 
+    the mountpoint of the filesystem to remove.
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [mount](/data/man/mount.dsmd)
