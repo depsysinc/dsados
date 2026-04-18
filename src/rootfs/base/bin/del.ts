@@ -1,7 +1,6 @@
-import { DSFilePermsError } from "../../../dsFileSystem";
 import { DSProcess, DSProcessError } from "../../../dsProcess";
 import { DSOptionParser } from "../../../lib/dsOptionParser";
-import { getAbsolutePath, getDirPath } from "../../../lib/dsPath";
+import { getDirPath } from "../../../lib/dsPath";
 
 export class PRDel extends DSProcess {
 
