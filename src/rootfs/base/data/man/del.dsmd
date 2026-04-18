@@ -1,0 +1,22 @@
+NAME
+
+  **del** - delete a file or directory
+
+SYNOPSIS
+
+    del *path*
+
+DESCRIPTION
+
+    The del command will delete the file or directory at the given path. It requires write access.
+    Del cannot be used with . or ..; if you wish to delete the cwd, you need to know the name of the 
+    directory (use pwd, for example). Deleting a directory will also delete the contents of 
+    that directory.
+
+OPTIONS
+
+    -h, --help:  output usage information and exit
+
+SEE ALSO
+
+    [rmfs](/data/man/rmfs.dsmd), [touch](/data/man/touch.dsmd)
