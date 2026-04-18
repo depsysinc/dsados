@@ -37,6 +37,7 @@ export class PRDel extends DSProcess {
         for (let i = 2; i < parentdir.filelist.length; i++) {
             if (parentdir.filelist[i].inode == inode) {
                 parentdir.filelist.splice(i, 1);
+                parentdir.fs.changed(parentdir);
                 return;
             }
         }
